@@ -19,18 +19,18 @@ import {
 import {
   ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
-  Construction as ProjectIcon,
+  VolunteerActivism as ProjectIcon,
   LocationOn as LocationIcon,
   CalendarToday as CalendarIcon,
   AccessTime as TimeIcon,
-  Engineering as EngineerIcon,
+  Handshake as HandshakeIcon,
   Description as DescriptionIcon,
   AttachMoney as MoneyIcon,
   Business as BusinessIcon,
   AccountBalance as AccountBalanceIcon,
   Assignment as TaskIcon,
-  Build as MaterialIcon,
-  Construction as EquipmentIcon,
+  CardGiftcard as GiftIcon,
+  Favorite as HeartIcon,
   TrendingUp as ProgressIcon,
   Warning as IssueIcon,
   Notes as NotesIcon,
@@ -42,8 +42,8 @@ import {
   Download as DownloadIcon,
   Visibility as PreviewIcon,
   CloudUpload as UploadIcon,
+  People as PeopleIcon,
 } from "@mui/icons-material";
-import QuotationGenerator from "./QuotationGenerator";
 
 const ProjectView = () => {
   const { id } = useParams();
@@ -57,7 +57,6 @@ const ProjectView = () => {
     fileName: "",
     type: "",
   });
-  const [quotationModal, setQuotationModal] = useState(false);
 
   // Helper to build URL for uploaded assets using Vite proxy
   const buildImageUrl = (imageUrl) => {
@@ -125,15 +124,13 @@ const ProjectView = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "planning":
-        return "info";
-      case "in_progress":
+      case "pending":
         return "warning";
+      case "in_progress":
+        return "info";
       case "completed":
         return "success";
       case "on_hold":
-        return "default";
-      case "cancelled":
         return "error";
       default:
         return "default";
@@ -327,21 +324,6 @@ const ProjectView = () => {
             <Box display="flex" gap={2}>
               <Button
                 variant="contained"
-                startIcon={<PdfIcon />}
-                onClick={() => setQuotationModal(true)}
-                sx={{
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                  color: "white",
-                  border: "1px solid rgba(255, 255, 255, 0.3)",
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.3)",
-                  },
-                }}
-              >
-                Generate Quotation
-              </Button>
-              <Button
-                variant="contained"
                 startIcon={<EditIcon />}
                 onClick={() => navigate(`/projects/${id}/edit`)}
                 sx={{
@@ -385,10 +367,28 @@ const ProjectView = () => {
                       <ProjectIcon />
                       <Box>
                         <Typography variant="body2" sx={{ color: "#666" }}>
+                          Category
+                        </Typography>
+                        <Chip
+                          label={project.category?.replace('_', ' ').toUpperCase()}
+                          size="small"
+                          sx={{ 
+                            mt: 0.5,
+                            backgroundColor: "#667eea",
+                            color: "white",
+                            fontWeight: 600
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <ProjectIcon />
+                      <Box>
+                        <Typography variant="body2" sx={{ color: "#666" }}>
                           Project Status
                         </Typography>
                         <Chip
-                          label={project.status?.toUpperCase()}
+                          label={project.status?.replace('_', ' ').toUpperCase()}
                           color={getStatusColor(project.status)}
                           size="small"
                           sx={{ mt: 0.5 }}
@@ -408,7 +408,7 @@ const ProjectView = () => {
                             Location
                           </Typography>
                           <Typography variant="body1" sx={{ color: "#333" }}>
-                            {project.location_name || "Not specified"}
+                            {project.county}{project.subcounty ? `, ${project.subcounty}` : ''}
                           </Typography>
                           {project.latitude && project.longitude && (
                             <Typography
@@ -456,6 +456,17 @@ const ProjectView = () => {
                       )}
                     </Box>
                     <Box display="flex" alignItems="center" gap={1}>
+                      <PeopleIcon />
+                      <Box>
+                        <Typography variant="body2" sx={{ color: "#666" }}>
+                          Target Individual
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: "#333" }}>
+                          {project.target_individual || "Not specified"}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1}>
                       <CalendarIcon />
                       <Box>
                         <Typography variant="body2" sx={{ color: "#666" }}>
@@ -477,53 +488,12 @@ const ProjectView = () => {
                         </Typography>
                       </Box>
                     </Box>
-                    {project.floor_size && (
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <ProjectIcon />
-                        <Box>
-                          <Typography variant="body2" sx={{ color: "#666" }}>
-                            Floor Size
-                          </Typography>
-                          <Typography variant="body1" sx={{ color: "#333" }}>
-                            {project.floor_size} m²
-                          </Typography>
-                        </Box>
-                      </Box>
-                    )}
-                    {project.construction_type && (
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <ProjectIcon />
-                        <Box>
-                          <Typography variant="body2" sx={{ color: "#666" }}>
-                            Construction Type
-                          </Typography>
-                          <Typography variant="body1" sx={{ color: "#333" }}>
-                            {project.construction_type
-                              .replace("_", " ")
-                              .toUpperCase()}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    )}
-                    {project.notes && (
-                      <Box display="flex" alignItems="flex-start" gap={1}>
-                        <NotesIcon />
-                        <Box>
-                          <Typography variant="body2" sx={{ color: "#666" }}>
-                            Notes
-                          </Typography>
-                          <Typography variant="body1" sx={{ color: "#333" }}>
-                            {project.notes}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    )}
                   </Stack>
                 </CardContent>
               </Card>
             </Grid>
 
-            {/* Financial & Progress */}
+            {/* Progress */}
             <Grid item xs={12} sx={{ width: "100%" }}>
               <Card
                 sx={{
@@ -536,40 +506,12 @@ const ProjectView = () => {
               >
                 <CardContent>
                   <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <MoneyIcon sx={{ color: "#f093fb" }} />
+                    <ProgressIcon sx={{ color: "#f093fb" }} />
                     <Typography variant="h5" sx={{ color: "#333" }}>
-                      Financial & Progress
+                      Progress
                     </Typography>
                   </Box>
                   <Stack spacing={2}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <MoneyIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Budget Estimate
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: "#333" }}>
-                          {formatCurrency(
-                            project.budget_estimate,
-                            project.currency
-                          )}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <MoneyIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Actual Cost
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: "#333" }}>
-                          {formatCurrency(
-                            project.actual_cost,
-                            project.currency
-                          )}
-                        </Typography>
-                      </Box>
-                    </Box>
                     <Box display="flex" alignItems="center" gap={1}>
                       <ProjectIcon />
                       <Box>
@@ -577,18 +519,7 @@ const ProjectView = () => {
                           Progress
                         </Typography>
                         <Typography variant="body1" sx={{ color: "#333" }}>
-                          {project.progress_percent || 0}%
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <AccountBalanceIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Funding Source
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: "#333" }}>
-                          {project.funding_source || "Not specified"}
+                          {project.progress || 0}%
                         </Typography>
                       </Box>
                     </Box>
@@ -622,7 +553,7 @@ const ProjectView = () => {
               </Grid>
             )}
 
-            {/* Project Stakeholders */}
+            {/* Project Team */}
             <Grid item xs={12} sx={{ width: "100%" }}>
               <Card
                 sx={{
@@ -635,58 +566,121 @@ const ProjectView = () => {
               >
                 <CardContent>
                   <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <ProjectIcon sx={{ color: "#4facfe" }} />
+                    <PeopleIcon sx={{ color: "#4facfe" }} />
                     <Typography variant="h5" sx={{ color: "#333" }}>
-                      Project Stakeholders
+                      Project Team
                     </Typography>
                   </Box>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <Box display="flex" alignItems="center" gap={1} mb={2}>
-                        <BusinessIcon />
+                  <Stack spacing={3}>
+                    {project.creator && (
+                      <Box display="flex" alignItems="center" gap={2}>
+                        <Avatar sx={{ bgcolor: "#667eea" }}>
+                          {project.creator.full_name?.charAt(0)}
+                        </Avatar>
                         <Box>
                           <Typography variant="body2" sx={{ color: "#666" }}>
-                            Contractor
+                            Created By
                           </Typography>
-                          <Typography variant="body1" sx={{ color: "#333" }}>
-                            {project.contractor_name || "Not specified"}
+                          <Typography variant="body1" sx={{ color: "#333", fontWeight: 600 }}>
+                            {project.creator.full_name}
+                          </Typography>
+                          <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+                            <EmailIcon sx={{ fontSize: 14, color: "#666" }} />
+                            <Typography variant="caption" sx={{ color: "#666" }}>
+                              {project.creator.email}
+                            </Typography>
+                          </Box>
+                          {project.creator.phone && (
+                            <Box display="flex" alignItems="center" gap={0.5}>
+                              <PhoneIcon sx={{ fontSize: 14, color: "#666" }} />
+                              <Typography variant="caption" sx={{ color: "#666" }}>
+                                {project.creator.phone}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
+                      </Box>
+                    )}
+                    {project.assigner && (
+                      <Box display="flex" alignItems="center" gap={2}>
+                        <Avatar sx={{ bgcolor: "#764ba2" }}>
+                          {project.assigner.full_name?.charAt(0)}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="body2" sx={{ color: "#666" }}>
+                            Assigned By
+                          </Typography>
+                          <Typography variant="body1" sx={{ color: "#333", fontWeight: 600 }}>
+                            {project.assigner.full_name}
+                          </Typography>
+                          <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+                            <EmailIcon sx={{ fontSize: 14, color: "#666" }} />
+                            <Typography variant="caption" sx={{ color: "#666" }}>
+                              {project.assigner.email}
+                            </Typography>
+                          </Box>
+                          {project.assigner.phone && (
+                            <Box display="flex" alignItems="center" gap={0.5}>
+                              <PhoneIcon sx={{ fontSize: 14, color: "#666" }} />
+                              <Typography variant="caption" sx={{ color: "#666" }}>
+                                {project.assigner.phone}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
+                      </Box>
+                    )}
+                    {project.assignee && (
+                      <Box display="flex" alignItems="center" gap={2}>
+                        <Avatar sx={{ bgcolor: "#43e97b" }}>
+                          {project.assignee.full_name?.charAt(0)}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="body2" sx={{ color: "#666" }}>
+                            Assigned To
+                          </Typography>
+                          <Typography variant="body1" sx={{ color: "#333", fontWeight: 600 }}>
+                            {project.assignee.full_name}
+                          </Typography>
+                          <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+                            <EmailIcon sx={{ fontSize: 14, color: "#666" }} />
+                            <Typography variant="caption" sx={{ color: "#666" }}>
+                              {project.assignee.email}
+                            </Typography>
+                          </Box>
+                          {project.assignee.phone && (
+                            <Box display="flex" alignItems="center" gap={0.5}>
+                              <PhoneIcon sx={{ fontSize: 14, color: "#666" }} />
+                              <Typography variant="caption" sx={{ color: "#666" }}>
+                                {project.assignee.phone}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
+                      </Box>
+                    )}
+                    {!project.assignee && (
+                      <Box display="flex" alignItems="center" gap={2}>
+                        <Avatar sx={{ bgcolor: "#e0e0e0" }}>
+                          <PeopleIcon />
+                        </Avatar>
+                        <Box>
+                          <Typography variant="body2" sx={{ color: "#666" }}>
+                            Assigned To
+                          </Typography>
+                          <Typography variant="body1" sx={{ color: "#999", fontStyle: "italic" }}>
+                            Not assigned yet
                           </Typography>
                         </Box>
                       </Box>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Box display="flex" alignItems="center" gap={1} mb={2}>
-                        <BusinessIcon />
-                        <Box>
-                          <Typography variant="body2" sx={{ color: "#666" }}>
-                            Client
-                          </Typography>
-                          <Typography variant="body1" sx={{ color: "#333" }}>
-                            {project.client_name || "Not specified"}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Box display="flex" alignItems="center" gap={1} mb={2}>
-                        <AccountBalanceIcon />
-                        <Box>
-                          <Typography variant="body2" sx={{ color: "#666" }}>
-                            Funding Source
-                          </Typography>
-                          <Typography variant="body1" sx={{ color: "#333" }}>
-                            {project.funding_source || "Not specified"}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Grid>
-                  </Grid>
+                    )}
+                  </Stack>
                 </CardContent>
               </Card>
             </Grid>
 
-            {/* Project Blueprints */}
-            {project.blueprint_url && project.blueprint_url.length > 0 && (
+            {/* Updated By */}
+            {project.updated_by && project.updated_by.length > 0 && (
               <Grid item xs={12} sx={{ width: "100%" }}>
                 <Card
                   sx={{
@@ -699,411 +693,108 @@ const ProjectView = () => {
                 >
                   <CardContent>
                     <Box display="flex" alignItems="center" gap={1} mb={3}>
-                      <ProjectIcon sx={{ color: "#ff6b6b" }} />
+                      <PeopleIcon sx={{ color: "#f093fb" }} />
                       <Typography variant="h5" sx={{ color: "#333" }}>
-                        Project Blueprints ({project.blueprint_url.length})
+                        Update History ({project.updated_by.length})
                       </Typography>
                     </Box>
-                    <Grid container spacing={2}>
-                      {project.blueprint_url.map((url, index) => {
-                        const fileName =
-                          url.split("/").pop() || `Blueprint ${index + 1}`;
-                        const isImage = fileName.match(
-                          /\.(jpg|jpeg|png|gif|bmp|webp)$/i
-                        );
-
-                        // Construct full URL for the image (same as Users component)
-                        const fullImageUrl = buildImageUrl(url);
-
-                        return (
-                          <Grid item xs={12} sm={6} md={4} key={index}>
-                            <Box
-                              sx={{
-                                p: 2,
-                                backgroundColor: "#f8f9fa",
-                                borderRadius: 2,
-                                border: "1px solid #e0e0e0",
-                                cursor: "pointer",
-                                transition: "transform 0.2s ease-in-out",
-                                "&:hover": {
-                                  transform: "scale(1.02)",
-                                },
-                              }}
-                              onClick={() => {
-                                window.open(fullImageUrl, "_blank");
-                              }}
-                            >
-                              {isImage ? (
-                                <Box>
-                                  <img
-                                    src={fullImageUrl}
-                                    alt={fileName}
-                                    style={{
-                                      width: "100%",
-                                      height: "150px",
-                                      objectFit: "cover",
-                                      borderRadius: "8px",
-                                      marginBottom: "8px",
-                                    }}
-                                    onError={(e) => {
-                                      e.target.style.display = "none";
-                                      e.target.nextSibling.style.display =
-                                        "block";
-                                    }}
-                                  />
-                                  <Box
-                                    textAlign="center"
-                                    sx={{ display: "none" }}
-                                  >
-                                    <ImageIcon
-                                      sx={{
-                                        fontSize: 48,
-                                        color: "white",
-                                        mb: 1,
-                                      }}
-                                    />
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "white",
-                                        display: "block",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {fileName}
-                                    </Typography>
-                                  </Box>
-                                  <Typography
-                                    variant="body2"
-                                    sx={{
-                                      fontWeight: 600,
-                                      color: "#333",
-                                      textAlign: "center",
-                                      wordBreak: "break-word",
-                                    }}
-                                  >
-                                    {fileName}
-                                  </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      color: "#666",
-                                      display: "block",
-                                      textAlign: "center",
-                                    }}
-                                  >
-                                    Click to view full size
-                                  </Typography>
-                                </Box>
-                              ) : (
-                                <Box textAlign="center">
-                                  <ImageIcon
-                                    sx={{ fontSize: 48, color: "#666", mb: 1 }}
-                                  />
-                                  <Typography
-                                    variant="body2"
-                                    sx={{
-                                      fontWeight: 600,
-                                      color: "#333",
-                                      wordBreak: "break-word",
-                                    }}
-                                  >
-                                    {fileName}
-                                  </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      color: "#666",
-                                      display: "block",
-                                    }}
-                                  >
-                                    Click to download
-                                  </Typography>
-                                </Box>
-                              )}
-                            </Box>
-                          </Grid>
-                        );
-                      })}
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Project Documents */}
-            {project.document_urls && project.document_urls.length > 0 && (
-              <Grid item xs={12}>
-                <Card
-                  sx={{
-                    backgroundColor: "white",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e0e0e0",
-                  }}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={3}>
-                      <UploadIcon sx={{ color: "#fa709a" }} />
-                      <Typography variant="h5" sx={{ color: "#333" }}>
-                        Project Documents ({project.document_urls.length})
-                      </Typography>
-                    </Box>
-                    <Grid container spacing={2}>
-                      {project.document_urls.map((fileUrl, index) => {
-                        const fileName =
-                          fileUrl.split("/").pop() || `Document ${index + 1}`;
-                        const fileType = getFileType(fileName);
-                        const isImage = fileType === "image";
-
-                        return (
-                          <Grid item xs={12} sm={6} md={4} key={index}>
-                            <Box
-                              sx={{
-                                p: 2,
-                                backgroundColor: "#f8f9fa",
-                                borderRadius: 2,
-                                border: "1px solid #e0e0e0",
-                                cursor: "pointer",
-                                transition: "transform 0.2s ease-in-out",
-                                position: "relative",
-                                "&:hover": {
-                                  transform: "scale(1.02)",
-                                },
-                              }}
-                              onClick={() =>
-                                handleDocumentClick(fileUrl, fileName)
-                              }
-                            >
-                              {isImage ? (
-                                <Box>
-                                  <img
-                                    src={buildImageUrl(fileUrl)}
-                                    alt={fileName}
-                                    style={{
-                                      width: "100%",
-                                      height: "150px",
-                                      objectFit: "cover",
-                                      borderRadius: "8px",
-                                      marginBottom: "8px",
-                                    }}
-                                    onError={(e) => {
-                                      e.target.style.display = "none";
-                                      e.target.nextSibling.style.display =
-                                        "block";
-                                    }}
-                                  />
-                                  <Box
-                                    textAlign="center"
-                                    sx={{ display: "none" }}
-                                  >
-                                    {getFileIcon(fileName)}
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "white",
-                                        display: "block",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {fileName}
-                                    </Typography>
-                                  </Box>
-                                  <Typography
-                                    variant="body2"
-                                    sx={{
-                                      fontWeight: 600,
-                                      color: "#333",
-                                      textAlign: "center",
-                                      wordBreak: "break-word",
-                                    }}
-                                  >
-                                    {fileName}
-                                  </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      color: "#666",
-                                      display: "block",
-                                      textAlign: "center",
-                                    }}
-                                  >
-                                    Click to view full size
-                                  </Typography>
-                                </Box>
-                              ) : fileType === "pdf" ? (
-                                <Box>
-                                  <iframe
-                                    src={buildImageUrl(fileUrl)}
-                                    style={{
-                                      width: "100%",
-                                      height: "200px",
-                                      border: "none",
-                                      borderRadius: "8px",
-                                      marginBottom: "8px",
-                                    }}
-                                    title={fileName}
-                                  />
-                                  <Typography
-                                    variant="body2"
-                                    sx={{
-                                      fontWeight: 600,
-                                      color: "#333",
-                                      textAlign: "center",
-                                      wordBreak: "break-word",
-                                    }}
-                                  >
-                                    {fileName}
-                                  </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      color: "#666",
-                                      display: "block",
-                                      textAlign: "center",
-                                    }}
-                                  >
-                                    PDF Preview
-                                  </Typography>
-                                  <Tooltip title="Download PDF" placement="top">
-                                    <DownloadIcon
-                                      sx={{
-                                        position: "absolute",
-                                        top: 8,
-                                        right: 8,
-                                        fontSize: 20,
-                                        color: "#666",
-                                        cursor: "pointer",
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        window.open(
-                                          buildImageUrl(fileUrl),
-                                          "_blank"
-                                        );
-                                      }}
-                                    />
-                                  </Tooltip>
-                                </Box>
-                              ) : (
-                                <Box textAlign="center">
-                                  {getFileIcon(fileName)}
-                                  <Typography
-                                    variant="body2"
-                                    sx={{
-                                      fontWeight: 600,
-                                      color: "#333",
-                                      wordBreak: "break-word",
-                                    }}
-                                  >
-                                    {fileName}
-                                  </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      color: "#666",
-                                      display: "block",
-                                    }}
-                                  >
-                                    Click to download
-                                  </Typography>
-                                  <Tooltip
-                                    title="Download Document"
-                                    placement="top"
-                                  >
-                                    <DownloadIcon
-                                      sx={{
-                                        position: "absolute",
-                                        top: 8,
-                                        right: 8,
-                                        fontSize: 20,
-                                        color: "#666",
-                                        cursor: "pointer",
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        window.open(
-                                          buildImageUrl(fileUrl),
-                                          "_blank"
-                                        );
-                                      }}
-                                    />
-                                  </Tooltip>
-                                </Box>
-                              )}
-                            </Box>
-                          </Grid>
-                        );
-                      })}
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Engineer Info */}
-            {project.engineer && (
-              <Grid item xs={12} sx={{ width: "100%" }}>
-                <Card
-                  sx={{
-                    backgroundColor: "white",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e0e0e0",
-                    width: "100%",
-                    maxWidth: "none",
-                  }}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={3}>
-                      <EngineerIcon sx={{ color: "#43e97b" }} />
-                      <Typography variant="h5" sx={{ color: "#333" }}>
-                        Engineer in Charge
-                      </Typography>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <Avatar sx={{ bgcolor: "#667eea" }}>
-                        {project.engineer.name?.charAt(0)}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="h6" sx={{ color: "#333" }}>
-                          {project.engineer.name}
-                        </Typography>
-                        <Box
-                          display="flex"
-                          alignItems="center"
-                          gap={1}
-                          mb={0.5}
+                    <Stack spacing={3}>
+                      {project.updated_by.map((update, index) => (
+                        <Box 
+                          key={index}
+                          sx={{
+                            p: 2,
+                            backgroundColor: "#f8f9fa",
+                            borderRadius: 2,
+                            border: "1px solid #e0e0e0",
+                          }}
                         >
-                          <EmailIcon sx={{ fontSize: 16, color: "#666" }} />
-                          <Typography variant="body2" sx={{ color: "#666" }}>
-                            {project.engineer.email}
-                          </Typography>
-                        </Box>
-                        {project.engineer.phone && (
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <PhoneIcon sx={{ fontSize: 16, color: "#666" }} />
-                            <Typography variant="body2" sx={{ color: "#666" }}>
-                              {project.engineer.phone}
-                            </Typography>
+                          <Box display="flex" alignItems="center" gap={2}>
+                            <Avatar sx={{ bgcolor: "#667eea" }}>
+                              {update.full_name?.charAt(0)}
+                            </Avatar>
+                            <Box>
+                              <Typography variant="body1" sx={{ color: "#333", fontWeight: 600 }}>
+                                {update.full_name}
+                              </Typography>
+                              <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+                                <EmailIcon sx={{ fontSize: 14, color: "#666" }} />
+                                <Typography variant="caption" sx={{ color: "#666" }}>
+                                  {update.email}
+                                </Typography>
+                              </Box>
+                              {update.phone && (
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <PhoneIcon sx={{ fontSize: 14, color: "#666" }} />
+                                  <Typography variant="caption" sx={{ color: "#666" }}>
+                                    {update.phone}
+                                  </Typography>
+                                </Box>
+                              )}
+                              <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+                                <CalendarIcon sx={{ fontSize: 14, color: "#666" }} />
+                                <Typography variant="caption" sx={{ color: "#666" }}>
+                                  {update.timestamp ? formatDate(update.timestamp) : "Legacy update"}
+                                </Typography>
+                              </Box>
+                            </Box>
                           </Box>
-                        )}
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#999", mt: 0.5 }}
-                        >
-                          Role:{" "}
-                          {project.engineer.role
-                            ?.replace("_", " ")
-                            .toUpperCase()}
+                        </Box>
+                      ))}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            )}
+
+            {/* Timeline */}
+            <Grid item xs={12} sx={{ width: "100%" }}>
+              <Card
+                sx={{
+                  backgroundColor: "white",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+                  border: "1px solid #e0e0e0",
+                  width: "100%",
+                  maxWidth: "none",
+                }}
+              >
+                <CardContent>
+                  <Box display="flex" alignItems="center" gap={1} mb={3}>
+                    <TimeIcon sx={{ color: "#4facfe" }} />
+                    <Typography variant="h5" sx={{ color: "#333" }}>
+                      Timeline
+                    </Typography>
+                  </Box>
+                  <Stack spacing={2}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <CalendarIcon />
+                      <Box>
+                        <Typography variant="body2" sx={{ color: "#666" }}>
+                          Created At
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: "#333" }}>
+                          {formatDate(project.createdAt)}
                         </Typography>
                       </Box>
                     </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <CalendarIcon />
+                      <Box>
+                        <Typography variant="body2" sx={{ color: "#666" }}>
+                          Last Updated
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: "#333" }}>
+                          {formatDate(project.updatedAt)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
 
-            {/* Project Tasks */}
-            {project.tasks && project.tasks.length > 0 && (
+            {/* Update Images */}
+            {project.update_images && project.update_images.length > 0 && (
               <Grid item xs={12}>
                 <Card
                   sx={{
@@ -1113,303 +804,112 @@ const ProjectView = () => {
                   }}
                 >
                   <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={2}>
-                      <TaskIcon sx={{ color: "#667eea" }} />
-                      <Typography variant="h6" sx={{ color: "#333" }}>
-                        Project Tasks ({project.tasks.length})
+                    <Box display="flex" alignItems="center" gap={1} mb={3}>
+                      <ImageIcon sx={{ color: "#ff6b6b" }} />
+                      <Typography variant="h5" sx={{ color: "#333" }}>
+                        Update Images ({project.update_images.length})
                       </Typography>
                     </Box>
                     <Grid container spacing={2}>
-                      {project.tasks.map((task, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
-                          <Box
-                            sx={{
-                              p: 2,
-                              backgroundColor: "#f8f9fa",
-                              borderRadius: 2,
-                              border: "1px solid #e0e0e0",
-                            }}
-                          >
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600, mb: 1, color: "#333" }}
+                      {project.update_images.map((imageObj, index) => {
+                        const fullImageUrl = buildImageUrl(imageObj.path);
+                        return (
+                          <Grid item xs={12} md={4} key={index}>
+                            <Box
+                              sx={{
+                                p: 2,
+                                backgroundColor: "#f8f9fa",
+                                borderRadius: 2,
+                                border: "1px solid #e0e0e0",
+                                cursor: "pointer",
+                                transition: "transform 0.2s ease-in-out",
+                                height: "200px",
+                                display: "flex",
+                                flexDirection: "column",
+                                "&:hover": {
+                                  transform: "scale(1.02)",
+                                },
+                              }}
+                              onClick={() => window.open(fullImageUrl, "_blank")}
                             >
-                              {task.title || task.name || `Task ${index + 1}`}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: "#666" }}
-                            >
-                              {task.description ||
-                                task.status ||
-                                "No description"}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      ))}
+                              <img
+                                src={fullImageUrl}
+                                alt={`Update ${index + 1}`}
+                                style={{
+                                  width: "100%",
+                                  height: "140px",
+                                  objectFit: "cover",
+                                  borderRadius: "8px",
+                                  marginBottom: "8px",
+                                  flex: 1,
+                                }}
+                              />
+                              <Typography
+                                variant="caption"
+                                sx={{ 
+                                  color: "#666", 
+                                  display: "block",
+                                  textAlign: "center",
+                                  mt: "auto"
+                                }}
+                              >
+                                {formatDate(imageObj.timestamp)}
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        );
+                      })}
                     </Grid>
                   </CardContent>
                 </Card>
               </Grid>
             )}
 
-            {/* Project Materials */}
-            {project.materials && project.materials.length > 0 && (
-              <Grid item xs={12}>
+            {/* Progress Descriptions */}
+            {project.progress_descriptions && project.progress_descriptions.length > 0 && (
+              <Grid item xs={12} sx={{ width: "100%" }}>
                 <Card
                   sx={{
                     backgroundColor: "white",
                     boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
                     border: "1px solid #e0e0e0",
+                    width: "100%",
+                    maxWidth: "none",
                   }}
                 >
                   <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={2}>
-                      <MaterialIcon sx={{ color: "#f093fb" }} />
-                      <Typography variant="h6" sx={{ color: "#333" }}>
-                        Materials ({project.materials.length})
+                    <Box display="flex" alignItems="center" gap={1} mb={3}>
+                      <ProgressIcon sx={{ color: "#667eea" }} />
+                      <Typography variant="h5" sx={{ color: "#333" }}>
+                        Progress Updates ({project.progress_descriptions.length})
                       </Typography>
                     </Box>
-                    <Grid container spacing={2}>
-                      {project.materials.map((material, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
-                          <Box
-                            sx={{
-                              p: 2,
-                              backgroundColor: "#f8f9fa",
-                              borderRadius: 2,
-                              border: "1px solid #e0e0e0",
-                            }}
+                    <Stack spacing={2}>
+                      {project.progress_descriptions.map((update, index) => (
+                        <Box
+                          key={index}
+                          sx={{
+                            p: 2,
+                            backgroundColor: "#f8f9fa",
+                            borderRadius: 2,
+                            border: "1px solid #e0e0e0",
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 600, mb: 1, color: "#333" }}
                           >
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600, mb: 1, color: "#333" }}
-                            >
-                              {material.name ||
-                                material.title ||
-                                `Material ${index + 1}`}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: "#666" }}
-                            >
-                              {material.description ||
-                                material.type ||
-                                "No description"}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Project Equipment */}
-            {project.equipment && project.equipment.length > 0 && (
-              <Grid item xs={12}>
-                <Card
-                  sx={{
-                    backgroundColor: "white",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e0e0e0",
-                  }}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={2}>
-                      <EquipmentIcon />
-                      <Typography variant="h6" sx={{ color: "#333" }}>
-                        Equipment ({project.equipment.length})
-                      </Typography>
-                    </Box>
-                    <Grid container spacing={2}>
-                      {project.equipment.map((equipment, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
-                          <Box
-                            sx={{
-                              p: 2,
-                              backgroundColor: "#f8f9fa",
-                              borderRadius: 2,
-                              border: "1px solid #e0e0e0",
-                            }}
+                            {update.description}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "#666" }}
                           >
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600, mb: 1, color: "#333" }}
-                            >
-                              {equipment.name ||
-                                equipment.title ||
-                                `Equipment ${index + 1}`}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: "#666" }}
-                            >
-                              {equipment.description ||
-                                equipment.type ||
-                                "No description"}
-                            </Typography>
-                          </Box>
-                        </Grid>
+                            {formatDate(update.timestamp)}
+                          </Typography>
+                        </Box>
                       ))}
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Project Budgets */}
-            {project.budgets && project.budgets.length > 0 && (
-              <Grid item xs={12}>
-                <Card
-                  sx={{
-                    backgroundColor: "white",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e0e0e0",
-                  }}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={2}>
-                      <MoneyIcon />
-                      <Typography variant="h6" sx={{ color: "#333" }}>
-                        Budget Details ({project.budgets.length})
-                      </Typography>
-                    </Box>
-                    <Grid container spacing={2}>
-                      {project.budgets.map((budget, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
-                          <Box
-                            sx={{
-                              p: 2,
-                              backgroundColor: "#f8f9fa",
-                              borderRadius: 2,
-                              border: "1px solid #e0e0e0",
-                            }}
-                          >
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600, mb: 1, color: "#333" }}
-                            >
-                              {budget.category ||
-                                budget.name ||
-                                `Budget ${index + 1}`}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: "#666" }}
-                            >
-                              Amount:{" "}
-                              {formatCurrency(budget.amount, project.currency)}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Progress Updates */}
-            {project.progressUpdates && project.progressUpdates.length > 0 && (
-              <Grid item xs={12}>
-                <Card
-                  sx={{
-                    backgroundColor: "white",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e0e0e0",
-                  }}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={2}>
-                      <ProgressIcon />
-                      <Typography variant="h6" sx={{ color: "#333" }}>
-                        Progress Updates ({project.progressUpdates.length})
-                      </Typography>
-                    </Box>
-                    <Grid container spacing={2}>
-                      {project.progressUpdates.map((update, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
-                          <Box
-                            sx={{
-                              p: 2,
-                              backgroundColor: "#f8f9fa",
-                              borderRadius: 2,
-                              border: "1px solid #e0e0e0",
-                            }}
-                          >
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600, mb: 1, color: "#333" }}
-                            >
-                              {update.title ||
-                                update.description ||
-                                `Update ${index + 1}`}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: "#666" }}
-                            >
-                              {update.date
-                                ? formatDate(update.date)
-                                : "No date"}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Project Issues */}
-            {project.issues && project.issues.length > 0 && (
-              <Grid item xs={12}>
-                <Card
-                  sx={{
-                    backgroundColor: "white",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e0e0e0",
-                  }}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={2}>
-                      <IssueIcon />
-                      <Typography variant="h6" sx={{ color: "#333" }}>
-                        Project Issues ({project.issues.length})
-                      </Typography>
-                    </Box>
-                    <Grid container spacing={2}>
-                      {project.issues.map((issue, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
-                          <Box
-                            sx={{
-                              p: 2,
-                              backgroundColor: "#f8f9fa",
-                              borderRadius: 2,
-                              border: "1px solid #e0e0e0",
-                            }}
-                          >
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600, mb: 1, color: "#333" }}
-                            >
-                              {issue.title ||
-                                issue.description ||
-                                `Issue ${index + 1}`}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: "#666" }}
-                            >
-                              {issue.status || issue.priority || "No status"}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      ))}
-                    </Grid>
+                    </Stack>
                   </CardContent>
                 </Card>
               </Grid>
@@ -1494,13 +994,6 @@ const ProjectView = () => {
         </Box>
       )}
 
-      {/* Quotation Generator Modal */}
-      <QuotationGenerator
-        projectId={id}
-        projectName={project?.name}
-        open={quotationModal}
-        onClose={() => setQuotationModal(false)}
-      />
     </Box>
   );
 };

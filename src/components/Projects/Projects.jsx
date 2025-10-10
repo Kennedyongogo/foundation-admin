@@ -79,7 +79,7 @@ const Projects = () => {
     location_name: "",
     latitude: "",
     longitude: "",
-    status: "planning",
+    status: "pending",
     start_date: "",
     end_date: "",
     budget_estimate: 0,
@@ -499,7 +499,7 @@ const Projects = () => {
         location_name: "",
         latitude: "",
         longitude: "",
-        status: "planning",
+        status: "pending",
         start_date: "",
         end_date: "",
         budget_estimate: 0,
@@ -992,7 +992,7 @@ const Projects = () => {
               location_name: "",
               latitude: "",
               longitude: "",
-              status: "planning",
+              status: "pending",
               start_date: "",
               end_date: "",
               budget_estimate: 0,
@@ -1920,11 +1920,10 @@ const Projects = () => {
                       }
                       label="Status"
                     >
-                      <MenuItem value="planning">Planning</MenuItem>
+                      <MenuItem value="pending">Pending</MenuItem>
                       <MenuItem value="in_progress">In Progress</MenuItem>
                       <MenuItem value="completed">Completed</MenuItem>
                       <MenuItem value="on_hold">On Hold</MenuItem>
-                      <MenuItem value="cancelled">Cancelled</MenuItem>
                     </Select>
                   </FormControl>
                 </Stack>

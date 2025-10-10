@@ -30,8 +30,8 @@ import {
   Close as CloseIcon,
   Image as ImageIcon,
   AttachMoney as MoneyIcon,
-  Engineering as EngineerIcon,
-  Construction as ProjectIcon,
+  Handshake as HandshakeIcon,
+  VolunteerActivism as ProjectIcon,
   LocationOn as LocationIcon,
   CalendarToday as CalendarIcon,
   Description as DescriptionIcon,
@@ -40,6 +40,7 @@ import {
   Description as WordIcon,
   Download as DownloadIcon,
   Visibility as PreviewIcon,
+  People as PeopleIcon,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
 
@@ -64,30 +65,22 @@ const ProjectEdit = () => {
   const [projectForm, setProjectForm] = useState({
     name: "",
     description: "",
-    location_name: "",
+    category: "volunteer",
+    county: "",
+    subcounty: "",
+    target_individual: "",
     latitude: "",
     longitude: "",
-    status: "planning",
+    status: "pending",
     start_date: "",
     end_date: "",
-    budget_estimate: "",
-    actual_cost: "",
-    currency: "KES",
-    contractor_name: "",
-    client_name: "",
-    funding_source: "",
-    engineer_in_charge: "",
-    progress_percent: 0,
-    notes: "",
-    floor_size: "",
-    construction_type: "building",
+    progress: 0,
+    assigned_to: null,
   });
-  const [blueprintUrls, setBlueprintUrls] = useState([]);
-  const [blueprintFiles, setBlueprintFiles] = useState([]);
-  const [blueprintPreviews, setBlueprintPreviews] = useState([]);
+  const [progressDescription, setProgressDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
-  const [projectFiles, setProjectFiles] = useState([]);
+  const [projectImages, setProjectImages] = useState([]);
   const [filePreviews, setFilePreviews] = useState([]);
   const [previewModal, setPreviewModal] = useState({
     open: false,
@@ -95,21 +88,12 @@ const ProjectEdit = () => {
     fileName: "",
     type: "",
   });
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     fetchProject();
+    fetchUsers();
   }, [id]);
-
-  // Cleanup object URLs on component unmount
-  useEffect(() => {
-    return () => {
-      filePreviews.forEach((preview) => {
-        if (preview.previewType === "pdf" && preview.preview) {
-          URL.revokeObjectURL(preview.preview);
-        }
-      });
-    };
-  }, [filePreviews]);
 
   const fetchProject = async () => {
     try {
@@ -135,36 +119,25 @@ const ProjectEdit = () => {
         setProjectForm({
           name: result.data.name || "",
           description: result.data.description || "",
-          location_name: result.data.location_name || "",
+          category: result.data.category || "volunteer",
+          county: result.data.county || "",
+          subcounty: result.data.subcounty || "",
+          target_individual: result.data.target_individual || "",
           latitude: result.data.latitude || "",
           longitude: result.data.longitude || "",
-          status: result.data.status || "planning",
+          status: result.data.status || "pending",
           start_date: result.data.start_date
             ? result.data.start_date.split("T")[0]
             : "",
           end_date: result.data.end_date
             ? result.data.end_date.split("T")[0]
             : "",
-          budget_estimate: result.data.budget_estimate || "",
-          actual_cost: result.data.actual_cost || "",
-          currency: result.data.currency || "KES",
-          contractor_name: result.data.contractor_name || "",
-          client_name: result.data.client_name || "",
-          funding_source: result.data.funding_source || "",
-          engineer_in_charge: result.data.engineer_in_charge || "",
-          progress_percent: result.data.progress_percent || 0,
-          notes: result.data.notes || "",
-          floor_size: result.data.floor_size || "",
-          construction_type: result.data.construction_type || "building",
+          progress: result.data.progress || 0,
+          assigned_to: result.data.assigned_to || null,
         });
-        setProjectFiles(result.data.document_urls || []);
-        const blueprints = Array.isArray(result.data.blueprint_url)
-          ? result.data.blueprint_url
-          : result.data.blueprint_url
-          ? [result.data.blueprint_url]
-          : [];
-        console.log("📥 Loaded blueprints from API:", blueprints);
-        setBlueprintUrls(blueprints);
+        // Load existing update_images
+        const images = result.data.update_images?.map(img => img.path) || [];
+        setProjectImages(images);
       } else {
         setError(result.message || "Failed to fetch project details");
       }
@@ -173,6 +146,24 @@ const ProjectEdit = () => {
       console.error("Error fetching project:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/admin-users", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setUsers(result.data || []);
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
     }
   };
 
@@ -187,13 +178,10 @@ const ProjectEdit = () => {
     const files = Array.from(event.target.files);
     setSelectedFiles((prev) => [...prev, ...files]);
 
-    // Create previews for all file types
+    // Create image previews
     const newPreviews = [];
     files.forEach((file) => {
-      const fileType = getFileType(file.name);
-
       if (file.type.startsWith("image/")) {
-        // For images, create image preview
         const reader = new FileReader();
         reader.onload = (e) => {
           newPreviews.push({
@@ -206,121 +194,28 @@ const ProjectEdit = () => {
           setFilePreviews((prev) => [...prev, ...newPreviews]);
         };
         reader.readAsDataURL(file);
-      } else if (file.type === "application/pdf") {
-        // For PDFs, create object URL for preview
-        const objectUrl = URL.createObjectURL(file);
-        newPreviews.push({
-          file: file,
-          preview: objectUrl,
-          name: file.name,
-          type: "pdf",
-          previewType: "pdf",
-        });
-        setFilePreviews((prev) => [...prev, ...newPreviews]);
-      } else {
-        // For other files, just show file info
-        newPreviews.push({
-          file: file,
-          preview: null,
-          name: file.name,
-          type: fileType,
-          previewType: "none",
-        });
-        setFilePreviews((prev) => [...prev, ...newPreviews]);
       }
     });
   };
 
   const removeSelectedFile = (index) => {
-    // Clean up object URLs to prevent memory leaks
-    const preview = filePreviews[index];
-    if (preview && preview.previewType === "pdf" && preview.preview) {
-      URL.revokeObjectURL(preview.preview);
-    }
-
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     setFilePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleBlueprintFileSelect = (event) => {
-    const files = Array.from(event.target.files);
-    const newFiles = [...blueprintFiles, ...files];
-    setBlueprintFiles(newFiles);
-
-    // Generate previews for image files
-    const newPreviews = [...blueprintPreviews];
-    files.forEach((file) => {
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          newPreviews.push(e.target.result);
-          setBlueprintPreviews([...newPreviews]);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        newPreviews.push(null);
-        setBlueprintPreviews([...newPreviews]);
-      }
-    });
+  const removeProjectImage = (index) => {
+    const newImages = projectImages.filter((_, i) => i !== index);
+    setProjectImages(newImages);
   };
 
-  const removeBlueprintFile = (index) => {
-    const newFiles = blueprintFiles.filter((_, i) => i !== index);
-    const newPreviews = blueprintPreviews.filter((_, i) => i !== index);
-    setBlueprintFiles(newFiles);
-    setBlueprintPreviews(newPreviews);
-  };
-
-  const removeProjectDocument = (index) => {
-    const newDocuments = projectFiles.filter((_, i) => i !== index);
-    setProjectFiles(newDocuments);
-  };
-
-  const getFileType = (fileName) => {
-    const extension = fileName.toLowerCase().split(".").pop();
-    if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(extension)) {
-      return "image";
-    } else if (extension === "pdf") {
-      return "pdf";
-    } else if (["doc", "docx"].includes(extension)) {
-      return "word";
-    } else if (["xls", "xlsx"].includes(extension)) {
-      return "excel";
-    }
-    return "document";
-  };
-
-  const getFileIcon = (fileName) => {
-    const type = getFileType(fileName);
-    switch (type) {
-      case "image":
-        return <ImageIcon sx={{ fontSize: 48, color: "white", mb: 1 }} />;
-      case "pdf":
-        return <PdfIcon sx={{ fontSize: 48, color: "#f44336", mb: 1 }} />;
-      case "word":
-        return <WordIcon sx={{ fontSize: 48, color: "#2196f3", mb: 1 }} />;
-      case "excel":
-        return <WordIcon sx={{ fontSize: 48, color: "#4caf50", mb: 1 }} />;
-      default:
-        return <ImageIcon sx={{ fontSize: 48, color: "white", mb: 1 }} />;
-    }
-  };
-
-  const handleDocumentClick = (fileUrl, fileName) => {
+  const handleImageClick = (fileUrl, fileName) => {
     const fullUrl = buildImageUrl(fileUrl);
-    const type = getFileType(fileName);
-
-    if (type === "image") {
       setPreviewModal({
         open: true,
         url: fullUrl,
         fileName: fileName,
-        type: type,
+      type: "image",
       });
-    } else {
-      // For other file types, open in new tab for download
-      window.open(fullUrl, "_blank");
-    }
   };
 
   const handleSave = async () => {
@@ -328,10 +223,8 @@ const ProjectEdit = () => {
       setSaving(true);
 
       console.log("💾 Starting save...");
-      console.log("💾 Current blueprintUrls state:", blueprintUrls);
-      console.log("💾 Current blueprintFiles state:", blueprintFiles);
 
-      // Prepare form data for project update with both blueprint and document files
+      // Prepare form data for project update with document files
       const formData = new FormData();
 
       // Add all project form fields
@@ -341,27 +234,19 @@ const ProjectEdit = () => {
         }
       });
 
-      // Add existing document URLs
-      projectFiles.forEach((url) => {
-        formData.append("document_urls", url);
+      // Add progress description if provided
+      if (progressDescription.trim()) {
+        formData.append("progress_description", progressDescription.trim());
+      }
+
+      // Add existing image URLs
+      projectImages.forEach((url) => {
+        formData.append("existing_images", url);
       });
 
-      // Add new document files directly
+      // Add new image files
       selectedFiles.forEach((file) => {
-        formData.append("documents", file);
-      });
-
-      // Add existing blueprint URLs
-      console.log("📸 Existing blueprint URLs to send:", blueprintUrls);
-      blueprintUrls.forEach((url) => {
-        formData.append("blueprint_url", url);
-      });
-
-      // Add new blueprint files
-      console.log("📸 New blueprint files to upload:", blueprintFiles.length);
-      blueprintFiles.forEach((file) => {
-        console.log("📸 Adding file:", file.name);
-        formData.append("blueprints", file);
+        formData.append("update_images", file);
       });
 
       console.log("Updated project data with files");
@@ -381,8 +266,7 @@ const ProjectEdit = () => {
         // Clear selected files and previews after successful save
         setSelectedFiles([]);
         setFilePreviews([]);
-        setBlueprintFiles([]);
-        setBlueprintPreviews([]);
+        setProgressDescription("");
 
         await Swal.fire({
           title: "Success!",
@@ -411,7 +295,7 @@ const ProjectEdit = () => {
   const isFormValid = () => {
     return (
       projectForm.name.trim() !== "" &&
-      projectForm.location_name.trim() !== "" &&
+      projectForm.county.trim() !== "" &&
       projectForm.start_date !== ""
     );
   };
@@ -602,12 +486,115 @@ const ProjectEdit = () => {
                         },
                       }}
                     />
+                    <FormControl fullWidth required>
+                      <InputLabel>Category</InputLabel>
+                      <Select
+                        value={projectForm.category}
+                      onChange={(e) =>
+                          handleInputChange("category", e.target.value)
+                        }
+                        label="Category"
+                      >
+                        <MenuItem value="volunteer">Volunteer</MenuItem>
+                        <MenuItem value="donation">Donation</MenuItem>
+                        <MenuItem value="fundraising">Fundraising</MenuItem>
+                        <MenuItem value="education">Education</MenuItem>
+                        <MenuItem value="healthcare">Healthcare</MenuItem>
+                        <MenuItem value="infrastructure">Infrastructure</MenuItem>
+                        <MenuItem value="other">Other</MenuItem>
+                      </Select>
+                    </FormControl>
                     <TextField
                       fullWidth
-                      label="Location"
-                      value={projectForm.location_name}
+                      multiline
+                      rows={3}
+                      label="Description"
+                      value={projectForm.description}
                       onChange={(e) =>
-                        handleInputChange("location_name", e.target.value)
+                        handleInputChange("description", e.target.value)
+                      }
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "transparent",
+                        },
+                      }}
+                    />
+                    <FormControl fullWidth required>
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={projectForm.status}
+                        onChange={(e) =>
+                          handleInputChange("status", e.target.value)
+                        }
+                        label="Status"
+                      >
+                        <MenuItem value="pending">Pending</MenuItem>
+                        <MenuItem value="in_progress">In Progress</MenuItem>
+                        <MenuItem value="completed">Completed</MenuItem>
+                        <MenuItem value="on_hold">On Hold</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <TextField
+                      fullWidth
+                      label="Progress (%)"
+                      type="number"
+                      value={projectForm.progress}
+                      onChange={(e) =>
+                        handleInputChange(
+                          "progress",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
+                      inputProps={{ min: 0, max: 100 }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "transparent",
+                        },
+                      }}
+                    />
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={2}
+                      label="Progress Update Description (Optional)"
+                      value={progressDescription}
+                      onChange={(e) => setProgressDescription(e.target.value)}
+                      placeholder="Describe what progress was made..."
+                      helperText="Add a note about this update (will be saved with timestamp)"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "transparent",
+                        },
+                      }}
+                    />
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Location & Schedule */}
+            <Grid item xs={12}>
+              <Card
+                sx={{
+                  backgroundColor: "white",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+                  border: "1px solid #e0e0e0",
+                }}
+              >
+                <CardContent>
+                  <Box display="flex" alignItems="center" gap={1} mb={3}>
+                    <LocationIcon sx={{ color: "#f093fb" }} />
+                    <Typography variant="h6" sx={{ color: "#333" }}>
+                      Location & Schedule
+                    </Typography>
+                  </Box>
+                  <Stack spacing={3}>
+                    <TextField
+                      fullWidth
+                      label="County"
+                      value={projectForm.county}
+                      onChange={(e) =>
+                        handleInputChange("county", e.target.value)
                       }
                       required
                       sx={{
@@ -616,6 +603,55 @@ const ProjectEdit = () => {
                         },
                       }}
                     />
+                    <TextField
+                      fullWidth
+                      label="Subcounty"
+                      value={projectForm.subcounty}
+                      onChange={(e) =>
+                        handleInputChange("subcounty", e.target.value)
+                      }
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "transparent",
+                        },
+                      }}
+                    />
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                      fullWidth
+                          label="Latitude"
+                          type="number"
+                          value={projectForm.latitude}
+                          onChange={(e) =>
+                            handleInputChange("latitude", e.target.value)
+                          }
+                          inputProps={{ step: "any" }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                              backgroundColor: "transparent",
+                            },
+                          }}
+                        />
+            </Grid>
+                      <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                          label="Longitude"
+                      type="number"
+                          value={projectForm.longitude}
+                      onChange={(e) =>
+                            handleInputChange("longitude", e.target.value)
+                      }
+                          inputProps={{ step: "any" }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          backgroundColor: "transparent",
+                        },
+                      }}
+                    />
+                      </Grid>
+                    </Grid>
                     <TextField
                       fullWidth
                       label="Start Date"
@@ -647,144 +683,59 @@ const ProjectEdit = () => {
                         },
                       }}
                     />
-                    <FormControl
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Target & Assignment */}
+            <Grid item xs={12}>
+              <Card
+                sx={{
+                  backgroundColor: "white",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+                  border: "1px solid #e0e0e0",
+                }}
+              >
+                <CardContent>
+                  <Box display="flex" alignItems="center" gap={1} mb={3}>
+                    <PeopleIcon sx={{ color: "#4facfe" }} />
+                    <Typography variant="h6" sx={{ color: "#333" }}>
+                      Target & Assignment
+                    </Typography>
+                  </Box>
+                  <Stack spacing={3}>
+                    <TextField
                       fullWidth
+                      label="Target Individual/Group"
+                      value={projectForm.target_individual}
+                      onChange={(e) =>
+                        handleInputChange("target_individual", e.target.value)
+                      }
+                      placeholder="e.g., Youth aged 18-25, Women farmers, etc."
                       sx={{
                         "& .MuiOutlinedInput-root": {
-                          backgroundColor: "rgba(255, 255, 255, 0.1)",
-                          "& fieldset": {
-                            borderColor: "rgba(255, 255, 255, 0.3)",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "rgba(255, 255, 255, 0.5)",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "white",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "rgba(255, 255, 255, 0.8)",
-                        },
-                        "& .MuiSelect-select": {
-                          color: "white",
+                          backgroundColor: "transparent",
                         },
                       }}
-                    >
-                      <InputLabel>Status</InputLabel>
+                    />
+                    <FormControl fullWidth>
+                      <InputLabel>Assign To</InputLabel>
                       <Select
-                        value={projectForm.status}
-                        onChange={(e) =>
-                          handleInputChange("status", e.target.value)
+                        value={projectForm.assigned_to || ""}
+                      onChange={(e) =>
+                          handleInputChange("assigned_to", e.target.value || null)
                         }
-                        label="Status"
+                        label="Assign To"
                       >
-                        <MenuItem value="planning">Planning</MenuItem>
-                        <MenuItem value="in_progress">In Progress</MenuItem>
-                        <MenuItem value="completed">Completed</MenuItem>
-                        <MenuItem value="on_hold">On Hold</MenuItem>
-                        <MenuItem value="cancelled">Cancelled</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <TextField
-                      fullWidth
-                      label="Progress (%)"
-                      type="number"
-                      value={projectForm.progress_percent}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "progress_percent",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      inputProps={{ min: 0, max: 100 }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      label="Description"
-                      value={projectForm.description}
-                      onChange={(e) =>
-                        handleInputChange("description", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={2}
-                      label="Notes"
-                      value={projectForm.notes}
-                      onChange={(e) =>
-                        handleInputChange("notes", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Floor Size (m²)"
-                      type="number"
-                      value={projectForm.floor_size}
-                      onChange={(e) =>
-                        handleInputChange("floor_size", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <FormControl
-                      fullWidth
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "rgba(255, 255, 255, 0.1)",
-                          "& fieldset": {
-                            borderColor: "rgba(255, 255, 255, 0.3)",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "rgba(255, 255, 255, 0.5)",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "white",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "rgba(255, 255, 255, 0.8)",
-                        },
-                        "& .MuiSelect-select": {
-                          color: "white",
-                        },
-                      }}
-                    >
-                      <InputLabel>Construction Type</InputLabel>
-                      <Select
-                        value={projectForm.construction_type}
-                        onChange={(e) =>
-                          handleInputChange("construction_type", e.target.value)
-                        }
-                        label="Construction Type"
-                      >
-                        <MenuItem value="building">Building</MenuItem>
-                        <MenuItem value="infrastructure">
-                          Infrastructure
+                        <MenuItem value="">
+                          <em>Not assigned</em>
                         </MenuItem>
-                        <MenuItem value="industrial">Industrial</MenuItem>
-                        <MenuItem value="specialized">Specialized</MenuItem>
-                        <MenuItem value="other">Other</MenuItem>
+                        {users.map((user) => (
+                          <MenuItem key={user.id} value={user.id}>
+                            {user.full_name} ({user.email})
+                          </MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                   </Stack>
@@ -792,7 +743,7 @@ const ProjectEdit = () => {
               </Card>
             </Grid>
 
-            {/* Financial Information */}
+            {/* Project Images */}
             <Grid item xs={12}>
               <Card
                 sx={{
@@ -803,161 +754,13 @@ const ProjectEdit = () => {
               >
                 <CardContent>
                   <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <MoneyIcon sx={{ color: "#f093fb" }} />
+                    <ImageIcon sx={{ color: "#43e97b" }} />
                     <Typography variant="h6" sx={{ color: "#333" }}>
-                      Financial Information
-                    </Typography>
-                  </Box>
-                  <Stack spacing={3}>
-                    <TextField
-                      fullWidth
-                      label="Budget Estimate"
-                      type="number"
-                      value={projectForm.budget_estimate}
-                      onChange={(e) =>
-                        handleInputChange("budget_estimate", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Actual Cost"
-                      type="number"
-                      value={projectForm.actual_cost}
-                      onChange={(e) =>
-                        handleInputChange("actual_cost", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <FormControl
-                      fullWidth
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "rgba(255, 255, 255, 0.1)",
-                          "& fieldset": {
-                            borderColor: "rgba(255, 255, 255, 0.3)",
-                          },
-                          "&:hover fieldset": {
-                            borderColor: "rgba(255, 255, 255, 0.5)",
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: "white",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "rgba(255, 255, 255, 0.8)",
-                        },
-                        "& .MuiSelect-select": {
-                          color: "white",
-                        },
-                      }}
-                    >
-                      <InputLabel>Currency</InputLabel>
-                      <Select
-                        value={projectForm.currency}
-                        onChange={(e) =>
-                          handleInputChange("currency", e.target.value)
-                        }
-                        label="Currency"
-                      >
-                        <MenuItem value="KES">KES (Kenyan Shilling)</MenuItem>
-                        <MenuItem value="USD">USD (US Dollar)</MenuItem>
-                        <MenuItem value="EUR">EUR (Euro)</MenuItem>
-                        <MenuItem value="GBP">GBP (British Pound)</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Stakeholders */}
-            <Grid item xs={12}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <ProjectIcon sx={{ color: "#4facfe" }} />
-                    <Typography variant="h6" sx={{ color: "#333" }}>
-                      Project Stakeholders
-                    </Typography>
-                  </Box>
-                  <Stack spacing={3}>
-                    <TextField
-                      fullWidth
-                      label="Contractor Name"
-                      value={projectForm.contractor_name}
-                      onChange={(e) =>
-                        handleInputChange("contractor_name", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Client Name"
-                      value={projectForm.client_name}
-                      onChange={(e) =>
-                        handleInputChange("client_name", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Funding Source"
-                      value={projectForm.funding_source}
-                      onChange={(e) =>
-                        handleInputChange("funding_source", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* File Upload */}
-            <Grid item xs={12}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <UploadIcon sx={{ color: "#43e97b" }} />
-                    <Typography variant="h6" sx={{ color: "#333" }}>
-                      Project Documents
+                      Project Images
                     </Typography>
                   </Box>
 
-                  {/* File Upload */}
+                  {/* Image Upload */}
                   <Box mb={3}>
                     <input
                       type="file"
@@ -965,7 +768,7 @@ const ProjectEdit = () => {
                       onChange={handleFileSelect}
                       style={{ display: "none" }}
                       id="file-upload"
-                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+                      accept="image/*"
                     />
                     <label htmlFor="file-upload">
                       <Button
@@ -981,23 +784,22 @@ const ProjectEdit = () => {
                           },
                         }}
                       >
-                        Upload Documents
+                        Upload Images
                       </Button>
                     </label>
                   </Box>
 
-                  {/* Selected Files */}
+                  {/* Selected Images */}
                   {selectedFiles.length > 0 && (
                     <Box mb={3}>
                       <Typography variant="subtitle2" mb={2}>
-                        Selected Files:
+                        Selected Images:
                       </Typography>
                       <Grid container spacing={2}>
                         {selectedFiles.map((file, index) => {
                           const preview = filePreviews.find(
                             (p) => p.file === file
                           );
-                          const fileType = getFileType(file.name);
 
                           return (
                             <Grid item xs={12} sm={6} md={4} key={index}>
@@ -1053,60 +855,10 @@ const ProjectEdit = () => {
                                     >
                                       {file.name}
                                     </Typography>
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "white",
-                                        display: "block",
-                                        textAlign: "center",
-                                        fontSize: "0.7rem",
-                                        opacity: 0.8,
-                                      }}
-                                    >
-                                      Click to view full size
-                                    </Typography>
-                                  </Box>
-                                ) : preview?.previewType === "pdf" &&
-                                  preview.preview ? (
-                                  <Box>
-                                    <iframe
-                                      src={preview.preview}
-                                      style={{
-                                        width: "100%",
-                                        height: "200px",
-                                        border: "none",
-                                        borderRadius: "8px",
-                                        marginBottom: "8px",
-                                      }}
-                                      title={file.name}
-                                    />
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#333",
-                                        display: "block",
-                                        textAlign: "center",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {file.name}
-                                    </Typography>
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "white",
-                                        display: "block",
-                                        textAlign: "center",
-                                        fontSize: "0.7rem",
-                                        opacity: 0.8,
-                                      }}
-                                    >
-                                      PDF Preview
-                                    </Typography>
                                   </Box>
                                 ) : (
                                   <Box textAlign="center">
-                                    {getFileIcon(file.name)}
+                                    <ImageIcon sx={{ fontSize: 48, color: "#666", mb: 1 }} />
                                     <Typography
                                       variant="caption"
                                       sx={{
@@ -1116,22 +868,6 @@ const ProjectEdit = () => {
                                       }}
                                     >
                                       {file.name}
-                                    </Typography>
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#666",
-                                        display: "block",
-                                        fontSize: "0.7rem",
-                                      }}
-                                    >
-                                      {fileType === "pdf"
-                                        ? "PDF Document"
-                                        : fileType === "word"
-                                        ? "Word Document"
-                                        : fileType === "excel"
-                                        ? "Excel Document"
-                                        : "Document"}
                                     </Typography>
                                   </Box>
                                 )}
@@ -1160,18 +896,16 @@ const ProjectEdit = () => {
                     </Box>
                   )}
 
-                  {/* Existing Files */}
-                  {projectFiles.length > 0 && (
+                  {/* Existing Images */}
+                  {projectImages.length > 0 && (
                     <Box>
                       <Typography variant="subtitle2" mb={2}>
-                        Current Documents:
+                        Current Images:
                       </Typography>
                       <Grid container spacing={2}>
-                        {projectFiles.map((fileUrl, index) => {
+                        {projectImages.map((fileUrl, index) => {
                           const fileName =
-                            fileUrl.split("/").pop() || `Document ${index + 1}`;
-                          const fileType = getFileType(fileName);
-                          const isImage = fileType === "image";
+                            fileUrl.split("/").pop() || `Image ${index + 1}`;
 
                           return (
                             <Grid item xs={12} sm={6} md={4} key={index}>
@@ -1189,13 +923,13 @@ const ProjectEdit = () => {
                                   },
                                 }}
                                 onClick={() =>
-                                  handleDocumentClick(fileUrl, fileName)
+                                  handleImageClick(fileUrl, fileName)
                                 }
                               >
                                 <IconButton
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    removeProjectDocument(index);
+                                    removeProjectImage(index);
                                   }}
                                   sx={{
                                     position: "absolute",
@@ -1213,7 +947,6 @@ const ProjectEdit = () => {
                                   <CloseIcon fontSize="small" />
                                 </IconButton>
 
-                                {isImage ? (
                                   <Box>
                                     <img
                                       src={buildImageUrl(fileUrl)}
@@ -1227,378 +960,44 @@ const ProjectEdit = () => {
                                       }}
                                       onError={(e) => {
                                         e.target.style.display = "none";
-                                        e.target.nextSibling.style.display =
-                                          "block";
+                                      e.target.nextSibling.style.display = "flex";
                                       }}
                                     />
                                     <Box
                                       textAlign="center"
-                                      sx={{ display: "none" }}
-                                    >
-                                      {getFileIcon(fileName)}
-                                      <Typography
-                                        variant="caption"
-                                        sx={{
-                                          color: "white",
-                                          display: "block",
-                                          wordBreak: "break-word",
-                                        }}
-                                      >
-                                        {fileName}
-                                      </Typography>
-                                    </Box>
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#333",
-                                        display: "block",
-                                        textAlign: "center",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {fileName}
-                                    </Typography>
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "white",
-                                        display: "block",
-                                        textAlign: "center",
-                                        fontSize: "0.7rem",
-                                        opacity: 0.8,
-                                      }}
-                                    >
-                                      Click to view full size
-                                    </Typography>
-                                  </Box>
-                                ) : fileType === "pdf" ? (
-                                  <Box>
-                                    <iframe
-                                      src={buildImageUrl(fileUrl)}
-                                      style={{
-                                        width: "100%",
-                                        height: "200px",
-                                        border: "none",
-                                        borderRadius: "8px",
-                                        marginBottom: "8px",
-                                      }}
-                                      title={fileName}
-                                    />
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#333",
-                                        display: "block",
-                                        textAlign: "center",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {fileName}
-                                    </Typography>
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "white",
-                                        display: "block",
-                                        textAlign: "center",
-                                        fontSize: "0.7rem",
-                                        opacity: 0.8,
-                                      }}
-                                    >
-                                      PDF Preview
-                                    </Typography>
-                                  </Box>
-                                ) : (
-                                  <Box textAlign="center">
-                                    {getFileIcon(fileName)}
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#333",
-                                        display: "block",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {fileName}
-                                    </Typography>
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#666",
-                                        display: "block",
-                                        fontSize: "0.7rem",
-                                      }}
-                                    >
-                                      Click to download
-                                    </Typography>
-                                  </Box>
-                                )}
-                              </Box>
-                            </Grid>
-                          );
-                        })}
-                      </Grid>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Blueprint Management */}
-            <Grid item xs={12}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <ProjectIcon sx={{ color: "#ff6b6b" }} />
-                    <Typography variant="h6" sx={{ color: "#333" }}>
-                      Project Blueprints
-                    </Typography>
-                  </Box>
-
-                  {/* Current Blueprints */}
-                  {blueprintUrls.length > 0 && (
-                    <Box mb={3}>
-                      <Typography variant="subtitle2" mb={2}>
-                        Current Blueprints:
-                      </Typography>
-                      <Grid container spacing={2}>
-                        {blueprintUrls.map((url, index) => {
-                          const fileName =
-                            url.split("/").pop() || `Blueprint ${index + 1}`;
-                          const isImage = fileName.match(
-                            /\.(jpg|jpeg|png|gif|bmp|webp)$/i
-                          );
-
-                          // Construct full URL for the image (same as Users component)
-                          const fullImageUrl = buildImageUrl(url);
-
-                          return (
-                            <Grid item xs={12} sm={6} md={4} key={index}>
-                              <Box
-                                sx={{
-                                  p: 2,
-                                  backgroundColor: "#f8f9fa",
-                                  borderRadius: 2,
-                                  border: "1px solid #e0e0e0",
-                                  position: "relative",
-                                }}
-                              >
-                                <IconButton
-                                  onClick={() => {
-                                    const newUrls = blueprintUrls.filter(
-                                      (_, i) => i !== index
-                                    );
-                                    setBlueprintUrls(newUrls);
-                                  }}
-                                  sx={{
-                                    position: "absolute",
-                                    top: 8,
-                                    right: 8,
-                                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                    color: "white",
-                                    "&:hover": {
-                                      backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                    },
-                                    zIndex: 1,
-                                  }}
-                                  size="small"
-                                >
-                                  <CloseIcon fontSize="small" />
-                                </IconButton>
-
-                                {isImage ? (
-                                  <Box>
-                                    <img
-                                      src={fullImageUrl}
-                                      alt={fileName}
-                                      style={{
-                                        width: "100%",
-                                        height: "150px",
-                                        objectFit: "cover",
-                                        borderRadius: "8px",
-                                        marginBottom: "8px",
-                                      }}
-                                      onError={(e) => {
-                                        e.target.style.display = "none";
-                                        e.target.nextSibling.style.display =
-                                          "block";
-                                      }}
-                                    />
-                                    <Box
-                                      textAlign="center"
-                                      sx={{ display: "none" }}
-                                    >
-                                      <ImageIcon
-                                        sx={{
-                                          fontSize: 48,
-                                          color: "white",
-                                          mb: 1,
-                                        }}
-                                      />
-                                      <Typography
-                                        variant="caption"
-                                        sx={{
-                                          color: "white",
-                                          display: "block",
-                                          wordBreak: "break-word",
-                                        }}
-                                      >
-                                        {fileName}
-                                      </Typography>
-                                    </Box>
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#333",
-                                        display: "block",
-                                        textAlign: "center",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {fileName}
-                                    </Typography>
-                                  </Box>
-                                ) : (
-                                  <Box textAlign="center">
-                                    <ImageIcon
-                                      sx={{
-                                        fontSize: 48,
-                                        color: "#666",
-                                        mb: 1,
-                                      }}
-                                    />
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#333",
-                                        display: "block",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {fileName}
-                                    </Typography>
-                                  </Box>
-                                )}
-                              </Box>
-                            </Grid>
-                          );
-                        })}
-                      </Grid>
-                    </Box>
-                  )}
-
-                  {/* Add Blueprint Files */}
-                  <Box>
-                    <input
-                      type="file"
-                      multiple
-                      accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.webp"
-                      onChange={handleBlueprintFileSelect}
-                      style={{ display: "none" }}
-                      id="blueprint-upload-edit"
-                    />
-                    <label htmlFor="blueprint-upload-edit">
-                      <Button
-                        variant="outlined"
-                        component="span"
-                        startIcon={<UploadIcon />}
-                        fullWidth
-                        sx={{
-                          color: "#ff6b6b",
-                          borderColor: "#ff6b6b",
-                          "&:hover": {
-                            borderColor: "#ff6b6b",
-                            backgroundColor: "rgba(255, 107, 107, 0.1)",
-                          },
-                          mb: 2,
-                        }}
-                      >
-                        Select Blueprint Files
-                      </Button>
-                    </label>
-
-                    {/* Selected Blueprint Files */}
-                    {blueprintFiles.length > 0 && (
-                      <Box>
-                        <Typography variant="subtitle2" mb={1}>
-                          New Blueprint Files:
-                        </Typography>
-                        <Grid container spacing={1}>
-                          {blueprintFiles.map((file, index) => (
-                            <Grid item xs={12} key={index}>
-                              <Box
-                                sx={{
-                                  p: 1,
-                                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                                  borderRadius: 1,
-                                  border: "1px solid rgba(255, 255, 255, 0.3)",
-                                  position: "relative",
-                                }}
-                              >
-                                <IconButton
-                                  onClick={() => removeBlueprintFile(index)}
-                                  sx={{
-                                    position: "absolute",
-                                    top: 4,
-                                    right: 4,
-                                    color: "white",
-                                    p: 0.5,
-                                  }}
-                                  size="small"
-                                >
-                                  <CloseIcon fontSize="small" />
-                                </IconButton>
-                                {blueprintPreviews[index] ? (
-                                  <img
-                                    src={blueprintPreviews[index]}
-                                    alt={file.name}
-                                    style={{
-                                      width: "100%",
-                                      height: "80px",
-                                      objectFit: "cover",
-                                      borderRadius: "4px",
-                                      marginBottom: "4px",
-                                    }}
-                                  />
-                                ) : (
-                                  <Box
-                                    display="flex"
-                                    alignItems="center"
-                                    gap={1}
+                                    sx={{ display: "none", flexDirection: "column", alignItems: "center" }}
                                   >
-                                    <ImageIcon />
+                                    <ImageIcon sx={{ fontSize: 48, color: "#666", mb: 1 }} />
                                     <Typography
                                       variant="caption"
-                                      sx={{ color: "#333" }}
+                                      sx={{
+                                        color: "#333",
+                                        display: "block",
+                                        wordBreak: "break-word",
+                                      }}
                                     >
-                                      {file.name}
+                                      {fileName}
                                     </Typography>
                                   </Box>
-                                )}
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    color: "#333",
-                                    display: "block",
-                                    textAlign: "center",
-                                    wordBreak: "break-word",
-                                  }}
-                                >
-                                  {file.name}
-                                </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      sx={{
+                                        color: "#333",
+                                        display: "block",
+                                        textAlign: "center",
+                                        wordBreak: "break-word",
+                                      }}
+                                    >
+                                      {fileName}
+                                    </Typography>
+                                  </Box>
                               </Box>
                             </Grid>
-                          ))}
-                        </Grid>
-                      </Box>
-                    )}
-                  </Box>
+                          );
+                        })}
+                      </Grid>
+                    </Box>
+                  )}
                 </CardContent>
               </Card>
             </Grid>

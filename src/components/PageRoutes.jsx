@@ -8,13 +8,6 @@ import Projects from "./Projects/Projects";
 import ProjectView from "./Projects/ProjectView";
 import ProjectEdit from "./Projects/ProjectEdit";
 import ProjectCreate from "./Projects/ProjectCreate";
-import Tasks from "./Tasks/Tasks";
-import TaskView from "./Tasks/TaskView";
-import Materials from "./Materials/Materials";
-import Equipment from "./Equipment/Equipment";
-import Labor from "./Labor/Labor";
-import Budget from "./budget/Budget";
-import BudgetView from "./budget/BudgetView";
 import Issues from "./Issues/Issues";
 import ConstructionMap from "../ConstructionMap";
 import Documents from "./Documents/Documents";
@@ -67,13 +60,6 @@ function PageRoutes() {
             <Route path="projects/create" element={<ProjectCreate />} />
             <Route path="projects/:id" element={<ProjectView />} />
             <Route path="projects/:id/edit" element={<ProjectEdit />} />
-            <Route path="tasks" element={<Tasks />} />
-            <Route path="tasks/:id" element={<TaskView />} />
-            <Route path="materials" element={<Materials />} />
-            <Route path="equipment" element={<Equipment />} />
-            <Route path="labor" element={<Labor />} />
-            <Route path="budget" element={<Budget />} />
-            <Route path="budget/:id" element={<BudgetView />} />
             <Route path="issues" element={<Issues />} />
             <Route path="map" element={<ConstructionMap />} />
             <Route path="documents" element={<Documents />} />

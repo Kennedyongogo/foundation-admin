@@ -68,11 +68,10 @@ const Projects = () => {
   const [totalProjects, setTotalProjects] = useState(0);
   const [tabCounts, setTabCounts] = useState({
     all: 0,
-    planning: 0,
+    pending: 0,
     in_progress: 0,
     completed: 0,
     on_hold: 0,
-    cancelled: 0,
   });
   const [projectForm, setProjectForm] = useState({
     name: "",
@@ -102,7 +101,7 @@ const Projects = () => {
   // Project status tabs configuration
   const statusTabs = [
     { label: "All Projects", value: "all", count: tabCounts.all },
-    { label: "Planning", value: "planning", count: tabCounts.planning },
+    { label: "Pending", value: "pending", count: tabCounts.pending },
     {
       label: "In Progress",
       value: "in_progress",
@@ -110,7 +109,6 @@ const Projects = () => {
     },
     { label: "Completed", value: "completed", count: tabCounts.completed },
     { label: "On Hold", value: "on_hold", count: tabCounts.on_hold },
-    { label: "Cancelled", value: "cancelled", count: tabCounts.cancelled },
   ];
 
   useEffect(() => {
@@ -155,7 +153,7 @@ const Projects = () => {
 
       if (data.success) {
         setProjects(data.data || []);
-        setTotalProjects(data.count || 0);
+        setTotalProjects(data.pagination?.total || 0);
 
         // Don't update tab counts here - they should only be updated from fetchAllProjectsForCounts
         // to avoid incorrect counts when switching tabs
@@ -173,15 +171,13 @@ const Projects = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "planning":
-        return "info";
-      case "in_progress":
+      case "pending":
         return "warning";
+      case "in_progress":
+        return "info";
       case "completed":
         return "success";
       case "on_hold":
-        return "default";
-      case "cancelled":
         return "error";
       default:
         return "default";
@@ -238,11 +234,10 @@ const Projects = () => {
   const updateTabCounts = (projectsData) => {
     const counts = {
       all: 0,
-      planning: 0,
+      pending: 0,
       in_progress: 0,
       completed: 0,
       on_hold: 0,
-      cancelled: 0,
     };
 
     projectsData.forEach((project) => {
@@ -645,7 +640,7 @@ const Projects = () => {
                 Projects Management
               </Typography>
               <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                Create and manage construction projects
+                Manage foundation projects and programs
               </Typography>
             </Box>
             <Button
@@ -776,11 +771,11 @@ const Projects = () => {
                 >
                   <TableCell>No</TableCell>
                   <TableCell>Project Name</TableCell>
+                  <TableCell>Category</TableCell>
                   <TableCell>Location</TableCell>
-                  <TableCell>Start Date</TableCell>
+                  <TableCell>Target</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Progress</TableCell>
-                  <TableCell>Budget</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -840,28 +835,41 @@ const Projects = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
+                        <Chip
+                          label={project.category?.replace('_', ' ')}
+                          size="small"
+                          sx={{
+                            textTransform: "capitalize",
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            backgroundColor: "#667eea",
+                            color: "white",
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
                         <Box display="flex" alignItems="center" gap={1}>
                           <LocationIcon
                             sx={{ color: "#e74c3c", fontSize: 18 }}
                           />
                           <Typography variant="body2" sx={{ color: "#7f8c8d" }}>
-                            {project.location_name}
+                            {project.county}{project.subcounty ? `, ${project.subcounty}` : ''}
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={1}>
-                          <CalendarIcon
+                          <PeopleIcon
                             sx={{ color: "#3498db", fontSize: 18 }}
                           />
                           <Typography variant="body2" sx={{ color: "#7f8c8d" }}>
-                            {formatDate(project.start_date)}
+                            {project.target_individual || "N/A"}
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={project.status}
+                          label={project.status?.replace('_', ' ')}
                           color={getStatusColor(project.status)}
                           size="small"
                           sx={{
@@ -880,19 +888,7 @@ const Projects = () => {
                             variant="body2"
                             sx={{ color: "#7f8c8d", fontWeight: 600 }}
                           >
-                            {project.progress_percent || 0}%
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <MoneyIcon sx={{ color: "#27ae60", fontSize: 18 }} />
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", fontWeight: 600 }}
-                          >
-                            {project.currency}{" "}
-                            {project.budget_estimate?.toLocaleString() || 0}
+                            {project.progress || 0}%
                           </Typography>
                         </Box>
                       </TableCell>

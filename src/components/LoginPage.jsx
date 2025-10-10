@@ -33,10 +33,14 @@ import {
   Email,
   Lock,
   Login,
+  Security,
+  Shield,
+  VerifiedUser,
+  AdminPanelSettings,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
 
-const images = ["/ticka1.png", "/ticka2.png", "/ticka3.png"];
+const images = ["/foundation1.jpg", "/foundation2.jpg", "/foundation3.jpg"];
 
 export default function LoginPage(props) {
   const theme = useTheme();
@@ -95,7 +99,7 @@ export default function LoginPage(props) {
       });
 
       try {
-        const response = await fetch("/api/admins/login", {
+        const response = await fetch("/api/admin-users/login", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -175,7 +179,7 @@ export default function LoginPage(props) {
       });
 
       try {
-        const response = await fetch("/api/admins/forgot-password", {
+        const response = await fetch("/api/admin-users/forgot-password", {
           method: "POST",
           credentials: "include",
           headers: {
@@ -269,7 +273,10 @@ export default function LoginPage(props) {
       justifyContent="center"
       minHeight="100vh"
       position="relative"
-      sx={{ overflow: "hidden" }}
+      sx={{ 
+        overflow: "hidden",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+      }}
     >
       <div
         className="login-background"
@@ -284,9 +291,44 @@ export default function LoginPage(props) {
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           transition: "opacity 1s ease-in-out",
-          backgroundColor: "#2c3e50", // Professional dark blue background
+          filter: "brightness(0.4) contrast(1.2)",
         }}
       />
+      
+      {/* Animated geometric shapes for visual interest */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: "10%",
+          left: "5%",
+          width: 100,
+          height: 100,
+          borderRadius: "50%",
+          background: "linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
+          animation: "float 6s ease-in-out infinite",
+          "@keyframes float": {
+            "0%, 100%": { transform: "translateY(0px) rotate(0deg)" },
+            "50%": { transform: "translateY(-20px) rotate(180deg)" }
+          }
+        }}
+      />
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: "15%",
+          right: "8%",
+          width: 80,
+          height: 80,
+          borderRadius: "20px",
+          background: "linear-gradient(45deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+          animation: "pulse 4s ease-in-out infinite",
+          "@keyframes pulse": {
+            "0%, 100%": { transform: "scale(1)" },
+            "50%": { transform: "scale(1.1)" }
+          }
+        }}
+      />
+
       <Box
         sx={{
           position: "absolute",
@@ -294,17 +336,20 @@ export default function LoginPage(props) {
           left: 0,
           width: "100%",
           height: "100%",
-          background: `linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 100%)`,
-          backdropFilter: "blur(0px)",
+          background: `linear-gradient(135deg, 
+            rgba(102, 126, 234, 0.8) 0%, 
+            rgba(118, 75, 162, 0.8) 50%, 
+            rgba(0,0,0,0.6) 100%)`,
+          backdropFilter: "blur(1px)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
           <Grid
             container
-            spacing={4}
+            spacing={{ xs: 2, sm: 3, md: 4 }}
             alignItems="center"
             justifyContent="center"
           >
@@ -315,31 +360,91 @@ export default function LoginPage(props) {
                   alignItems={{ xs: "center", md: "flex-start" }}
                 >
                   <Slide direction="up" in timeout={1200}>
-                    <Box>
-                      <Typography
-                        variant="h1"
+                    <Stack spacing={4} sx={{ textAlign: { xs: "center", md: "left" } }}>
+                      {/* Logo with enhanced styling */}
+                      <Box
                         sx={{
-                          color: "#fff",
-                          fontWeight: 800,
-                          fontSize: {
-                            xs: "3rem",
-                            sm: "4rem",
-                            md: "5rem",
-                            lg: "6rem",
-                          },
-                          textAlign: { xs: "center", md: "left" },
-                          letterSpacing: "2px",
-                          mb: 2,
-                          background: `linear-gradient(45deg, ${theme.palette.primary.light}, ${theme.palette.secondary.light})`,
-                          backgroundClip: "text",
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                          textShadow: "0 0 30px rgba(255,255,255,0.3)",
+                          position: "relative",
+                          display: "inline-block",
+                          "&::before": {
+                            content: '""',
+                            position: "absolute",
+                            top: -10,
+                            left: -10,
+                            right: -10,
+                            bottom: -10,
+                            background: "linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
+                            borderRadius: "20px",
+                            filter: "blur(10px)",
+                            zIndex: -1,
+                          }
                         }}
                       >
-                        TickaZone
-                      </Typography>
-                    </Box>
+                        <Box
+                          component="img"
+                          src="/foundation-logo.png"
+                          alt="Mwalimu Hope Foundation"
+                          sx={{
+                            height: { xs: 80, sm: 100, md: 120, lg: 140 },
+                            width: "auto",
+                            filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.4)) brightness(1.1)",
+                            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                            "&:hover": {
+                              transform: "scale(1.05) rotate(2deg)",
+                              filter: "drop-shadow(0 12px 24px rgba(0,0,0,0.5)) brightness(1.2)",
+                            },
+                          }}
+                        />
+                      </Box>
+
+                      {/* Enhanced title with subtitle */}
+                      <Stack spacing={2}>
+                        <Typography
+                          variant="h1"
+                          sx={{
+                            color: "#fff",
+                            fontWeight: 900,
+                            fontSize: {
+                              xs: "1.8rem",
+                              sm: "2.2rem",
+                              md: "2.8rem",
+                              lg: "3.2rem",
+                            },
+                            textAlign: { xs: "center", md: "left" },
+                            letterSpacing: "0.5px",
+                            background: `linear-gradient(135deg, 
+                              rgba(255,255,255,0.95) 0%, 
+                              rgba(255,255,255,0.8) 50%, 
+                              rgba(255,255,255,0.9) 100%)`,
+                            backgroundClip: "text",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            textShadow: "0 0 30px rgba(255,255,255,0.3)",
+                            lineHeight: 1.2,
+                            mb: 1,
+                          }}
+                        >
+                          Mwalimu Hope Foundation
+                        </Typography>
+                        
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: "rgba(255,255,255,0.9)",
+                            fontWeight: 400,
+                            fontSize: { xs: "0.9rem", sm: "1rem", md: "1.1rem" },
+                            textAlign: { xs: "center", md: "left" },
+                            letterSpacing: "0.5px",
+                            opacity: 0.9,
+                            maxWidth: { md: "350px" },
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          Empowering Minds, Restoring Hope
+                        </Typography>
+
+                      </Stack>
+                    </Stack>
                   </Slide>
                 </Stack>
               </Fade>
@@ -353,36 +458,75 @@ export default function LoginPage(props) {
                 <Card
                   elevation={0}
                   sx={{
-                    p: 4,
-                    maxWidth: 450,
+                    p: { xs: 2, sm: 3, md: 4 },
+                    maxWidth: { xs: "100%", sm: 450, md: 480 },
                     width: "100%",
-                    borderRadius: 4,
-                    background: "rgba(255, 255, 255, 0.1)",
-                    backdropFilter: "blur(25px)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
-                    transition: "all 0.3s ease-in-out",
+                    borderRadius: { xs: 4, sm: 6 },
+                    background: "rgba(255, 255, 255, 0.08)",
+                    backdropFilter: "blur(40px)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    boxShadow: `
+                      0 20px 40px rgba(0, 0, 0, 0.3),
+                      0 0 0 1px rgba(255, 255, 255, 0.05),
+                      inset 0 1px 0 rgba(255, 255, 255, 0.1)
+                    `,
+                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                    position: "relative",
+                    overflow: "hidden",
+                    mx: { xs: 1, sm: 0 },
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: "2px",
+                      background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                      opacity: 0,
+                      transition: "opacity 0.3s ease",
+                    },
                     "&:hover": {
-                      transform: "translateY(-5px)",
-                      boxShadow: "0 12px 40px rgba(0, 0, 0, 0.3)",
-                      border: "1px solid rgba(255, 255, 255, 0.3)",
+                      transform: { xs: "translateY(-2px)", sm: "translateY(-4px)", md: "translateY(-8px) scale(1.02)" },
+                      boxShadow: `
+                        0 32px 64px rgba(0, 0, 0, 0.4),
+                        0 0 0 1px rgba(255, 255, 255, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2)
+                      `,
+                      border: "1px solid rgba(255, 255, 255, 0.25)",
+                      "&::before": {
+                        opacity: 1,
+                      },
                     },
                   }}
                 >
                   <form onSubmit={login}>
-                    <Typography
-                      textAlign="center"
-                      fontWeight="700"
-                      color="white"
-                      variant="h4"
-                      sx={{
-                        mb: 3,
-                        textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
-                        letterSpacing: "1px",
-                      }}
-                    >
-                      Sign In
-                    </Typography>
+                    {/* Enhanced header with admin icon */}
+                    <Stack direction="row" alignItems="center" justifyContent="center" spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: { xs: 3, sm: 4 } }}>
+                      <AdminPanelSettings 
+                        sx={{ 
+                          color: "rgba(255,255,255,0.9)", 
+                          fontSize: { xs: 24, sm: 28, md: 32 },
+                          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
+                        }} 
+                      />
+                      <Typography
+                        textAlign="center"
+                        fontWeight="800"
+                        color="white"
+                        variant="h4"
+                        sx={{
+                          textShadow: "2px 2px 8px rgba(0,0,0,0.6)",
+                          letterSpacing: "1px",
+                          background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8))",
+                          backgroundClip: "text",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          fontSize: { xs: "1.5rem", sm: "1.8rem", md: "2rem" },
+                        }}
+                      >
+                        Admin Portal
+                      </Typography>
+                    </Stack>
 
                     <TextField
                       inputRef={rfEmail}
@@ -391,39 +535,58 @@ export default function LoginPage(props) {
                       fullWidth
                       margin="normal"
                       variant="outlined"
+                      placeholder="admin@mwalimuhope.org"
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Email sx={{ color: "rgba(255,255,255,0.7)" }} />
+                            <Email sx={{ 
+                              color: "rgba(255,255,255,0.7)",
+                              transition: "all 0.3s ease",
+                              fontSize: { xs: 20, sm: 24 },
+                            }} />
                           </InputAdornment>
                         ),
                       }}
                       sx={{
                         "& .MuiOutlinedInput-root": {
-                          backgroundColor: "rgba(255, 255, 255, 0.15)",
-                          borderRadius: 3,
-                          border: "1px solid rgba(255, 255, 255, 0.2)",
-                          transition: "all 0.3s ease",
+                          backgroundColor: "rgba(255, 255, 255, 0.08)",
+                          borderRadius: { xs: 3, sm: 4 },
+                          border: "1px solid rgba(255, 255, 255, 0.15)",
+                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                          backdropFilter: "blur(10px)",
                           "&:hover": {
-                            backgroundColor: "rgba(255, 255, 255, 0.2)",
-                            border: "1px solid rgba(255, 255, 255, 0.4)",
+                            backgroundColor: "rgba(255, 255, 255, 0.12)",
+                            border: "1px solid rgba(255, 255, 255, 0.3)",
+                            transform: "translateY(-1px)",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
                           },
                           "&.Mui-focused": {
-                            backgroundColor: "rgba(255, 255, 255, 0.25)",
-                            border: `2px solid ${theme.palette.primary.light}`,
-                            boxShadow: `0 0 20px ${theme.palette.primary.main}40`,
+                            backgroundColor: "rgba(255, 255, 255, 0.15)",
+                            border: `2px solid rgba(255, 255, 255, 0.6)`,
+                            boxShadow: `
+                              0 0 0 4px rgba(255, 255, 255, 0.1),
+                              0 8px 24px rgba(0, 0, 0, 0.2)
+                            `,
+                            transform: "translateY(-2px)",
                           },
                         },
                         "& .MuiInputLabel-root": {
                           color: "rgba(255, 255, 255, 0.8)",
+                          fontWeight: 500,
+                          fontSize: { xs: "0.9rem", sm: "1rem" },
                           "&.Mui-focused": {
-                            color: theme.palette.primary.light,
+                            color: "rgba(255, 255, 255, 0.95)",
                           },
                         },
                         "& .MuiInputBase-input": {
                           color: "white",
+                          fontWeight: 400,
+                          fontSize: { xs: "0.9rem", sm: "1rem" },
+                          py: { xs: 1.2, sm: 1.5 },
                           "&::placeholder": {
-                            color: "rgba(255, 255, 255, 0.6)",
+                            color: "rgba(255, 255, 255, 0.5)",
+                            opacity: 1,
+                            fontSize: { xs: "0.85rem", sm: "0.9rem" },
                           },
                         },
                       }}
@@ -436,10 +599,15 @@ export default function LoginPage(props) {
                       fullWidth
                       margin="normal"
                       variant="outlined"
+                      placeholder="Enter your secure password"
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Lock sx={{ color: "rgba(255,255,255,0.7)" }} />
+                            <Security sx={{ 
+                              color: "rgba(255,255,255,0.7)",
+                              transition: "all 0.3s ease",
+                              fontSize: { xs: 20, sm: 24 },
+                            }} />
                           </InputAdornment>
                         ),
                         endAdornment: (
@@ -447,12 +615,21 @@ export default function LoginPage(props) {
                             <IconButton
                               onClick={() => setShowPassword(!showPassword)}
                               edge="end"
-                              sx={{ color: "rgba(255,255,255,0.7)" }}
+                              sx={{ 
+                                color: "rgba(255,255,255,0.7)",
+                                transition: "all 0.3s ease",
+                                p: { xs: 0.8, sm: 1 },
+                                "&:hover": {
+                                  color: "rgba(255,255,255,0.9)",
+                                  backgroundColor: "rgba(255,255,255,0.1)",
+                                  transform: "scale(1.1)",
+                                },
+                              }}
                             >
                               {showPassword ? (
-                                <VisibilityOff />
+                                <VisibilityOff sx={{ fontSize: { xs: 20, sm: 22 } }} />
                               ) : (
-                                <Visibility />
+                                <Visibility sx={{ fontSize: { xs: 20, sm: 22 } }} />
                               )}
                             </IconButton>
                           </InputAdornment>
@@ -460,30 +637,44 @@ export default function LoginPage(props) {
                       }}
                       sx={{
                         "& .MuiOutlinedInput-root": {
-                          backgroundColor: "rgba(255, 255, 255, 0.15)",
-                          borderRadius: 3,
-                          border: "1px solid rgba(255, 255, 255, 0.2)",
-                          transition: "all 0.3s ease",
+                          backgroundColor: "rgba(255, 255, 255, 0.08)",
+                          borderRadius: { xs: 3, sm: 4 },
+                          border: "1px solid rgba(255, 255, 255, 0.15)",
+                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                          backdropFilter: "blur(10px)",
                           "&:hover": {
-                            backgroundColor: "rgba(255, 255, 255, 0.2)",
-                            border: "1px solid rgba(255, 255, 255, 0.4)",
+                            backgroundColor: "rgba(255, 255, 255, 0.12)",
+                            border: "1px solid rgba(255, 255, 255, 0.3)",
+                            transform: "translateY(-1px)",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
                           },
                           "&.Mui-focused": {
-                            backgroundColor: "rgba(255, 255, 255, 0.25)",
-                            border: `2px solid ${theme.palette.primary.light}`,
-                            boxShadow: `0 0 20px ${theme.palette.primary.main}40`,
+                            backgroundColor: "rgba(255, 255, 255, 0.15)",
+                            border: `2px solid rgba(255, 255, 255, 0.6)`,
+                            boxShadow: `
+                              0 0 0 4px rgba(255, 255, 255, 0.1),
+                              0 8px 24px rgba(0, 0, 0, 0.2)
+                            `,
+                            transform: "translateY(-2px)",
                           },
                         },
                         "& .MuiInputLabel-root": {
                           color: "rgba(255, 255, 255, 0.8)",
+                          fontWeight: 500,
+                          fontSize: { xs: "0.9rem", sm: "1rem" },
                           "&.Mui-focused": {
-                            color: theme.palette.primary.light,
+                            color: "rgba(255, 255, 255, 0.95)",
                           },
                         },
                         "& .MuiInputBase-input": {
                           color: "white",
+                          fontWeight: 400,
+                          fontSize: { xs: "0.9rem", sm: "1rem" },
+                          py: { xs: 1.2, sm: 1.5 },
                           "&::placeholder": {
-                            color: "rgba(255, 255, 255, 0.6)",
+                            color: "rgba(255, 255, 255, 0.5)",
+                            opacity: 1,
+                            fontSize: { xs: "0.85rem", sm: "0.9rem" },
                           },
                         },
                       }}
@@ -491,21 +682,32 @@ export default function LoginPage(props) {
 
                     <Typography
                       variant="body2"
-                      color="white"
+                      color="rgba(255,255,255,0.8)"
                       align="center"
                       sx={{
                         mt: 2,
                         cursor: "pointer",
                         transition: "all 0.3s ease",
+                        fontWeight: 500,
                         "&:hover": {
-                          textDecoration: "underline",
-                          color: theme.palette.primary.light,
-                          transform: "scale(1.05)",
+                          color: "rgba(255,255,255,0.95)",
+                          transform: "translateY(-1px)",
+                          textShadow: "0 2px 8px rgba(255,255,255,0.3)",
                         },
                       }}
                       onClick={() => setOpenResetDialog(true)}
                     >
-                      Forgot password? Click here
+                      Forgot your password? 
+                      <Box component="span" sx={{ 
+                        color: "rgba(255,255,255,0.9)",
+                        textDecoration: "underline",
+                        ml: 0.5,
+                        "&:hover": {
+                          color: "white",
+                        }
+                      }}>
+                        Reset here
+                      </Box>
                     </Typography>
 
                     <Button
@@ -516,34 +718,75 @@ export default function LoginPage(props) {
                       disabled={loading}
                       startIcon={
                         loading ? (
-                          <CircularProgress size={20} color="inherit" />
+                          <CircularProgress size={{ xs: 20, sm: 24 }} color="inherit" />
                         ) : (
-                          <Login />
+                          <Login sx={{ fontSize: { xs: 20, sm: 24 } }} />
                         )
                       }
                       sx={{
-                        mt: 3,
-                        py: 1.5,
-                        borderRadius: 3,
-                        background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
-                        boxShadow: `0 4px 15px ${theme.palette.primary.main}40`,
-                        transition: "all 0.3s ease",
+                        mt: { xs: 3, sm: 4 },
+                        py: { xs: 1.5, sm: 2 },
+                        borderRadius: { xs: 3, sm: 4 },
+                        background: `
+                          linear-gradient(135deg, 
+                            rgba(76, 175, 80, 0.9) 0%, 
+                            rgba(56, 142, 60, 0.9) 50%, 
+                            rgba(46, 125, 50, 0.9) 100%)
+                        `,
+                        boxShadow: `
+                          0 8px 32px rgba(76, 175, 80, 0.3),
+                          0 0 0 1px rgba(255, 255, 255, 0.1),
+                          inset 0 1px 0 rgba(255, 255, 255, 0.2)
+                        `,
+                        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                         textTransform: "none",
-                        fontSize: "1.1rem",
-                        fontWeight: 600,
+                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.2rem" },
+                        fontWeight: 700,
                         letterSpacing: "0.5px",
+                        position: "relative",
+                        overflow: "hidden",
+                        "&::before": {
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: "-100%",
+                          width: "100%",
+                          height: "100%",
+                          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+                          transition: "left 0.5s ease",
+                        },
                         "&:hover": {
-                          background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
-                          boxShadow: `0 6px 20px ${theme.palette.primary.main}60`,
-                          transform: "translateY(-2px)",
+                          background: `
+                            linear-gradient(135deg, 
+                              rgba(76, 175, 80, 1) 0%, 
+                              rgba(56, 142, 60, 1) 50%, 
+                              rgba(46, 125, 50, 1) 100%)
+                          `,
+                          boxShadow: `
+                            0 12px 48px rgba(76, 175, 80, 0.4),
+                            0 0 0 1px rgba(255, 255, 255, 0.2),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.3)
+                          `,
+                          transform: { xs: "translateY(-2px)", sm: "translateY(-3px) scale(1.02)" },
+                          "&::before": {
+                            left: "100%",
+                          },
+                        },
+                        "&:active": {
+                          transform: "translateY(-1px) scale(0.98)",
                         },
                         "&:disabled": {
-                          background: "rgba(255, 255, 255, 0.2)",
-                          color: theme.palette.primary.main,
+                          background: "rgba(255, 255, 255, 0.1)",
+                          color: "rgba(255, 255, 255, 0.5)",
+                          transform: "none",
+                          boxShadow: "none",
+                          "&::before": {
+                            display: "none",
+                          },
                         },
                       }}
                     >
-                      {loading ? "Signing In..." : "Sign In"}
+                      {loading ? "Authenticating..." : "Access Admin Portal"}
                     </Button>
                   </form>
                 </Card>
@@ -557,23 +800,49 @@ export default function LoginPage(props) {
         open={openResetDialog}
         onClose={() => setOpenResetDialog(false)}
         fullWidth
-        maxWidth="xs"
+        maxWidth="sm"
         TransitionComponent={Slide}
-        transitionDuration={300}
+        transitionDuration={400}
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            background: "rgba(255, 255, 255, 0.95)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
+          }
+        }}
       >
         <DialogTitle
           sx={{
-            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
+            background: `linear-gradient(135deg, 
+              rgba(76, 175, 80, 0.9) 0%, 
+              rgba(56, 142, 60, 0.9) 100%)`,
             color: "white",
-            fontWeight: 600,
+            fontWeight: 700,
+            fontSize: "1.3rem",
+            letterSpacing: "0.5px",
+            textAlign: "center",
+            py: 3,
           }}
         >
-          Reset Password
+          <Stack direction="row" alignItems="center" justifyContent="center" spacing={2}>
+            <Security sx={{ fontSize: 28 }} />
+            <Box>Reset Password</Box>
+          </Stack>
         </DialogTitle>
         <Divider />
-        <DialogContent sx={{ pt: 3 }}>
-          <DialogContentText sx={{ mb: 2 }}>
-            Please enter your email address to reset your password.
+        <DialogContent sx={{ pt: 4, pb: 2 }}>
+          <DialogContentText 
+            sx={{ 
+              mb: 3, 
+              fontSize: "1rem",
+              color: "rgba(0,0,0,0.7)",
+              textAlign: "center",
+              lineHeight: 1.6,
+            }}
+          >
+            Enter your registered email address and we'll send you a secure link to reset your password.
           </DialogContentText>
           <form
             onSubmit={(e) => {
@@ -587,19 +856,46 @@ export default function LoginPage(props) {
               label="Email Address"
               fullWidth
               margin="normal"
+              placeholder="admin@mwalimuhope.org"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Email />
+                    <Email sx={{ color: "rgba(0,0,0,0.6)" }} />
                   </InputAdornment>
                 ),
               }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 3,
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(76, 175, 80, 0.5)",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(76, 175, 80, 1)",
+                    borderWidth: 2,
+                  },
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color: "rgba(76, 175, 80, 1)",
+                },
+              }}
             />
-            <DialogActions sx={{ mt: 2 }}>
+            <DialogActions sx={{ mt: 4, gap: 2, px: 0 }}>
               <Button
                 onClick={() => setOpenResetDialog(false)}
                 variant="outlined"
-                color="primary"
+                sx={{
+                  borderColor: "rgba(0,0,0,0.3)",
+                  color: "rgba(0,0,0,0.7)",
+                  borderRadius: 3,
+                  px: 3,
+                  py: 1,
+                  fontWeight: 600,
+                  "&:hover": {
+                    borderColor: "rgba(0,0,0,0.5)",
+                    backgroundColor: "rgba(0,0,0,0.05)",
+                  },
+                }}
                 disabled={resetLoading}
               >
                 Cancel
@@ -607,11 +903,28 @@ export default function LoginPage(props) {
               <Button
                 type="submit"
                 variant="contained"
-                color="primary"
+                sx={{
+                  background: `linear-gradient(135deg, 
+                    rgba(76, 175, 80, 0.9) 0%, 
+                    rgba(56, 142, 60, 0.9) 100%)`,
+                  borderRadius: 3,
+                  px: 3,
+                  py: 1,
+                  fontWeight: 600,
+                  textTransform: "none",
+                  boxShadow: "0 4px 12px rgba(76, 175, 80, 0.3)",
+                  "&:hover": {
+                    background: `linear-gradient(135deg, 
+                      rgba(76, 175, 80, 1) 0%, 
+                      rgba(56, 142, 60, 1) 100%)`,
+                    boxShadow: "0 6px 16px rgba(76, 175, 80, 0.4)",
+                    transform: "translateY(-1px)",
+                  },
+                }}
                 disabled={resetLoading}
-                startIcon={resetLoading ? <CircularProgress size={16} /> : null}
+                startIcon={resetLoading ? <CircularProgress size={18} color="inherit" /> : <Security />}
               >
-                {resetLoading ? "Processing..." : "Submit"}
+                {resetLoading ? "Sending..." : "Send Reset Link"}
               </Button>
             </DialogActions>
           </form>

@@ -773,7 +773,6 @@ const Projects = () => {
                   <TableCell>Project Name</TableCell>
                   <TableCell>Category</TableCell>
                   <TableCell>Location</TableCell>
-                  <TableCell>Target</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Progress</TableCell>
                   <TableCell>Actions</TableCell>
@@ -782,13 +781,13 @@ const Projects = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                       <CircularProgress sx={{ color: "#667eea" }} />
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                       <Typography color="error" variant="h6">
                         {error}
                       </Typography>
@@ -796,7 +795,7 @@ const Projects = () => {
                   </TableRow>
                 ) : projects.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                       <Typography variant="h6" color="text.secondary">
                         No projects found.
                       </Typography>
@@ -854,16 +853,6 @@ const Projects = () => {
                           />
                           <Typography variant="body2" sx={{ color: "#7f8c8d" }}>
                             {project.county}{project.subcounty ? `, ${project.subcounty}` : ''}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <PeopleIcon
-                            sx={{ color: "#3498db", fontSize: 18 }}
-                          />
-                          <Typography variant="body2" sx={{ color: "#7f8c8d" }}>
-                            {project.target_individual || "N/A"}
                           </Typography>
                         </Box>
                       </TableCell>

@@ -132,15 +132,15 @@ export default function Header(props) {
 
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Typography variant="body1" sx={{ mr: 1 }}>
-            {currentUser?.name}
+            {currentUser?.full_name}
           </Typography>
 
           {/* Profile Picture or Avatar */}
           <Box sx={{ mr: 1 }}>
-            {currentUser?.profile_picture ? (
+            {currentUser?.profile_image ? (
               <Avatar
-                src={buildImageUrl(currentUser.profile_picture)}
-                alt={currentUser?.name}
+                src={buildImageUrl(currentUser.profile_image)}
+                alt={currentUser?.full_name}
                 sx={{
                   width: 32,
                   height: 32,
@@ -160,7 +160,7 @@ export default function Header(props) {
                   fontSize: "0.875rem",
                 }}
               >
-                {getInitials(currentUser?.name)}
+                {getInitials(currentUser?.full_name)}
               </Avatar>
             )}
           </Box>

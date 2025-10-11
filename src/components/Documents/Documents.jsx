@@ -50,6 +50,8 @@ import {
   Close as CloseIcon,
   Image as ImageIcon,
   Folder,
+  Person as PersonIcon,
+  Description as DescriptionIcon,
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import Swal from "sweetalert2";
@@ -69,13 +71,9 @@ const Documents = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalDocuments, setTotalDocuments] = useState(0);
   const [documentForm, setDocumentForm] = useState({
-    document_type: "company_document",
-    category: "",
+    title: "",
     description: "",
-    file_name: "",
-    file_type: "",
-    file_url: "",
-    uploaded_by_admin_id: "",
+    file_type: "pdf",
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -100,16 +98,8 @@ const Documents = () => {
         limit: rowsPerPage.toString(),
       });
 
-      if (filter !== "all") {
-        queryParams.append("category", filter);
-      }
-
       if (documentTypeFilter !== "all") {
-        queryParams.append("document_type", documentTypeFilter);
-      } else {
-        // Only exclude project_document when showing "All Documents"
-        // Project documents are stored in the Project model, not Document model
-        queryParams.append("exclude_types", "project_document");
+        queryParams.append("file_type", documentTypeFilter);
       }
 
       const response = await fetch(`/api/documents?${queryParams}`, {
@@ -137,18 +127,20 @@ const Documents = () => {
     }
   };
 
-  const getDocumentTypeColor = (type) => {
+  const getFileTypeColor = (type) => {
     switch (type) {
-      case "company_document":
-        return "primary";
-      case "project_document":
-        return "secondary";
-      case "template":
-        return "success";
-      case "policy":
-        return "warning";
-      case "contract":
+      case "pdf":
         return "error";
+      case "word":
+        return "primary";
+      case "excel":
+        return "success";
+      case "powerpoint":
+        return "warning";
+      case "image":
+        return "secondary";
+      case "text":
+        return "default";
       default:
         return "default";
     }
@@ -156,18 +148,18 @@ const Documents = () => {
 
   const getFileTypeIcon = (fileType) => {
     switch (fileType) {
-      case ".pdf":
+      case "pdf":
         return "📄";
-      case ".doc":
-      case ".docx":
+      case "word":
         return "📝";
-      case ".xls":
-      case ".xlsx":
+      case "excel":
         return "📊";
-      case ".jpg":
-      case ".jpeg":
-      case ".png":
+      case "image":
         return "🖼️";
+      case "powerpoint":
+        return "📊";
+      case "text":
+        return "📝";
       default:
         return "📁";
     }
@@ -198,7 +190,7 @@ const Documents = () => {
   const handleDeleteDocument = async (document) => {
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: `Do you want to delete "${document.file_name}"?`,
+      text: `Do you want to delete "${document.title}"?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -253,19 +245,102 @@ const Documents = () => {
     }
   };
 
-  const handleDownloadDocument = (document) => {
-    const downloadUrl = `${window.location.origin}${document.file_url}`;
-    window.open(downloadUrl, "_blank");
+  const handleDownloadDocument = async (documentId) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        Swal.fire({
+          icon: "error",
+          title: "Authentication Required",
+          text: "Please login again to download documents.",
+        });
+        return;
+      }
+
+      // Show loading state
+      Swal.fire({
+        title: "Downloading...",
+        text: "Please wait while we prepare your document",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      // Fetch the document with authentication
+      const response = await fetch(`/api/documents/${documentId}/download`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Get the filename from Content-Disposition header or use document ID
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `document-${documentId}`;
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      // Create blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // Close loading and show success
+      Swal.close();
+      Swal.fire({
+        icon: "success",
+        title: "Download Complete!",
+        text: "Document downloaded successfully",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      Swal.close();
+      Swal.fire({
+        icon: "error",
+        title: "Download Failed",
+        text: error.message || "Failed to download document. Please try again.",
+      });
+    }
   };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
+      // Auto-detect file type based on extension
+      const extension = file.name.split(".").pop().toLowerCase();
+      let detectedType = "other";
+      if (["pdf"].includes(extension)) detectedType = "pdf";
+      else if (["doc", "docx"].includes(extension)) detectedType = "word";
+      else if (["xls", "xlsx"].includes(extension)) detectedType = "excel";
+      else if (["ppt", "pptx"].includes(extension)) detectedType = "powerpoint";
+      else if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) detectedType = "image";
+      else if (["txt", "csv"].includes(extension)) detectedType = "text";
+      
       setDocumentForm({
         ...documentForm,
-        file_name: file.name,
-        file_type: file.name.split(".").pop().toLowerCase(),
+        title: file.name,
+        file_type: detectedType,
       });
     }
   };
@@ -289,22 +364,14 @@ const Documents = () => {
         return;
       }
 
-      // Get current user ID from localStorage
-      const user = JSON.parse(localStorage.getItem("user"));
-      if (!user || !user.id) {
-        setError("User information not found. Please login again.");
-        return;
-      }
-
       // Create FormData for file upload
       const formData = new FormData();
-      formData.append("general_documents", selectedFile);
-      formData.append("document_type", documentForm.document_type);
-      formData.append("category", documentForm.category);
+      formData.append("document", selectedFile);
+      formData.append("title", documentForm.title);
       formData.append("description", documentForm.description);
-      formData.append("uploaded_by_admin_id", user.id);
+      formData.append("file_type", documentForm.file_type);
 
-      const response = await fetch("/api/documents/upload", {
+      const response = await fetch("/api/documents", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -320,13 +387,9 @@ const Documents = () => {
 
       // Reset form and close dialog
       setDocumentForm({
-        document_type: "company_document",
-        category: "",
+        title: "",
         description: "",
-        file_name: "",
-        file_type: "",
-        file_url: "",
-        uploaded_by_admin_id: "",
+        file_type: "pdf",
       });
       setSelectedFile(null);
       setOpenCreateDialog(false);
@@ -447,13 +510,9 @@ const Documents = () => {
               onClick={() => {
                 setSelectedDocument(null);
                 setDocumentForm({
-                  document_type: "company_document",
-                  category: "",
+                  title: "",
                   description: "",
-                  file_name: "",
-                  file_type: "",
-                  file_url: "",
-                  uploaded_by_admin_id: "",
+                  file_type: "pdf",
                 });
                 setOpenCreateDialog(true);
               }}
@@ -484,7 +543,7 @@ const Documents = () => {
         <Box
           sx={{ p: { xs: 1, sm: 2, md: 3 }, minHeight: "calc(100vh - 200px)" }}
         >
-          {/* Document Type Filter Tabs */}
+          {/* File Type Filter Tabs */}
           <Box mb={3}>
             <Tabs
               value={documentTypeFilter}
@@ -518,10 +577,12 @@ const Documents = () => {
               }}
             >
               <Tab label="All Documents" value="all" />
-              <Tab label="Company Documents" value="company_document" />
-              <Tab label="Templates" value="template" />
-              <Tab label="Policies" value="policy" />
-              <Tab label="Contracts" value="contract" />
+              <Tab label="PDF" value="pdf" />
+              <Tab label="Word" value="word" />
+              <Tab label="Excel" value="excel" />
+              <Tab label="PowerPoint" value="powerpoint" />
+              <Tab label="Images" value="image" />
+              <Tab label="Text Files" value="text" />
             </Tabs>
           </Box>
 
@@ -566,8 +627,9 @@ const Documents = () => {
                   }}
                 >
                   <TableCell>No</TableCell>
-                  <TableCell>File Name</TableCell>
-                  <TableCell>Document Type</TableCell>
+                  <TableCell>Title</TableCell>
+                  <TableCell>File Type</TableCell>
+                  <TableCell>Uploaded By</TableCell>
                   <TableCell>Upload Date</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
@@ -575,13 +637,13 @@ const Documents = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                       <CircularProgress sx={{ color: "#667eea" }} />
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                       <Alert severity="error" sx={{ mb: 2 }}>
                         {error}
                       </Alert>
@@ -599,7 +661,7 @@ const Documents = () => {
                   </TableRow>
                 ) : documents.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                       <Typography variant="h6" color="text.secondary">
                         No documents found.
                       </Typography>
@@ -638,14 +700,14 @@ const Documents = () => {
                             fontWeight="600"
                             sx={{ color: "#2c3e50" }}
                           >
-                            {document.file_name}
+                            {document.title}
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={document.document_type.replace("_", " ")}
-                          color={getDocumentTypeColor(document.document_type)}
+                          label={document.file_type}
+                          color={getFileTypeColor(document.file_type)}
                           size="small"
                           variant="outlined"
                           sx={{
@@ -654,6 +716,14 @@ const Documents = () => {
                             borderRadius: 2,
                           }}
                         />
+                      </TableCell>
+                      <TableCell>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "#2c3e50", fontWeight: 600 }}
+                        >
+                          {document.uploader?.full_name || "Unknown"}
+                        </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography
@@ -668,7 +738,7 @@ const Documents = () => {
                           <Tooltip title="Download Document" arrow>
                             <IconButton
                               size="small"
-                              onClick={() => handleDownloadDocument(document)}
+                              onClick={() => handleDownloadDocument(document.id)}
                               sx={{
                                 color: "#27ae60",
                                 backgroundColor: "rgba(39, 174, 96, 0.1)",
@@ -759,13 +829,9 @@ const Documents = () => {
             setOpenCreateDialog(false);
             setSelectedDocument(null);
             setDocumentForm({
-              document_type: "company_document",
-              category: "",
+              title: "",
               description: "",
-              file_name: "",
-              file_type: "",
-              file_url: "",
-              uploaded_by_admin_id: "",
+              file_type: "pdf",
             });
           }}
           maxWidth="xs"
@@ -844,136 +910,227 @@ const Documents = () => {
             sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto" }}
           >
             {openViewDialog ? (
-              // View Document Details - Simple UI
+              // View Document Details - Card Layout
               <Box>
-                <Typography
-                  variant="h5"
-                  sx={{ mb: 3, fontWeight: 600, color: "#667eea" }}
+                <Box
+                  sx={{
+                    background:
+                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    borderRadius: 3,
+                    p: 3,
+                    mb: 4,
+                    mt: 2,
+                    position: "relative",
+                    overflow: "hidden",
+                    color: "white",
+                  }}
                 >
-                  Document Information
-                </Typography>
-
-                <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6}>
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: -20,
+                      right: -20,
+                      width: 100,
+                      height: 100,
+                      background: "rgba(255, 255, 255, 0.1)",
+                      borderRadius: "50%",
+                      zIndex: 0,
+                    }}
+                  />
+                  <Box sx={{ position: "relative", zIndex: 1 }}>
                     <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      gutterBottom
+                      variant="h4"
+                      sx={{
+                        fontWeight: 800,
+                        mb: 1,
+                        textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                        background: "linear-gradient(45deg, #fff, #f0f8ff)",
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                      }}
                     >
-                      File Name
+                      {selectedDocument?.title || "N/A"}
                     </Typography>
                     <Box display="flex" alignItems="center" gap={1}>
                       <Typography sx={{ fontSize: "1.5rem" }}>
                         {getFileTypeIcon(selectedDocument.file_type)}
                       </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {selectedDocument.file_name}
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          opacity: 0.9,
+                          lineHeight: 1.6,
+                          fontSize: "1rem",
+                          textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                        }}
+                      >
+                        {selectedDocument.file_type.toUpperCase()} Document
                       </Typography>
                     </Box>
-                  </Grid>
+                  </Box>
+                </Box>
 
-                  <Grid item xs={12} sm={6}>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      Document Type
-                    </Typography>
-                    <Chip
-                      label={selectedDocument.document_type.replace("_", " ")}
-                      color={getDocumentTypeColor(
-                        selectedDocument.document_type
-                      )}
-                      size="small"
-                      sx={{ textTransform: "capitalize" }}
-                    />
-                  </Grid>
+                <Stack spacing={2} sx={{ mb: 3 }}>
+                  <Card
+                    sx={{
+                      background: "white",
+                      borderRadius: 2,
+                      p: 2,
+                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Box display="flex" alignItems="center" gap={2}>
+                      <Folder sx={{ fontSize: 24, color: "#667eea" }} />
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
+                          FILE TYPE
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50" }}>
+                          <Chip
+                            label={selectedDocument.file_type}
+                            color={getFileTypeColor(selectedDocument.file_type)}
+                            size="small"
+                            sx={{ textTransform: "capitalize", fontWeight: 600 }}
+                          />
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Card>
 
-                  <Grid item xs={12} sm={6}>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      Category
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {selectedDocument.category || "Uncategorized"}
-                    </Typography>
-                  </Grid>
+                  <Card
+                    sx={{
+                      background: "white",
+                      borderRadius: 2,
+                      p: 2,
+                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Box display="flex" alignItems="center" gap={2}>
+                      <PersonIcon sx={{ fontSize: 24, color: "#667eea" }} />
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
+                          UPLOADED BY
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50" }}>
+                          {selectedDocument.uploader?.full_name || "Unknown"}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Card>
 
-                  <Grid item xs={12} sm={6}>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      File Type
-                    </Typography>
-                    <Chip
-                      label={selectedDocument.file_type}
-                      color="default"
-                      size="small"
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      Uploaded By
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {selectedDocument.uploadedBy?.name || "Unknown"}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      Upload Date
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {formatDate(selectedDocument.createdAt)}
-                    </Typography>
-                  </Grid>
+                  <Card
+                    sx={{
+                      background: "white",
+                      borderRadius: 2,
+                      p: 2,
+                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Box display="flex" alignItems="center" gap={2}>
+                      <CalendarIcon sx={{ fontSize: 24, color: "#667eea" }} />
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
+                          UPLOAD DATE
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50" }}>
+                          {formatDate(selectedDocument.createdAt)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Card>
 
                   {selectedDocument.description && (
-                    <Grid item xs={12}>
-                      <Typography
-                        variant="subtitle2"
-                        color="text.secondary"
-                        gutterBottom
-                      >
-                        Description
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {selectedDocument.description}
-                      </Typography>
-                    </Grid>
+                    <Card
+                      sx={{
+                        background: "white",
+                        borderRadius: 2,
+                        p: 2,
+                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                          transform: "translateY(-2px)",
+                        },
+                      }}
+                    >
+                      <Box display="flex" alignItems="flex-start" gap={2}>
+                        <DescriptionIcon sx={{ fontSize: 24, color: "#667eea", mt: 0.5 }} />
+                        <Box>
+                          <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
+                            DESCRIPTION
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50", mt: 0.5 }}>
+                            {selectedDocument.description}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Card>
                   )}
+                </Stack>
 
-                  <Grid item xs={12}>
+                {/* Download Section */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, mb: 2, color: "#2c3e50" }}
+                  >
+                    Actions
+                  </Typography>
+                  <Card
+                    sx={{
+                      background: "white",
+                      borderRadius: 2,
+                      p: 3,
+                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
                     <Button
                       variant="contained"
                       startIcon={<UploadIcon />}
-                      onClick={() => handleDownloadDocument(selectedDocument)}
+                      onClick={() => handleDownloadDocument(selectedDocument.id)}
                       sx={{
                         background:
                           "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                        mt: 2,
+                        borderRadius: 2,
+                        px: 4,
+                        py: 1.5,
+                        fontWeight: 600,
+                        textTransform: "none",
+                        boxShadow: "0 4px 15px rgba(102, 126, 234, 0.3)",
+                        "&:hover": {
+                          background:
+                            "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
+                          transform: "translateY(-1px)",
+                          boxShadow: "0 6px 20px rgba(102, 126, 234, 0.4)",
+                        },
+                        transition: "all 0.3s ease",
                       }}
                     >
                       Download Document
                     </Button>
-                  </Grid>
-                </Grid>
+                  </Card>
+                </Box>
               </Box>
             ) : (
               // Create/Edit Worker Form
@@ -983,49 +1140,50 @@ const Documents = () => {
                 sx={{ maxHeight: "45vh", overflowY: "auto" }}
               >
                 <Stack spacing={1.5} sx={{ mt: 1 }}>
-                  {/* Task Selection */}
+                  {/* Title */}
+                  <TextField
+                    fullWidth
+                    label="Title"
+                    value={documentForm.title}
+                    onChange={(e) =>
+                      setDocumentForm({
+                        ...documentForm,
+                        title: e.target.value,
+                      })
+                    }
+                    variant="outlined"
+                    size="small"
+                    required
+                    placeholder="Document title"
+                  />
+
+                  {/* File Type Selection */}
                   <FormControl
                     fullWidth
                     variant="outlined"
                     size="small"
                     required
                   >
-                    <InputLabel>Select Task</InputLabel>
+                    <InputLabel>File Type</InputLabel>
                     <Select
-                      value={documentForm.document_type}
+                      value={documentForm.file_type}
                       onChange={(e) =>
                         setDocumentForm({
                           ...documentForm,
-                          document_type: e.target.value,
+                          file_type: e.target.value,
                         })
                       }
-                      label="Document Type"
+                      label="File Type"
                     >
-                      <MenuItem value="company_document">
-                        Company Document
-                      </MenuItem>
-                      <MenuItem value="template">Template</MenuItem>
-                      <MenuItem value="policy">Policy</MenuItem>
-                      <MenuItem value="contract">Contract</MenuItem>
+                      <MenuItem value="pdf">PDF</MenuItem>
+                      <MenuItem value="word">Word Document</MenuItem>
+                      <MenuItem value="excel">Excel Spreadsheet</MenuItem>
+                      <MenuItem value="powerpoint">PowerPoint</MenuItem>
+                      <MenuItem value="image">Image</MenuItem>
+                      <MenuItem value="text">Text File</MenuItem>
                       <MenuItem value="other">Other</MenuItem>
                     </Select>
                   </FormControl>
-
-                  {/* Category */}
-                  <TextField
-                    fullWidth
-                    label="Category"
-                    value={documentForm.category}
-                    onChange={(e) =>
-                      setDocumentForm({
-                        ...documentForm,
-                        category: e.target.value,
-                      })
-                    }
-                    variant="outlined"
-                    size="small"
-                    placeholder="e.g., HR, Finance, Legal"
-                  />
 
                   {/* Description */}
                   <TextField
@@ -1122,13 +1280,9 @@ const Documents = () => {
                 setOpenCreateDialog(false);
                 setSelectedDocument(null);
                 setDocumentForm({
-                  document_type: "company_document",
-                  category: "",
+                  title: "",
                   description: "",
-                  file_name: "",
-                  file_type: "",
-                  file_url: "",
-                  uploaded_by_admin_id: "",
+                  file_type: "pdf",
                 });
               }}
               variant="outlined"
@@ -1174,9 +1328,8 @@ const Documents = () => {
                   transition: "all 0.3s ease",
                 }}
                 disabled={
-                  !documentForm.document_type ||
-                  !documentForm.category ||
-                  !documentForm.description ||
+                  !documentForm.title ||
+                  !documentForm.file_type ||
                   !selectedFile
                 }
               >

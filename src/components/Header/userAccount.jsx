@@ -80,7 +80,7 @@ export default function UserAccount({ open, onClose, currentUser }) {
             Account Details
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.9, fontSize: "0.9rem" }}>
-            {currentUser?.name}
+            {currentUser?.full_name}
           </Typography>
         </Box>
 
@@ -133,7 +133,7 @@ export default function UserAccount({ open, onClose, currentUser }) {
               variant="body1"
               sx={{ fontWeight: 500, color: "text.primary" }}
             >
-              {currentUser?.name}
+              {currentUser?.full_name}
             </Typography>
           </Box>
 
@@ -269,10 +269,10 @@ export default function UserAccount({ open, onClose, currentUser }) {
             </Typography>
             <Chip
               icon={
-                currentUser?.isActive ? <CheckCircleIcon /> : <CancelIcon />
+                currentUser?.isActive !== false ? <CheckCircleIcon /> : <CancelIcon />
               }
-              label={currentUser?.isActive ? "Active" : "Inactive"}
-              color={currentUser?.isActive ? "success" : "error"}
+              label={currentUser?.isActive !== false ? "Active" : "Inactive"}
+              color={currentUser?.isActive !== false ? "success" : "error"}
               variant="filled"
               sx={{ fontWeight: 600 }}
             />
@@ -310,7 +310,7 @@ export default function UserAccount({ open, onClose, currentUser }) {
             >
               {currentUser?.lastLogin
                 ? new Date(currentUser.lastLogin).toLocaleString()
-                : "Never"}
+                : "Current Session"}
             </Typography>
           </Box>
         </Box>

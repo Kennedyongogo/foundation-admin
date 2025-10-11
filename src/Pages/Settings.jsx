@@ -43,9 +43,10 @@ import { useNavigate } from "react-router-dom";
 export default function Settings({ user }) {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
-    Name: user?.name || "",
+    Name: user?.full_name || "",
     Email: user?.email || "",
     PhoneNumber: user?.phone || "",
+    Position: user?.position || "",
     Role: user?.role || "",
   });
   const [currentUser, setCurrentUser] = useState(user);
@@ -101,7 +102,7 @@ export default function Settings({ user }) {
           return;
         }
 
-        const response = await fetch(`/api/admins/${user?.id}`, {
+        const response = await fetch(`/api/admin-users/${user?.id}`, {
           method: "GET",
           credentials: "include",
           headers: {
@@ -115,9 +116,10 @@ export default function Settings({ user }) {
           setCurrentUser(data.data);
           // Only update userData if no signature is being uploaded
           setUserData((prevData) => ({
-            Name: data.data.name || "",
+            Name: data.data.full_name || "",
             Email: data.data.email || "",
             PhoneNumber: data.data.phone || "",
+            Position: data.data.position || "",
             Role: data.data.role || "",
           }));
         }
@@ -165,7 +167,7 @@ export default function Settings({ user }) {
         return;
       }
 
-      const response = await fetch(`/api/admins/${user?.id}/change-password`, {
+      const response = await fetch(`/api/admin-users/${user?.id}/password`, {
         method: "PUT",
         credentials: "include",
         headers: {
@@ -221,13 +223,14 @@ export default function Settings({ user }) {
 
       // Prepare update data
       const updateData = {
-        name: userData.Name,
+        full_name: userData.Name,
         email: userData.Email,
         phone: userData.PhoneNumber,
+        position: userData.Position,
         role: userData.Role,
       };
 
-      const response = await fetch(`/api/admins/${user?.id}`, {
+      const response = await fetch(`/api/admin-users/${user?.id}`, {
         method: "PUT",
         credentials: "include",
         headers: {
@@ -440,19 +443,27 @@ export default function Settings({ user }) {
               <CardContent sx={{ p: 3 }}>
                 <Stack spacing={3}>
                   {[
-                    { field: "Name", icon: <PersonIcon />, disabled: false },
-                    { field: "Email", icon: <EmailIcon />, disabled: true },
+                    { field: "Name", label: "Full Name", icon: <PersonIcon />, disabled: false },
+                    { field: "Email", label: "Email", icon: <EmailIcon />, disabled: true },
                     {
                       field: "PhoneNumber",
+                      label: "Phone Number",
                       icon: <PhoneIcon />,
                       disabled: false,
                     },
                     {
+                      field: "Position",
+                      label: "Position",
+                      icon: <WorkIcon />,
+                      disabled: false,
+                    },
+                    {
                       field: "Role",
+                      label: "Role",
                       icon: <WorkIcon />,
                       disabled: true,
                     },
-                  ].map(({ field, icon, disabled }) => (
+                  ].map(({ field, label, icon, disabled }) => (
                     <FormControl key={field} fullWidth>
                       <InputLabel
                         sx={{
@@ -463,11 +474,11 @@ export default function Settings({ user }) {
                           },
                         }}
                       >
-                        {field}
+                        {label}
                       </InputLabel>
                       <OutlinedInput
-                        label={field}
-                        value={userData[field]}
+                        label={label}
+                        value={userData[field] || ""}
                         disabled={disabled}
                         onChange={(e) =>
                           setUserData({

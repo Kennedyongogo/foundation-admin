@@ -53,9 +53,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import LocationSearchingIcon from "@mui/icons-material/LocationSearching";
 
-// Removed hospital-related constants as we're focusing only on applications
-
-const ConstructionMap = () => {
+const CharityMap = () => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const navigate = useNavigate();
@@ -69,7 +67,7 @@ const ConstructionMap = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [tileLoadError, setTileLoadError] = useState(false);
   const [mapInitialized, setMapInitialized] = useState(false);
-  const [constructionProjects, setConstructionProjects] = useState([]);
+  const [charityProjects, setCharityProjects] = useState([]);
   const [selectedProjectDetails, setSelectedProjectDetails] = useState(null);
   const [tooltip, setTooltip] = useState({
     visible: false,
@@ -78,18 +76,18 @@ const ConstructionMap = () => {
     y: 0,
   });
   const [visibleStatuses, setVisibleStatuses] = useState({
-    planning: true,
-    active: true,
+    pending: true,
+    in_progress: true,
     completed: true,
     on_hold: true,
     cancelled: true,
   });
 
-  const [visibleConstructionTypes, setVisibleConstructionTypes] = useState({
-    building: true,
-    infrastructure: true,
-    industrial: true,
-    specialized: true,
+  const [visibleCategories, setVisibleCategories] = useState({
+    volunteer: true,
+    donation: true,
+    fundraising: true,
+    community: true,
     other: true,
   });
 
@@ -171,7 +169,7 @@ const ConstructionMap = () => {
     );
   };
 
-  // Find construction projects near user location
+  // Find charity projects near user location
   const findNearMeProjects = () => {
     if (!userLocation) {
       getUserLocation(() => {
@@ -189,7 +187,7 @@ const ConstructionMap = () => {
     if (!userLocation) return;
 
     const dataToSearch =
-      searchResults.length > 0 ? searchResults : constructionProjects;
+      searchResults.length > 0 ? searchResults : charityProjects;
 
     console.log("Performing near me search with:", {
       userLocation,
@@ -324,8 +322,8 @@ const ConstructionMap = () => {
     }
   }, [showMarker, mapInitialized]);
 
-  // Search construction projects function
-  const searchConstructionProjects = async (query, column) => {
+  // Search charity projects function
+  const searchCharityProjects = async (query, column) => {
     setIsSearching(true);
     setSearchError(null);
 
@@ -338,8 +336,7 @@ const ConstructionMap = () => {
         if (column === "all") {
           params.append("search", query);
         } else {
-          params.append("searchColumn", column);
-          params.append("searchValue", query);
+          params.append(column, query);
         }
       }
 
@@ -359,7 +356,7 @@ const ConstructionMap = () => {
       setSearchResults(data?.data || []);
       return data?.data || [];
     } catch (error) {
-      console.error("Error searching construction projects:", error);
+      console.error("Error searching charity projects:", error);
       setSearchError(error.message);
       setSearchResults([]);
       return [];
@@ -368,7 +365,7 @@ const ConstructionMap = () => {
     }
   };
 
-  // Fetch construction projects
+  // Fetch charity projects
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -389,10 +386,10 @@ const ConstructionMap = () => {
         }
 
         const projectsData = await projectsResponse.json();
-        setConstructionProjects(projectsData?.data || []);
+        setCharityProjects(projectsData?.data || []);
       } catch (error) {
-        console.error("Error fetching construction projects:", error);
-        setConstructionProjects([]);
+        console.error("Error fetching charity projects:", error);
+        setCharityProjects([]);
       } finally {
         setIsLoading(false);
       }
@@ -404,7 +401,7 @@ const ConstructionMap = () => {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchQuery.trim()) {
-        searchConstructionProjects(searchQuery, searchColumn);
+        searchCharityProjects(searchQuery, searchColumn);
       } else {
         setSearchResults([]);
       }
@@ -500,8 +497,8 @@ const ConstructionMap = () => {
         const properties = feature.get("properties");
         const featureType = properties?.type;
 
-        if (featureType === "constructionProject") {
-          // Show tooltip for construction projects
+        if (featureType === "charityProject") {
+          // Show tooltip for charity projects
           const coordinate = event.coordinate;
           const pixel = map.getPixelFromCoordinate(coordinate);
           setTooltip({
@@ -537,7 +534,7 @@ const ConstructionMap = () => {
     };
   }, [mapInitialized]);
 
-  // Add click interaction for applications
+  // Add click interaction for projects
   useEffect(() => {
     if (!mapInstance.current || !mapInitialized) return;
     const map = mapInstance.current;
@@ -552,7 +549,7 @@ const ConstructionMap = () => {
         const properties = feature.get("properties");
         const featureType = properties?.type;
 
-        if (featureType === "constructionProject") {
+        if (featureType === "charityProject") {
           // Show project details in drawer
           setSelectedProjectDetails(properties);
           setDrawerOpen(true);
@@ -567,7 +564,7 @@ const ConstructionMap = () => {
     };
   }, [mapInitialized, navigate]);
 
-  // Create construction project markers
+  // Create charity project markers
   const createProjectMarkers = (projects, isSearchResult = false) => {
     return projects
       .filter(
@@ -575,7 +572,7 @@ const ConstructionMap = () => {
           project.longitude !== null &&
           project.latitude !== null &&
           visibleStatuses[project.status] &&
-          visibleConstructionTypes[project.construction_type]
+          visibleCategories[project.category]
       )
       .map((project) => {
         const lon = parseFloat(project.longitude); // longitude
@@ -589,14 +586,14 @@ const ConstructionMap = () => {
           geometry: new Point(fromLonLat([lon, lat])),
           properties: {
             ...project,
-            type: "constructionProject",
+            type: "charityProject",
             isSearchResult: isSearchResult,
           },
         });
 
-        // Get construction type specific marker
-        const markerSvg = getConstructionTypeMarker(
-          project.construction_type,
+        // Get category specific marker
+        const markerSvg = getCategoryMarker(
+          project.category,
           project.status,
           isSearchResult
         );
@@ -648,7 +645,7 @@ const ConstructionMap = () => {
     return feature;
   };
 
-  // Update markers when polling stations, search results, visible statuses, or near me mode change
+  // Update markers when projects, search results, visible statuses, or near me mode change
   useEffect(() => {
     if (!mapInstance.current || !mapInitialized) return;
     const vectorSource = vectorLayerRef.current.getSource();
@@ -656,7 +653,7 @@ const ConstructionMap = () => {
     // Clear existing markers
     const existingFeatures = vectorSource.getFeatures();
     const projectFeatures = existingFeatures.filter(
-      (f) => f.get("properties")?.type === "constructionProject"
+      (f) => f.get("properties")?.type === "charityProject"
     );
     const userLocationFeatures = existingFeatures.filter(
       (f) => f.get("properties")?.type === "userLocation"
@@ -671,7 +668,7 @@ const ConstructionMap = () => {
     } else if (searchResults.length > 0) {
       dataToShow = searchResults;
     } else {
-      dataToShow = constructionProjects;
+      dataToShow = charityProjects;
     }
 
     // Add project markers
@@ -686,11 +683,11 @@ const ConstructionMap = () => {
       vectorSource.addFeature(userLocationMarker);
     }
   }, [
-    constructionProjects,
+    charityProjects,
     searchResults,
     mapInitialized,
     visibleStatuses,
-    visibleConstructionTypes,
+    visibleCategories,
     nearMeMode,
     nearMeResults,
     userLocation,
@@ -725,9 +722,9 @@ const ConstructionMap = () => {
   // Helper function to get status color
   const getStatusColor = (status) => {
     switch (status) {
-      case "planning":
+      case "pending":
         return "#ff9800"; // Orange
-      case "active":
+      case "in_progress":
         return "#4caf50"; // Green
       case "completed":
         return "#2196f3"; // Blue
@@ -740,9 +737,9 @@ const ConstructionMap = () => {
     }
   };
 
-  // Helper function to get construction type marker
-  const getConstructionTypeMarker = (
-    constructionType,
+  // Helper function to get category marker
+  const getCategoryMarker = (
+    category,
     status,
     isSearchResult = false
   ) => {
@@ -753,8 +750,8 @@ const ConstructionMap = () => {
 
     let svgIcon = "";
 
-    switch (constructionType) {
-      case "building":
+    switch (category) {
+      case "volunteer":
         svgIcon = `
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="${outerRadius}" fill="${statusColor}" stroke="white" stroke-width="${strokeWidth}"/>
@@ -763,11 +760,11 @@ const ConstructionMap = () => {
                 ? `<circle cx="12" cy="12" r="14" fill="none" stroke="#ff6b35" stroke-width="2" opacity="0.8"/>`
                 : ""
             }
-            <path d="M3 21h18v-2H3v2zm1-3h16l-8-7-8 7zM12 2l8 6v11H4V8l8-6zm0 3.5L7 10v8h10v-8l-5-4.5z" fill="white"/>
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="white"/>
           </svg>
         `;
         break;
-      case "infrastructure":
+      case "donation":
         svgIcon = `
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="${outerRadius}" fill="${statusColor}" stroke="white" stroke-width="${strokeWidth}"/>
@@ -776,11 +773,11 @@ const ConstructionMap = () => {
                 ? `<circle cx="12" cy="12" r="14" fill="none" stroke="#ff6b35" stroke-width="2" opacity="0.8"/>`
                 : ""
             }
-            <path d="M2 20h20v-2H2v2zm2-3h16l-2-4H6l-2 4zM12 2L2 8v7h20V8l-10-6zm0 2.5L18 9v5H6V9l6-4.5z" fill="white"/>
+            <path d="M20.5 4c-2.61 0.45-5.59 1.22-8 2.5-2.41-1.28-5.39-2.05-8-2.5v11.5c2.61 0.45 5.59 1.22 8 2.5 2.41-1.28 5.39-2.05 8-2.5V4zm-8 10.92c-1.87-0.73-3.96-1.18-6-1.36V5.64c2.04 0.18 4.13 0.63 6 1.36v7.92z" fill="white"/>
           </svg>
         `;
         break;
-      case "industrial":
+      case "fundraising":
         svgIcon = `
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="${outerRadius}" fill="${statusColor}" stroke="white" stroke-width="${strokeWidth}"/>
@@ -789,11 +786,11 @@ const ConstructionMap = () => {
                 ? `<circle cx="12" cy="12" r="14" fill="none" stroke="#ff6b35" stroke-width="2" opacity="0.8"/>`
                 : ""
             }
-            <path d="M2 20h20v-2H2v2zm2-3h16v-4H4v4zm0-6h16V7H4v4zm0-6h16V1H4v4z" fill="white"/>
+            <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.42 0 2.13.54 2.39 1.4.12.4.45.7.87.7h.3c.66 0 1.13-.65.9-1.27-.42-1.18-1.4-2.16-2.96-2.54V4.5c0-.83-.67-1.5-1.5-1.5S10 3.67 10 4.5v.66c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-1.65 0-2.5-.59-2.83-1.43-.15-.39-.49-.67-.9-.67h-.28c-.67 0-1.14.68-.89 1.3.57 1.39 1.9 2.21 3.4 2.53v.67c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-.65c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" fill="white"/>
           </svg>
         `;
         break;
-      case "specialized":
+      case "community":
         svgIcon = `
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="${outerRadius}" fill="${statusColor}" stroke="white" stroke-width="${strokeWidth}"/>
@@ -802,7 +799,7 @@ const ConstructionMap = () => {
                 ? `<circle cx="12" cy="12" r="14" fill="none" stroke="#ff6b35" stroke-width="2" opacity="0.8"/>`
                 : ""
             }
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2zm0 3.8L10.5 9l2.5 1.5L15.5 9 12 5.8z" fill="white"/>
+            <path d="M12 5.69l5 4.5V18h-2v-6H9v6H7v-7.81l5-4.5M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z" fill="white"/>
           </svg>
         `;
         break;
@@ -816,7 +813,7 @@ const ConstructionMap = () => {
                 ? `<circle cx="12" cy="12" r="14" fill="none" stroke="#ff6b35" stroke-width="2" opacity="0.8"/>`
                 : ""
             }
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="white"/>
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="white"/>
           </svg>
         `;
         break;
@@ -833,45 +830,45 @@ const ConstructionMap = () => {
     }));
   };
 
-  // Handle construction type toggle
-  const handleConstructionTypeToggle = (constructionType) => {
-    setVisibleConstructionTypes((prev) => ({
+  // Handle category toggle
+  const handleCategoryToggle = (category) => {
+    setVisibleCategories((prev) => ({
       ...prev,
-      [constructionType]: !prev[constructionType],
+      [category]: !prev[category],
     }));
   };
 
   // Handle select all/deselect all
   const handleSelectAll = () => {
     setVisibleStatuses({
-      planning: true,
-      active: true,
+      pending: true,
+      in_progress: true,
       completed: true,
       on_hold: true,
       cancelled: true,
     });
-    setVisibleConstructionTypes({
-      building: true,
-      infrastructure: true,
-      industrial: true,
-      specialized: true,
+    setVisibleCategories({
+      volunteer: true,
+      donation: true,
+      fundraising: true,
+      community: true,
       other: true,
     });
   };
 
   const handleDeselectAll = () => {
     setVisibleStatuses({
-      planning: false,
-      active: false,
+      pending: false,
+      in_progress: false,
       completed: false,
       on_hold: false,
       cancelled: false,
     });
-    setVisibleConstructionTypes({
-      building: false,
-      infrastructure: false,
-      industrial: false,
-      specialized: false,
+    setVisibleCategories({
+      volunteer: false,
+      donation: false,
+      fundraising: false,
+      community: false,
       other: false,
     });
   };
@@ -906,21 +903,21 @@ const ConstructionMap = () => {
     }
   };
 
-  // Get status counts
+  // Get status and category counts
   const getStatusCounts = () => {
     const counts = {};
     const statuses = [
-      "planning",
-      "active",
+      "pending",
+      "in_progress",
       "completed",
       "on_hold",
       "cancelled",
     ];
-    const constructionTypes = [
-      "building",
-      "infrastructure",
-      "industrial",
-      "specialized",
+    const categories = [
+      "volunteer",
+      "donation",
+      "fundraising",
+      "community",
       "other",
     ];
     let dataToCount;
@@ -930,7 +927,7 @@ const ConstructionMap = () => {
     } else if (searchResults.length > 0) {
       dataToCount = searchResults;
     } else {
-      dataToCount = constructionProjects;
+      dataToCount = charityProjects;
     }
 
     statuses.forEach((status) => {
@@ -942,10 +939,10 @@ const ConstructionMap = () => {
       ).length;
     });
 
-    constructionTypes.forEach((type) => {
-      counts[type] = dataToCount.filter(
+    categories.forEach((category) => {
+      counts[category] = dataToCount.filter(
         (project) =>
-          project.construction_type === type &&
+          project.category === category &&
           project.longitude !== null &&
           project.latitude !== null
       ).length;
@@ -968,7 +965,7 @@ const ConstructionMap = () => {
           border: "1px solid #e0e0e0",
         }}
       >
-        {/* Application Location Label and Near Me Controls */}
+        {/* Charity Projects Location Label and Near Me Controls */}
         <Box
           sx={{
             display: "flex",
@@ -985,7 +982,7 @@ const ConstructionMap = () => {
               fontSize: "1.1rem",
             }}
           >
-            Construction Map
+            Charity Projects Map
           </Typography>
 
           {/* Near Me Controls */}
@@ -1115,7 +1112,7 @@ const ConstructionMap = () => {
             {/* Search Input */}
             <TextField
               size="small"
-              placeholder="Search by project name, location, status, contractor, client, or coordinates..."
+              placeholder="Search by project name, category, county, target individual, or description..."
               value={searchQuery}
               onChange={handleSearchChange}
               sx={{
@@ -1154,13 +1151,12 @@ const ConstructionMap = () => {
               >
                 <MenuItem value="all">All Fields</MenuItem>
                 <MenuItem value="name">Project Name</MenuItem>
-                <MenuItem value="location_name">Location</MenuItem>
+                <MenuItem value="category">Category</MenuItem>
                 <MenuItem value="status">Status</MenuItem>
-                <MenuItem value="contractor_name">Contractor</MenuItem>
-                <MenuItem value="client_name">Client</MenuItem>
-                <MenuItem value="engineer">Engineer</MenuItem>
+                <MenuItem value="county">County</MenuItem>
+                <MenuItem value="subcounty">Subcounty</MenuItem>
+                <MenuItem value="target_individual">Target Individual</MenuItem>
                 <MenuItem value="description">Description</MenuItem>
-                <MenuItem value="coordinates">Coordinates</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -1410,7 +1406,7 @@ const ConstructionMap = () => {
           >
             <CircularProgress size={20} />
             <Typography variant="caption" sx={{ color: "text.secondary" }}>
-              Loading construction projects...
+              Loading charity projects...
             </Typography>
           </Box>
         )}
@@ -1473,7 +1469,7 @@ const ConstructionMap = () => {
           </IconButton>
         </Box>
 
-        {/* Compact Legend Box for applications with filtering */}
+        {/* Compact Legend Box for charity projects with filtering */}
         <Box
           sx={{
             position: "absolute",
@@ -1579,7 +1575,7 @@ const ConstructionMap = () => {
             </Box>
           )}
 
-          {/* Construction Types with Checkboxes */}
+          {/* Project Categories with Checkboxes */}
           <Typography
             variant="body2"
             sx={{
@@ -1589,15 +1585,15 @@ const ConstructionMap = () => {
               color: "text.secondary",
             }}
           >
-            Construction Types
+            Project Categories
           </Typography>
           <Box
             sx={{ display: "flex", flexDirection: "column", gap: 0.25, mb: 1 }}
           >
-            {Object.entries(visibleConstructionTypes).map(
-              ([type, isVisible]) => (
+            {Object.entries(visibleCategories).map(
+              ([category, isVisible]) => (
                 <Box
-                  key={type}
+                  key={category}
                   sx={{
                     display: "flex",
                     alignItems: "center",
@@ -1607,7 +1603,7 @@ const ConstructionMap = () => {
                 >
                   <Checkbox
                     checked={isVisible}
-                    onChange={() => handleConstructionTypeToggle(type)}
+                    onChange={() => handleCategoryToggle(category)}
                     size="small"
                     sx={{
                       padding: 0.1,
@@ -1636,7 +1632,7 @@ const ConstructionMap = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    {type.charAt(0).toUpperCase()}
+                    {category.charAt(0).toUpperCase()}
                   </Box>
                   <Typography
                     variant="body2"
@@ -1649,7 +1645,7 @@ const ConstructionMap = () => {
                       textTransform: "capitalize",
                     }}
                   >
-                    {type.replace("_", " ")}
+                    {category.replace("_", " ")}
                   </Typography>
                   <Typography
                     variant="caption"
@@ -1665,7 +1661,7 @@ const ConstructionMap = () => {
                       textAlign: "center",
                     }}
                   >
-                    {statusCounts[type]}
+                    {statusCounts[category]}
                   </Typography>
                 </Box>
               )
@@ -2046,15 +2042,54 @@ const ConstructionMap = () => {
                             letterSpacing: 0.5,
                           }}
                         >
-                          Budget Estimate
+                          Category
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            px: 2,
+                            py: 0.5,
+                            borderRadius: 3,
+                            backgroundColor: "#e3f2fd",
+                            color: "#1976d2",
+                            fontWeight: 600,
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          {selectedProjectDetails.category
+                            ?.charAt(0)
+                            .toUpperCase() +
+                            selectedProjectDetails.category?.slice(1) || "-"}
+                        </Box>
+                      </Box>
+
+                      <Box
+                        sx={{
+                          p: 2,
+                          backgroundColor: "white",
+                          borderRadius: 2,
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                          border: "1px solid #e0e0e0",
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            color: "text.secondary",
+                            mb: 1,
+                            fontSize: "0.8rem",
+                            textTransform: "uppercase",
+                            letterSpacing: 0.5,
+                          }}
+                        >
+                          Target Individual
                         </Typography>
                         <Typography
                           variant="body1"
                           sx={{ fontWeight: 500, color: "text.primary" }}
                         >
-                          {selectedProjectDetails.currency}{" "}
-                          {selectedProjectDetails.budget_estimate?.toLocaleString() ||
-                            "-"}
+                          {selectedProjectDetails.target_individual || "-"}
                         </Typography>
                       </Box>
 
@@ -2077,44 +2112,13 @@ const ConstructionMap = () => {
                             letterSpacing: 0.5,
                           }}
                         >
-                          Contractor
+                          Description
                         </Typography>
                         <Typography
                           variant="body1"
                           sx={{ fontWeight: 500, color: "text.primary" }}
                         >
-                          {selectedProjectDetails.contractor_name ||
-                            "Not Assigned"}
-                        </Typography>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "white",
-                          borderRadius: 2,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: "text.secondary",
-                            mb: 1,
-                            fontSize: "0.8rem",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          Engineer in Charge
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: 500, color: "text.primary" }}
-                        >
-                          {selectedProjectDetails.engineer?.name ||
-                            "Not Assigned"}
+                          {selectedProjectDetails.description || "-"}
                         </Typography>
                       </Box>
 
@@ -2185,13 +2189,13 @@ const ConstructionMap = () => {
                             letterSpacing: 0.5,
                           }}
                         >
-                          Location
+                          County
                         </Typography>
                         <Typography
                           variant="body1"
                           sx={{ fontWeight: 500, color: "text.primary" }}
                         >
-                          {selectedProjectDetails.location_name || "-"}
+                          {selectedProjectDetails.county || "-"}
                         </Typography>
                       </Box>
 
@@ -2214,13 +2218,13 @@ const ConstructionMap = () => {
                             letterSpacing: 0.5,
                           }}
                         >
-                          Client
+                          Subcounty
                         </Typography>
                         <Typography
                           variant="body1"
                           sx={{ fontWeight: 500, color: "text.primary" }}
                         >
-                          {selectedProjectDetails.client_name || "-"}
+                          {selectedProjectDetails.subcounty || "-"}
                         </Typography>
                       </Box>
 
@@ -2249,7 +2253,7 @@ const ConstructionMap = () => {
                           variant="body1"
                           sx={{ fontWeight: 500, color: "text.primary" }}
                         >
-                          {selectedProjectDetails.progress_percent || 0}%
+                          {selectedProjectDetails.progress || 0}%
                         </Typography>
                       </Box>
 
@@ -2272,18 +2276,13 @@ const ConstructionMap = () => {
                             letterSpacing: 0.5,
                           }}
                         >
-                          Construction Type
+                          Assigned To
                         </Typography>
                         <Typography
                           variant="body1"
                           sx={{ fontWeight: 500, color: "text.primary" }}
                         >
-                          {selectedProjectDetails.construction_type
-                            ?.charAt(0)
-                            .toUpperCase() +
-                            selectedProjectDetails.construction_type?.slice(
-                              1
-                            ) || "-"}
+                          {selectedProjectDetails.assignee?.full_name || "Not Assigned"}
                         </Typography>
                       </Box>
 
@@ -2434,4 +2433,4 @@ const ConstructionMap = () => {
   );
 };
 
-export default ConstructionMap;
+export default CharityMap;

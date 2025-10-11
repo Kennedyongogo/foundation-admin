@@ -11,7 +11,6 @@ import {
   MapOutlined,
   StarRateSharp,
   Search,
-  Construction,
   DataArray,
   DataObject,
   Help,
@@ -24,13 +23,9 @@ import {
   Settings,
   QuestionAnswer,
   Schedule,
-  Assignment,
-  Inventory,
-  Work,
-  AttachMoney,
   Business,
-  Engineering,
   Folder,
+  History,
 } from "@mui/icons-material";
 import { Money } from "@phosphor-icons/react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -136,7 +131,6 @@ const Navbar = (props) => {
     customerService: false,
     riskManagement: false,
     debtCollection: false,
-    "Construction Management": false,
   });
   const [menuItems, setMenuItems] = useState([]);
 
@@ -167,43 +161,12 @@ const Navbar = (props) => {
       path: "/projects",
     },
     {
-      text: "Construction Management",
-      icon: <Engineering />,
-      subItems: [
-        {
-          text: "Tasks",
-          icon: <Assignment />,
-          path: "/tasks",
-        },
-        {
-          text: "Materials",
-          icon: <Inventory />,
-          path: "/materials",
-        },
-        {
-          text: "Equipment",
-          icon: <Construction />,
-          path: "/equipment",
-        },
-        {
-          text: "Labor",
-          icon: <Work />,
-          path: "/labor",
-        },
-        {
-          text: "Budget",
-          icon: <AttachMoney />,
-          path: "/budget",
-        },
-      ],
-    },
-    {
       text: "Issues",
       icon: <Warning />,
       path: "/issues",
     },
     {
-      text: "Construction Map",
+      text: "Charity Map",
       icon: <Map />,
       path: "/map",
     },
@@ -211,6 +174,16 @@ const Navbar = (props) => {
       text: "Documents",
       icon: <Folder />,
       path: "/documents",
+    },
+    {
+      text: "Audit Trail",
+      icon: <History />,
+      path: "/audit",
+    },
+    {
+      text: "Users",
+      icon: <PeopleAlt />,
+      path: "/users",
     },
   ];
 
@@ -384,40 +357,6 @@ const Navbar = (props) => {
         </List>
         <Divider />
         <List>
-          {user && user.role === "super_admin" && (
-            <ListItem
-              button
-              onClick={() => navigate("/users")}
-              selected={location.pathname === "/users"}
-              sx={{
-                cursor: "pointer",
-                bgcolor:
-                  location.pathname === "/users"
-                    ? "action.selected"
-                    : "transparent",
-              }}
-            >
-              <ListItemIcon>
-                <PeopleAlt
-                  color={
-                    location.pathname === "/users" ? "primary" : "textSecondary"
-                  }
-                />
-              </ListItemIcon>
-              <ListItemText
-                primary="Users"
-                sx={{
-                  cursor: "pointer",
-                  color:
-                    location.pathname === "/users"
-                      ? "primary"
-                      : "textSecondary",
-                  fontWeight:
-                    location.pathname === "/users" ? "bold" : "normal",
-                }}
-              />
-            </ListItem>
-          )}
           <ListItem
             button
             onClick={() => navigate("/settings")}

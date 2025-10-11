@@ -61,26 +61,20 @@ const Issues = () => {
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [editForm, setEditForm] = useState({
-    name: "",
+    full_name: "",
     email: "",
-    description: "",
+    phone: "",
+    message: "",
     category: "",
-    project_id: "",
     status: "",
   });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalIssues, setTotalIssues] = useState(0);
-  const [projects, setProjects] = useState([]);
 
   useEffect(() => {
     fetchIssues();
   }, [page, rowsPerPage]);
-
-  // Fetch projects on component mount
-  useEffect(() => {
-    fetchProjects();
-  }, []);
 
   const fetchIssues = async () => {
     try {
@@ -98,7 +92,7 @@ const Issues = () => {
         limit: rowsPerPage.toString(),
       });
 
-      const response = await fetch(`/api/issues?${queryParams}`, {
+      const response = await fetch(`/api/inquiries?${queryParams}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -110,7 +104,7 @@ const Issues = () => {
 
       if (data.success) {
         setIssues(data.data || []);
-        setTotalIssues(data.count || 0);
+        setTotalIssues(data.pagination?.total || 0);
       } else {
         setError(
           "Failed to fetch issues: " + (data.message || "Unknown error")
@@ -125,14 +119,12 @@ const Issues = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "open":
-        return "error";
-      case "in_progress":
+      case "pending":
         return "warning";
+      case "in_progress":
+        return "info";
       case "resolved":
         return "success";
-      case "closed":
-        return "default";
       default:
         return "default";
     }
@@ -140,14 +132,12 @@ const Issues = () => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case "open":
-        return "Open";
+      case "pending":
+        return "Pending";
       case "in_progress":
         return "In Progress";
       case "resolved":
         return "Resolved";
-      case "closed":
-        return "Closed";
       default:
         return status;
     }
@@ -155,14 +145,18 @@ const Issues = () => {
 
   const getCategoryText = (category) => {
     switch (category) {
-      case "project_inquiry":
-        return "Project Inquiry";
-      case "technical_issue":
-        return "Technical Issue";
-      case "billing_issue":
-        return "Billing Issue";
-      case "general_inquiry":
-        return "General Inquiry";
+      case "volunteer":
+        return "Volunteer";
+      case "education":
+        return "Education";
+      case "mental_health":
+        return "Mental Health";
+      case "community":
+        return "Community";
+      case "donation":
+        return "Donation";
+      case "partnership":
+        return "Partnership";
       default:
         return category;
     }
@@ -185,28 +179,6 @@ const Issues = () => {
     setPage(0);
   };
 
-  const fetchProjects = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      const response = await fetch(`/api/projects?limit=1000`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setProjects(data.data || []);
-      }
-    } catch (err) {
-      console.error("Error fetching projects:", err);
-    }
-  };
-
   const handleViewIssue = (issue) => {
     setSelectedIssue(issue);
     setOpenViewDialog(true);
@@ -215,11 +187,11 @@ const Issues = () => {
   const handleEditIssue = (issue) => {
     setSelectedIssue(issue);
     setEditForm({
-      name: issue.name,
+      full_name: issue.full_name,
       email: issue.email,
-      description: issue.description,
+      phone: issue.phone || "",
+      message: issue.message,
       category: issue.category,
-      project_id: issue.project_id,
       status: issue.status,
     });
     setOpenEditDialog(true);
@@ -235,7 +207,7 @@ const Issues = () => {
         return;
       }
 
-      const response = await fetch(`/api/issues/${selectedIssue.id}`, {
+      const response = await fetch(`/api/inquiries/${selectedIssue.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -296,7 +268,7 @@ const Issues = () => {
   const handleDeleteIssue = async (issue) => {
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: `Do you want to delete issue from "${issue.name}"?`,
+      text: `Do you want to delete inquiry from "${issue.full_name}"?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -324,7 +296,7 @@ const Issues = () => {
           return;
         }
 
-        const response = await fetch(`/api/issues/${issue.id}`, {
+        const response = await fetch(`/api/inquiries/${issue.id}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -512,10 +484,8 @@ const Issues = () => {
                   }}
                 >
                   <TableCell>No</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
+                  <TableCell>Full Name</TableCell>
                   <TableCell>Category</TableCell>
-                  <TableCell>Project</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Created</TableCell>
                   <TableCell>Actions</TableCell>
@@ -524,13 +494,13 @@ const Issues = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                       <CircularProgress sx={{ color: "#667eea" }} />
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                       <Alert severity="error" sx={{ mb: 2 }}>
                         {error}
                       </Alert>
@@ -548,9 +518,9 @@ const Issues = () => {
                   </TableRow>
                 ) : issues.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                       <Typography variant="h6" color="text.secondary">
-                        No issues found.
+                        No inquiries found.
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -583,12 +553,7 @@ const Issues = () => {
                           fontWeight="600"
                           sx={{ color: "#2c3e50" }}
                         >
-                          {issue.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ color: "#7f8c8d" }}>
-                          {issue.email}
+                          {issue.full_name}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -602,14 +567,6 @@ const Issues = () => {
                             borderRadius: 2,
                           }}
                         />
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#7f8c8d", fontWeight: 600 }}
-                        >
-                          {issue.project?.name || "N/A"}
-                        </Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -804,12 +761,15 @@ const Issues = () => {
             {selectedIssue && (
               <Box>
                 <Typography variant="h6" gutterBottom>
-                  {selectedIssue.name}
+                  {selectedIssue.full_name}
                 </Typography>
 
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     <strong>Email:</strong> {selectedIssue.email}
+                  </Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    <strong>Phone:</strong> {selectedIssue.phone || "N/A"}
                   </Typography>
                   <Typography variant="subtitle2" gutterBottom>
                     <strong>Category:</strong>{" "}
@@ -820,15 +780,11 @@ const Issues = () => {
                     {getStatusText(selectedIssue.status)}
                   </Typography>
                   <Typography variant="subtitle2" gutterBottom>
-                    <strong>Project:</strong>{" "}
-                    {selectedIssue.project?.name || "N/A"}
-                  </Typography>
-                  <Typography variant="subtitle2" gutterBottom>
                     <strong>Created:</strong>{" "}
                     {formatDate(selectedIssue.createdAt)}
                   </Typography>
                   <Typography variant="subtitle2" gutterBottom>
-                    <strong>Description:</strong>
+                    <strong>Message:</strong>
                   </Typography>
                   <Typography
                     variant="body2"
@@ -840,7 +796,7 @@ const Issues = () => {
                       border: "1px solid rgba(102, 126, 234, 0.1)",
                     }}
                   >
-                    {selectedIssue.description}
+                    {selectedIssue.message}
                   </Typography>
                 </Box>
               </Box>
@@ -964,23 +920,25 @@ const Issues = () => {
             sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto" }}
           >
             <Stack spacing={3} sx={{ mt: 1 }}>
-              {/* Name and Email Row */}
+              {/* Full Name Field */}
+              <TextField
+                fullWidth
+                label="Full Name"
+                value={editForm.full_name}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, full_name: e.target.value })
+                }
+                required
+                variant="outlined"
+                size="small"
+              />
+
+              {/* Email and Phone Row */}
               <Box
                 display="flex"
                 flexDirection={{ xs: "column", sm: "row" }}
                 gap={2}
               >
-                <TextField
-                  fullWidth
-                  label="Name"
-                  value={editForm.name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, name: e.target.value })
-                  }
-                  required
-                  variant="outlined"
-                  size="small"
-                />
                 <TextField
                   fullWidth
                   label="Email"
@@ -992,6 +950,16 @@ const Issues = () => {
                   variant="outlined"
                   size="small"
                   required
+                />
+                <TextField
+                  fullWidth
+                  label="Phone"
+                  value={editForm.phone}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, phone: e.target.value })
+                  }
+                  variant="outlined"
+                  size="small"
                 />
               </Box>
 
@@ -1011,10 +979,12 @@ const Issues = () => {
                     label="Category"
                     required
                   >
-                    <MenuItem value="project_inquiry">Project Inquiry</MenuItem>
-                    <MenuItem value="technical_issue">Technical Issue</MenuItem>
-                    <MenuItem value="billing_issue">Billing Issue</MenuItem>
-                    <MenuItem value="general_inquiry">General Inquiry</MenuItem>
+                    <MenuItem value="volunteer">Volunteer</MenuItem>
+                    <MenuItem value="education">Education</MenuItem>
+                    <MenuItem value="mental_health">Mental Health</MenuItem>
+                    <MenuItem value="community">Community</MenuItem>
+                    <MenuItem value="donation">Donation</MenuItem>
+                    <MenuItem value="partnership">Partnership</MenuItem>
                   </Select>
                 </FormControl>
                 <FormControl fullWidth variant="outlined" size="small">
@@ -1027,53 +997,25 @@ const Issues = () => {
                     label="Status"
                     required
                   >
-                    <MenuItem value="open">Open</MenuItem>
+                    <MenuItem value="pending">Pending</MenuItem>
                     <MenuItem value="in_progress">In Progress</MenuItem>
                     <MenuItem value="resolved">Resolved</MenuItem>
-                    <MenuItem value="closed">Closed</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
 
-              {/* Project Selection */}
-              <FormControl fullWidth variant="outlined" size="small">
-                <InputLabel>Project</InputLabel>
-                <Select
-                  value={editForm.project_id}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, project_id: e.target.value })
-                  }
-                  label="Project"
-                  required
-                >
-                  {projects.length > 0 ? (
-                    projects.map((project) => (
-                      <MenuItem key={project.id} value={project.id}>
-                        {project.name}
-                      </MenuItem>
-                    ))
-                  ) : (
-                    <MenuItem disabled>
-                      {loading
-                        ? "Loading projects..."
-                        : "No projects available"}
-                    </MenuItem>
-                  )}
-                </Select>
-              </FormControl>
-
-              {/* Description */}
+              {/* Message */}
               <TextField
                 fullWidth
-                label="Description"
-                value={editForm.description}
+                label="Message"
+                value={editForm.message}
                 onChange={(e) =>
-                  setEditForm({ ...editForm, description: e.target.value })
+                  setEditForm({ ...editForm, message: e.target.value })
                 }
                 variant="outlined"
                 size="small"
                 multiline
-                rows={3}
+                rows={4}
                 required
               />
             </Stack>
@@ -1086,11 +1028,11 @@ const Issues = () => {
                 setOpenEditDialog(false);
                 setSelectedIssue(null);
                 setEditForm({
-                  name: "",
+                  full_name: "",
                   email: "",
-                  description: "",
+                  phone: "",
+                  message: "",
                   category: "",
-                  project_id: "",
                   status: "",
                 });
               }}

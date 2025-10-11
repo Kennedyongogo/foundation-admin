@@ -9,10 +9,11 @@ import ProjectView from "./Projects/ProjectView";
 import ProjectEdit from "./Projects/ProjectEdit";
 import ProjectCreate from "./Projects/ProjectCreate";
 import Issues from "./Issues/Issues";
-import ConstructionMap from "../ConstructionMap";
+import CharityMap from "../CharityMap";
 import Documents from "./Documents/Documents";
 import UsersTable from "./Users/UsersTable";
 import Analytics from "./Analytics/Analytics";
+import Audit from "./Audit/Audit";
 
 function PageRoutes() {
   const [user, setUser] = useState(null);
@@ -61,8 +62,9 @@ function PageRoutes() {
             <Route path="projects/:id" element={<ProjectView />} />
             <Route path="projects/:id/edit" element={<ProjectEdit />} />
             <Route path="issues" element={<Issues />} />
-            <Route path="map" element={<ConstructionMap />} />
+            <Route path="map" element={<CharityMap />} />
             <Route path="documents" element={<Documents />} />
+            <Route path="audit" element={<Audit />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="users" element={<UsersTable />} />
             <Route path="settings" element={<Settings user={user} />} />

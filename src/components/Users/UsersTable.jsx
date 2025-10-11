@@ -89,24 +89,25 @@ const UsersTable = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalUsers, setTotalUsers] = useState(0);
   const [userForm, setUserForm] = useState({
-    name: "",
+    full_name: "",
     email: "",
     phone: "",
-    role: "engineer",
+    position: "",
+    role: "admin",
     password: "",
     profile_picture: null,
     profile_picture_preview: "",
+    profile_picture_path: "", // For storing the relative path
     isActive: true,
-    // Event organizer specific fields
-    organization_name: "",
-    contact_person: "",
-    phone_number: "",
-    address: "",
-    kra_pin: "",
-    bank_name: "",
-    bank_account_number: "",
-    website: "",
   });
+
+  // Role tabs configuration
+  const roleTabs = [
+    { label: "All Users", value: null },
+    { label: "Super Admins", value: "super-admin" },
+    { label: "Admins", value: "admin" },
+    { label: "Regular Users", value: "regular user" },
+  ];
 
   useEffect(() => {
     fetchUsers();
@@ -128,10 +129,13 @@ const UsersTable = () => {
         limit: rowsPerPage.toString(),
       });
 
-      // Choose endpoint based on active tab
-      const endpoint = activeTab === 0 ? "/api/admins" : "/api/organizers";
+      // Add role filter if a specific role is selected
+      const selectedRole = roleTabs[activeTab]?.value;
+      if (selectedRole) {
+        queryParams.append("role", selectedRole);
+      }
 
-      const response = await fetch(`${endpoint}?${queryParams}`, {
+      const response = await fetch(`/api/admin-users?${queryParams}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -143,7 +147,7 @@ const UsersTable = () => {
 
       if (data.success) {
         setUsers(data.data || []);
-        setTotalUsers(data.count || 0);
+        setTotalUsers(data.pagination?.total || 0);
       } else {
         setError("Failed to fetch users: " + (data.message || "Unknown error"));
       }
@@ -156,46 +160,26 @@ const UsersTable = () => {
 
   const getRoleColor = (role) => {
     switch (role) {
-      case "super_admin":
+      case "super-admin":
         return "error";
-      case "project_manager":
+      case "admin":
         return "primary";
-      case "engineer":
+      case "regular user":
         return "secondary";
       default:
         return "default";
     }
   };
 
-  const getTypeColor = (type) => {
-    switch (type) {
-      case "client":
-        return "primary";
-      case "worker":
-        return "secondary";
-      case "guest":
-        return "default";
-      default:
-        return "default";
-    }
+  const formatRole = (role) => {
+    if (!role) return "N/A";
+    return role.replace("-", " ").replace(/_/g, " ").split(" ").map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(" ");
   };
 
   const getStatusColor = (isActive) => {
     return isActive ? "success" : "error";
-  };
-
-  const getStatusColorForOrganizer = (status) => {
-    switch (status) {
-      case "approved":
-      case "active":
-        return "success";
-      case "pending":
-        return "warning";
-      case "suspended":
-        return "error";
-      default:
-        return "default";
-    }
   };
 
   const getInitials = (name) => {
@@ -240,68 +224,33 @@ const UsersTable = () => {
   const handleEditUser = (user) => {
     setSelectedUser(user);
 
-    // Convert file path to URL for display (same as blueprints)
+    // Convert file path to URL for display
     let profilePictureUrl = "";
-    if (user.profile_picture || user.profile_image || user.logo) {
-      profilePictureUrl = buildImageUrl(
-        user.profile_picture || user.profile_image || user.logo
-      );
+    let profilePicturePath = "";
+    if (user.profile_image) {
+      profilePictureUrl = buildImageUrl(user.profile_image);
+      profilePicturePath = user.profile_image; // Store the relative path
     }
 
-    // Check if this is admin or organizer based on activeTab
-    if (activeTab === 0) {
-      // Admin user form
-      setUserForm({
-        name: user.full_name || user.name || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        role: user.role || "engineer",
-        password: "",
-        profile_picture: null,
-        profile_picture_preview: profilePictureUrl,
-        isActive: user.isActive !== undefined ? user.isActive : true,
-        organization_name: "",
-        contact_person: "",
-        phone_number: "",
-        address: "",
-        kra_pin: "",
-        bank_name: "",
-        bank_account_number: "",
-        website: "",
-      });
-    } else {
-      // Event organizer form
-      setUserForm({
-        name: "",
-        email: user.email || "",
-        phone: "",
-        role: "engineer",
-        password: "",
-        profile_picture: null,
-        profile_picture_preview: profilePictureUrl,
-        isActive: user.isActive !== undefined ? user.isActive : true,
-        organization_name: user.organization_name || "",
-        contact_person: user.contact_person || "",
-        phone_number: user.phone_number || "",
-        address: user.address || "",
-        kra_pin: user.kra_pin || "",
-        bank_name: user.bank_name || "",
-        bank_account_number: user.bank_account_number || "",
-        website: user.website || "",
-      });
-    }
+    setUserForm({
+      full_name: user.full_name || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      position: user.position || "",
+      role: user.role || "admin",
+      password: "",
+      profile_picture: null,
+      profile_picture_preview: profilePictureUrl,
+      profile_picture_path: profilePicturePath, // Store the existing path
+      isActive: user.isActive !== undefined ? user.isActive : true,
+    });
     setOpenEditDialog(true);
   };
 
   const handleDeleteUser = async (user) => {
-    const userName =
-      activeTab === 0
-        ? user.full_name || user.name
-        : user.organization_name || user.name;
-
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: `Do you want to delete "${userName}"?`,
+      text: `Do you want to delete "${user.full_name}"?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -320,10 +269,7 @@ const UsersTable = () => {
           return;
         }
 
-        // Choose endpoint based on active tab
-        const endpoint = activeTab === 0 ? "/api/admins" : "/api/users";
-
-        const response = await fetch(`${endpoint}/${user.id}`, {
+        const response = await fetch(`/api/admin-users/${user.id}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -357,122 +303,6 @@ const UsersTable = () => {
     }
   };
 
-  const handleApproveOrganizer = async (organizer) => {
-    const result = await Swal.fire({
-      title: "Approve Organizer?",
-      text: `Approve "${organizer.organization_name}" to start creating events?`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#27ae60",
-      cancelButtonColor: "#95a5a6",
-      confirmButtonText: "Yes, approve!",
-      cancelButtonText: "Cancel",
-    });
-
-    if (result.isConfirmed) {
-      try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          setError("No authentication token found. Please login again.");
-          return;
-        }
-
-        const response = await fetch(
-          `/api/organizers/${organizer.id}/approve`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Failed to approve organizer");
-        }
-
-        fetchUsers();
-
-        Swal.fire({
-          icon: "success",
-          title: "Approved!",
-          text: "Organizer has been approved successfully.",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      } catch (err) {
-        console.error("Error approving organizer:", err);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: err.message || "Failed to approve organizer. Please try again.",
-        });
-      }
-    }
-  };
-
-  const handleSuspendOrganizer = async (organizer) => {
-    const result = await Swal.fire({
-      title: "Suspend Organizer?",
-      text: `Suspend "${organizer.organization_name}"? They won't be able to create events.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#e74c3c",
-      cancelButtonColor: "#95a5a6",
-      confirmButtonText: "Yes, suspend!",
-      cancelButtonText: "Cancel",
-    });
-
-    if (result.isConfirmed) {
-      try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          setError("No authentication token found. Please login again.");
-          return;
-        }
-
-        const response = await fetch(
-          `/api/organizers/${organizer.id}/suspend`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Failed to suspend organizer");
-        }
-
-        fetchUsers();
-
-        Swal.fire({
-          icon: "success",
-          title: "Suspended!",
-          text: "Organizer has been suspended successfully.",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-      } catch (err) {
-        console.error("Error suspending organizer:", err);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: err.message || "Failed to suspend organizer. Please try again.",
-        });
-      }
-    }
-  };
-
   const handleUpdateUser = async () => {
     try {
       setIsUpdating(true);
@@ -484,39 +314,22 @@ const UsersTable = () => {
       }
 
       const formData = new FormData();
+      formData.append("full_name", userForm.full_name);
+      formData.append("email", userForm.email);
+      formData.append("phone", userForm.phone);
+      formData.append("position", userForm.position);
+      formData.append("role", userForm.role);
+      formData.append("isActive", userForm.isActive);
 
-      // Add fields based on active tab
-      if (activeTab === 0) {
-        // Admin user fields
-        formData.append("full_name", userForm.name);
-        formData.append("email", userForm.email);
-        formData.append("phone", userForm.phone);
-        formData.append("role", userForm.role);
-        formData.append("isActive", userForm.isActive);
-      } else {
-        // Event organizer fields
-        formData.append("organization_name", userForm.organization_name);
-        formData.append("contact_person", userForm.contact_person);
-        formData.append("email", userForm.email);
-        formData.append("phone_number", userForm.phone_number);
-        formData.append("address", userForm.address);
-        formData.append("kra_pin", userForm.kra_pin);
-        formData.append("bank_name", userForm.bank_name);
-        formData.append("bank_account_number", userForm.bank_account_number);
-        formData.append("website", userForm.website);
-      }
-
+      // If a new file is selected, send the file
+      // If no new file but there's an existing path, send the path
       if (userForm.profile_picture) {
-        formData.append(
-          activeTab === 0 ? "profile_image" : "logo",
-          userForm.profile_picture
-        );
+        formData.append("profile_image", userForm.profile_picture);
+      } else if (userForm.profile_picture_path) {
+        formData.append("profile_image_path", userForm.profile_picture_path);
       }
 
-      // Choose endpoint based on active tab
-      const endpoint = activeTab === 0 ? "/api/admins" : "/api/organizers";
-
-      const response = await fetch(`${endpoint}/${selectedUser.id}`, {
+      const response = await fetch(`/api/admin-users/${selectedUser.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -531,22 +344,16 @@ const UsersTable = () => {
       }
 
       setUserForm({
-        name: "",
+        full_name: "",
         email: "",
         phone: "",
-        role: "engineer",
+        position: "",
+        role: "admin",
         password: "",
         profile_picture: null,
         profile_picture_preview: "",
+        profile_picture_path: "",
         isActive: true,
-        organization_name: "",
-        contact_person: "",
-        phone_number: "",
-        address: "",
-        kra_pin: "",
-        bank_name: "",
-        bank_account_number: "",
-        website: "",
       });
       setOpenEditDialog(false);
       setSelectedUser(null);
@@ -583,41 +390,19 @@ const UsersTable = () => {
       }
 
       const formData = new FormData();
-
-      // Add fields based on active tab
-      if (activeTab === 0) {
-        // Admin user fields
-        formData.append("full_name", userForm.name);
+      formData.append("full_name", userForm.full_name);
         formData.append("email", userForm.email);
         formData.append("phone", userForm.phone);
+      formData.append("position", userForm.position);
         formData.append("role", userForm.role);
         formData.append("password", userForm.password);
         formData.append("isActive", userForm.isActive);
-      } else {
-        // Event organizer fields
-        formData.append("organization_name", userForm.organization_name);
-        formData.append("contact_person", userForm.contact_person);
-        formData.append("email", userForm.email);
-        formData.append("phone_number", userForm.phone_number);
-        formData.append("password", userForm.password);
-        formData.append("address", userForm.address);
-        formData.append("kra_pin", userForm.kra_pin);
-        formData.append("bank_name", userForm.bank_name);
-        formData.append("bank_account_number", userForm.bank_account_number);
-        formData.append("website", userForm.website);
-      }
 
       if (userForm.profile_picture) {
-        formData.append(
-          activeTab === 0 ? "profile_image" : "logo",
-          userForm.profile_picture
-        );
+        formData.append("profile_image", userForm.profile_picture);
       }
 
-      // Choose endpoint based on active tab
-      const endpoint = activeTab === 0 ? "/api/admins" : "/api/organizers";
-
-      const response = await fetch(endpoint, {
+      const response = await fetch("/api/admin-users", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -632,22 +417,15 @@ const UsersTable = () => {
       }
 
       setUserForm({
-        name: "",
+        full_name: "",
         email: "",
         phone: "",
-        role: "engineer",
+        position: "",
+        role: "admin",
         password: "",
         profile_picture: null,
         profile_picture_preview: "",
         isActive: true,
-        organization_name: "",
-        contact_person: "",
-        phone_number: "",
-        address: "",
-        kra_pin: "",
-        bank_name: "",
-        bank_account_number: "",
-        website: "",
       });
       setOpenCreateDialog(false);
       setSelectedUser(null);
@@ -745,17 +523,12 @@ const UsersTable = () => {
                   fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
                 }}
               >
-                {activeTab === 0
-                  ? "Admin Users Management"
-                  : "Event Organizers Management"}
+                Admin Users Management
               </Typography>
               <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                {activeTab === 0
-                  ? "Manage admin users and permissions"
-                  : "Manage event organizers and their accounts"}
+                Manage admin users and their roles
               </Typography>
             </Box>
-            {activeTab === 0 && (
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
@@ -763,13 +536,15 @@ const UsersTable = () => {
                   setSelectedUser(null);
                   setShowPassword(false);
                   setUserForm({
-                    name: "",
+                    full_name: "",
                     email: "",
                     phone: "",
-                    role: "engineer",
+                    position: "",
+                    role: "admin",
                     password: "",
                     profile_picture: null,
                     profile_picture_preview: "",
+                    profile_picture_path: "",
                     isActive: true,
                   });
                   setOpenCreateDialog(true);
@@ -794,7 +569,6 @@ const UsersTable = () => {
               >
                 Create New Admin
               </Button>
-            )}
           </Box>
         </Box>
 
@@ -826,8 +600,9 @@ const UsersTable = () => {
                 },
               }}
             >
-              <Tab label="Admin Users" />
-              <Tab label="Event Organizers" />
+              {roleTabs.map((tab, index) => (
+                <Tab key={index} label={tab.label} />
+              ))}
             </Tabs>
           </Box>
 
@@ -872,13 +647,10 @@ const UsersTable = () => {
                   }}
                 >
                   <TableCell>No</TableCell>
-                  <TableCell>
-                    {activeTab === 0 ? "Name" : "Organization"}
-                  </TableCell>
-                  <TableCell>
-                    {activeTab === 0 ? "Phone" : "Contact Person"}
-                  </TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Position</TableCell>
                   <TableCell>Email</TableCell>
+                  <TableCell>Role</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
@@ -886,13 +658,13 @@ const UsersTable = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                       <CircularProgress sx={{ color: "#667eea" }} />
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                       <Typography color="error" variant="h6">
                         {error}
                       </Typography>
@@ -900,11 +672,9 @@ const UsersTable = () => {
                   </TableRow>
                 ) : users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                       <Typography variant="h6" color="text.secondary">
-                        {activeTab === 0
-                          ? "No admin users found."
-                          : "No event organizers found."}
+                        No users found.
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -937,16 +707,12 @@ const UsersTable = () => {
                           fontWeight="600"
                           sx={{ color: "#2c3e50" }}
                         >
-                          {activeTab === 0
-                            ? user.full_name || user.name
-                            : user.organization_name || "N/A"}
+                          {user.full_name || "N/A"}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" sx={{ color: "#7f8c8d" }}>
-                          {activeTab === 0
-                            ? user.phone || "N/A"
-                            : user.contact_person || "N/A"}
+                          {user.position || "N/A"}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -956,18 +722,21 @@ const UsersTable = () => {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={
-                            activeTab === 0
-                              ? user.isActive
-                                ? "Active"
-                                : "Inactive"
-                              : user.status || "pending"
-                          }
-                          color={
-                            activeTab === 0
-                              ? getStatusColor(user.isActive)
-                              : getStatusColorForOrganizer(user.status)
-                          }
+                          label={formatRole(user.role)}
+                          color={getRoleColor(user.role)}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            textTransform: "capitalize",
+                            fontWeight: 600,
+                            borderRadius: 2,
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={user.isActive ? "Active" : "Inactive"}
+                          color={getStatusColor(user.isActive)}
                           size="small"
                           variant="outlined"
                           sx={{
@@ -997,8 +766,6 @@ const UsersTable = () => {
                               <ViewIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          {activeTab === 0 ? (
-                            <>
                               <Tooltip title="Edit User" arrow>
                                 <IconButton
                                   size="small"
@@ -1007,8 +774,7 @@ const UsersTable = () => {
                                     color: "#3498db",
                                     backgroundColor: "rgba(52, 152, 219, 0.1)",
                                     "&:hover": {
-                                      backgroundColor:
-                                        "rgba(52, 152, 219, 0.2)",
+                                  backgroundColor: "rgba(52, 152, 219, 0.2)",
                                       transform: "scale(1.1)",
                                     },
                                     transition: "all 0.2s ease",
@@ -1036,56 +802,6 @@ const UsersTable = () => {
                                   <DeleteIcon fontSize="small" />
                                 </IconButton>
                               </Tooltip>
-                            </>
-                          ) : (
-                            <>
-                              {(user.status === "pending" ||
-                                user.status === "suspended") && (
-                                <Tooltip title="Approve Organizer" arrow>
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleApproveOrganizer(user)}
-                                    sx={{
-                                      color: "#27ae60",
-                                      backgroundColor: "rgba(39, 174, 96, 0.1)",
-                                      "&:hover": {
-                                        backgroundColor:
-                                          "rgba(39, 174, 96, 0.2)",
-                                        transform: "scale(1.1)",
-                                      },
-                                      transition: "all 0.2s ease",
-                                      borderRadius: 2,
-                                    }}
-                                  >
-                                    <ApproveIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
-                              {(user.status === "approved" ||
-                                user.status === "active") && (
-                                <Tooltip title="Suspend Organizer" arrow>
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleSuspendOrganizer(user)}
-                                    sx={{
-                                      color: "#e67e22",
-                                      backgroundColor:
-                                        "rgba(230, 126, 34, 0.1)",
-                                      "&:hover": {
-                                        backgroundColor:
-                                          "rgba(230, 126, 34, 0.2)",
-                                        transform: "scale(1.1)",
-                                      },
-                                      transition: "all 0.2s ease",
-                                      borderRadius: 2,
-                                    }}
-                                  >
-                                    <SuspendIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
-                            </>
-                          )}
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -1128,11 +844,14 @@ const UsersTable = () => {
             setSelectedUser(null);
             setShowPassword(false);
             setUserForm({
-              name: "",
+              full_name: "",
               email: "",
               phone: "",
-              role: "campaign_manager",
+              position: "",
+              role: "admin",
               password: "",
+              profile_picture: null,
+              profile_picture_preview: "",
               isActive: true,
             });
           }}
@@ -1246,9 +965,7 @@ const UsersTable = () => {
                         WebkitTextFillColor: "transparent",
                       }}
                     >
-                      {activeTab === 0
-                        ? selectedUser?.full_name || selectedUser?.name
-                        : selectedUser?.organization_name || "N/A"}
+                      {selectedUser?.full_name || "N/A"}
                     </Typography>
                     <Typography
                       variant="body1"
@@ -1265,17 +982,13 @@ const UsersTable = () => {
                 </Box>
 
                 {/* Profile Picture Display */}
-                {(selectedUser?.profile_picture ||
-                  selectedUser?.profile_image ||
-                  selectedUser?.logo) && (
+                {selectedUser?.profile_image && (
                   <Box sx={{ textAlign: "center", mb: 3 }}>
                     <Typography
                       variant="h6"
                       sx={{ mb: 2, color: "#2c3e50", fontWeight: 600 }}
                     >
-                      {activeTab === 0
-                        ? "Profile Picture"
-                        : "Organization Logo"}
+                      Profile Picture
                     </Typography>
                     <Box
                       sx={{
@@ -1292,25 +1005,15 @@ const UsersTable = () => {
                       }}
                       onClick={() => {
                         const fullImageUrl = buildImageUrl(
-                          selectedUser.profile_picture ||
-                            selectedUser.profile_image ||
-                            selectedUser.logo
+                          selectedUser.profile_image
                         );
                         window.open(fullImageUrl, "_blank");
                       }}
                     >
                       <Box
                         component="img"
-                        src={buildImageUrl(
-                          selectedUser.profile_picture ||
-                            selectedUser.profile_image ||
-                            selectedUser.logo
-                        )}
-                        alt={
-                          activeTab === 0
-                            ? "Profile Picture"
-                            : "Organization Logo"
-                        }
+                        src={buildImageUrl(selectedUser.profile_image)}
+                        alt="Profile Picture"
                         sx={{
                           width: 150,
                           height: 150,
@@ -1354,129 +1057,119 @@ const UsersTable = () => {
                             textAlign: "center",
                           }}
                         >
-                          {activeTab === 0
-                            ? "Profile Picture"
-                            : "Organization Logo"}
+                          Profile Picture
                         </Typography>
                       </Box>
                     </Box>
                   </Box>
                 )}
 
-                <Grid container spacing={2} sx={{ mb: 3 }}>
-                  <Grid item xs={12} sm={6}>
-                    <Card
-                      sx={{
-                        background:
-                          "linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)",
-                        color: "white",
-                        borderRadius: 3,
-                        p: 2,
-                        height: "100%",
-                        boxShadow: "0 8px 25px rgba(255, 107, 107, 0.3)",
-                      }}
-                    >
-                      <Box display="flex" alignItems="center" gap={2}>
-                        <PersonIcon sx={{ fontSize: 24 }} />
-                        <Box>
-                          <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                            {activeTab === 0 ? "ROLE" : "CONTACT PERSON"}
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                            {activeTab === 0
-                              ? selectedUser?.role?.replace("_", " ") || "N/A"
-                              : selectedUser?.contact_person || "N/A"}
-                          </Typography>
-                        </Box>
+                <Stack spacing={2} sx={{ mb: 3 }}>
+                  <Card
+                    sx={{
+                      background: "white",
+                      borderRadius: 2,
+                      p: 2,
+                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Box display="flex" alignItems="center" gap={2}>
+                      <PersonIcon sx={{ fontSize: 24, color: "#667eea" }} />
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
+                          ROLE
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50" }}>
+                          {formatRole(selectedUser?.role)}
+                        </Typography>
                       </Box>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Card
-                      sx={{
-                        background:
-                          "linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)",
-                        color: "white",
-                        borderRadius: 3,
-                        p: 2,
-                        height: "100%",
-                        boxShadow: "0 8px 25px rgba(78, 205, 196, 0.3)",
-                      }}
-                    >
-                      <Box display="flex" alignItems="center" gap={2}>
-                        <PhoneIcon sx={{ fontSize: 24 }} />
-                        <Box>
-                          <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                            PHONE
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                            {activeTab === 0
-                              ? selectedUser?.phone || "N/A"
-                              : selectedUser?.phone_number || "N/A"}
-                          </Typography>
-                        </Box>
+                    </Box>
+                  </Card>
+                  <Card
+                    sx={{
+                      background: "white",
+                      borderRadius: 2,
+                      p: 2,
+                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Box display="flex" alignItems="center" gap={2}>
+                      <PhoneIcon sx={{ fontSize: 24, color: "#667eea" }} />
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
+                          PHONE
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50" }}>
+                          {selectedUser?.phone || "N/A"}
+                        </Typography>
                       </Box>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Card
-                      sx={{
-                        background:
-                          "linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)",
-                        color: "white",
-                        borderRadius: 3,
-                        p: 2,
-                        height: "100%",
-                        boxShadow: "0 8px 25px rgba(155, 89, 182, 0.3)",
-                      }}
-                    >
-                      <Box display="flex" alignItems="center" gap={2}>
-                        <CheckCircle sx={{ fontSize: 24 }} />
-                        <Box>
-                          <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                            STATUS
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                            {activeTab === 0
-                              ? selectedUser?.isActive
-                                ? "Active"
-                                : "Inactive"
-                              : selectedUser?.status || "pending"}
-                          </Typography>
-                        </Box>
+                    </Box>
+                  </Card>
+                  <Card
+                    sx={{
+                      background: "white",
+                      borderRadius: 2,
+                      p: 2,
+                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Box display="flex" alignItems="center" gap={2}>
+                      <CheckCircle sx={{ fontSize: 24, color: "#667eea" }} />
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
+                          STATUS
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50" }}>
+                          {selectedUser?.isActive ? "Active" : "Inactive"}
+                        </Typography>
                       </Box>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Card
-                      sx={{
-                        background:
-                          "linear-gradient(135deg, #f39c12 0%, #e67e22 100%)",
-                        color: "white",
-                        borderRadius: 3,
-                        p: 2,
-                        height: "100%",
-                        boxShadow: "0 8px 25px rgba(243, 156, 18, 0.3)",
-                      }}
-                    >
-                      <Box display="flex" alignItems="center" gap={2}>
-                        <Schedule sx={{ fontSize: 24 }} />
-                        <Box>
-                          <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                            LAST LOGIN
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                            {selectedUser?.lastLogin
-                              ? new Date(
-                                  selectedUser.lastLogin
-                                ).toLocaleDateString()
-                              : "Never"}
-                          </Typography>
-                        </Box>
+                    </Box>
+                  </Card>
+                  <Card
+                    sx={{
+                      background: "white",
+                      borderRadius: 2,
+                      p: 2,
+                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Box display="flex" alignItems="center" gap={2}>
+                      <Schedule sx={{ fontSize: 24, color: "#667eea" }} />
+                      <Box>
+                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
+                          LAST LOGIN
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50" }}>
+                          {selectedUser?.lastLogin
+                            ? new Date(
+                                selectedUser.lastLogin
+                              ).toLocaleDateString()
+                            : "Never"}
+                        </Typography>
                       </Box>
-                    </Card>
-                  </Grid>
-                </Grid>
+                    </Box>
+                  </Card>
+                </Stack>
 
                 {/* Additional Info Section */}
                 <Box sx={{ mb: 3 }}>
@@ -1486,146 +1179,79 @@ const UsersTable = () => {
                   >
                     Additional Information
                   </Typography>
-                  <Grid container spacing={2}>
-                    {activeTab === 0 ? (
-                      <>
-                        {/* Admin User Additional Info */}
-                        <Grid item xs={12} sm={6}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Department:</strong>{" "}
-                            {selectedUser?.department || "N/A"}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Created:</strong>{" "}
-                            {selectedUser?.createdAt
-                              ? new Date(
-                                  selectedUser.createdAt
-                                ).toLocaleDateString()
-                              : "N/A"}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Last Updated:</strong>{" "}
-                            {selectedUser?.updatedAt
-                              ? new Date(
-                                  selectedUser.updatedAt
-                                ).toLocaleDateString()
-                              : "N/A"}
-                          </Typography>
-                        </Grid>
-                      </>
-                    ) : (
-                      <>
-                        {/* Event Organizer Additional Info */}
-                        <Grid item xs={12} sm={6}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Address:</strong>{" "}
-                            {selectedUser?.address || "N/A"}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>KRA PIN:</strong>{" "}
-                            {selectedUser?.kra_pin || "N/A"}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Bank Name:</strong>{" "}
-                            {selectedUser?.bank_name || "N/A"}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Bank Account:</strong>{" "}
-                            {selectedUser?.bank_account_number || "N/A"}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Website:</strong>{" "}
-                            {selectedUser?.website ? (
-                              <a
-                                href={selectedUser.website}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{
-                                  color: "#667eea",
-                                  textDecoration: "none",
-                                }}
-                              >
-                                {selectedUser.website}
-                              </a>
-                            ) : (
-                              "N/A"
-                            )}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Pesapal Merchant Ref:</strong>{" "}
-                            {selectedUser?.pesapal_merchant_ref || "N/A"}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Created:</strong>{" "}
-                            {selectedUser?.createdAt
-                              ? new Date(
-                                  selectedUser.createdAt
-                                ).toLocaleDateString()
-                              : "N/A"}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Last Updated:</strong>{" "}
-                            {selectedUser?.updatedAt
-                              ? new Date(
-                                  selectedUser.updatedAt
-                                ).toLocaleDateString()
-                              : "N/A"}
-                          </Typography>
-                        </Grid>
-                      </>
-                    )}
-                  </Grid>
+                  <Stack spacing={2}>
+                    <Card
+                      sx={{
+                        background: "white",
+                        borderRadius: 2,
+                        p: 2,
+                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                          transform: "translateY(-2px)",
+                        },
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#7f8c8d", mb: 0.5 }}
+                      >
+                        <strong>Position:</strong>{" "}
+                        {selectedUser?.position || "N/A"}
+                      </Typography>
+                    </Card>
+                    <Card
+                      sx={{
+                        background: "white",
+                        borderRadius: 2,
+                        p: 2,
+                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                          transform: "translateY(-2px)",
+                        },
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#7f8c8d", mb: 0.5 }}
+                      >
+                        <strong>Created:</strong>{" "}
+                        {selectedUser?.createdAt
+                          ? new Date(
+                              selectedUser.createdAt
+                            ).toLocaleDateString()
+                          : "N/A"}
+                      </Typography>
+                    </Card>
+                    <Card
+                      sx={{
+                        background: "white",
+                        borderRadius: 2,
+                        p: 2,
+                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                          transform: "translateY(-2px)",
+                        },
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#7f8c8d", mb: 0.5 }}
+                      >
+                        <strong>Last Updated:</strong>{" "}
+                        {selectedUser?.updatedAt
+                          ? new Date(
+                              selectedUser.updatedAt
+                            ).toLocaleDateString()
+                          : "N/A"}
+                      </Typography>
+                    </Card>
+                  </Stack>
                 </Box>
               </Box>
             ) : (
@@ -1636,14 +1262,12 @@ const UsersTable = () => {
                 sx={{ maxHeight: "45vh", overflowY: "auto" }}
               >
                 <Stack spacing={1.5} sx={{ mt: 1 }}>
-                  {activeTab === 0 ? (
-                    <>
                       <TextField
                         fullWidth
                         label="Full Name"
-                        value={userForm.name}
+                    value={userForm.full_name}
                         onChange={(e) =>
-                          setUserForm({ ...userForm, name: e.target.value })
+                      setUserForm({ ...userForm, full_name: e.target.value })
                         }
                         required
                         variant="outlined"
@@ -1671,120 +1295,16 @@ const UsersTable = () => {
                         variant="outlined"
                         size="small"
                       />
-                    </>
-                  ) : (
-                    <>
                       <TextField
                         fullWidth
-                        label="Organization Name"
-                        value={userForm.organization_name}
+                    label="Position"
+                    value={userForm.position}
                         onChange={(e) =>
-                          setUserForm({
-                            ...userForm,
-                            organization_name: e.target.value,
-                          })
-                        }
-                        required
-                        variant="outlined"
-                        size="small"
-                      />
-                      <TextField
-                        fullWidth
-                        label="Contact Person"
-                        value={userForm.contact_person}
-                        onChange={(e) =>
-                          setUserForm({
-                            ...userForm,
-                            contact_person: e.target.value,
-                          })
-                        }
-                        required
-                        variant="outlined"
-                        size="small"
-                      />
-                      <TextField
-                        fullWidth
-                        label="Email"
-                        type="email"
-                        value={userForm.email}
-                        onChange={(e) =>
-                          setUserForm({ ...userForm, email: e.target.value })
-                        }
-                        required
-                        variant="outlined"
-                        size="small"
-                      />
-                      <TextField
-                        fullWidth
-                        label="Phone Number"
-                        value={userForm.phone_number}
-                        onChange={(e) =>
-                          setUserForm({
-                            ...userForm,
-                            phone_number: e.target.value,
-                          })
+                      setUserForm({ ...userForm, position: e.target.value })
                         }
                         variant="outlined"
                         size="small"
                       />
-                      <TextField
-                        fullWidth
-                        label="Address"
-                        value={userForm.address}
-                        onChange={(e) =>
-                          setUserForm({ ...userForm, address: e.target.value })
-                        }
-                        variant="outlined"
-                        size="small"
-                      />
-                      <TextField
-                        fullWidth
-                        label="KRA PIN"
-                        value={userForm.kra_pin}
-                        onChange={(e) =>
-                          setUserForm({ ...userForm, kra_pin: e.target.value })
-                        }
-                        variant="outlined"
-                        size="small"
-                      />
-                      <TextField
-                        fullWidth
-                        label="Bank Name"
-                        value={userForm.bank_name}
-                        onChange={(e) =>
-                          setUserForm({
-                            ...userForm,
-                            bank_name: e.target.value,
-                          })
-                        }
-                        variant="outlined"
-                        size="small"
-                      />
-                      <TextField
-                        fullWidth
-                        label="Bank Account Number"
-                        value={userForm.bank_account_number}
-                        onChange={(e) =>
-                          setUserForm({
-                            ...userForm,
-                            bank_account_number: e.target.value,
-                          })
-                        }
-                        variant="outlined"
-                        size="small"
-                      />
-                      <TextField
-                        fullWidth
-                        label="Website"
-                        value={userForm.website}
-                        onChange={(e) =>
-                          setUserForm({ ...userForm, website: e.target.value })
-                        }
-                        variant="outlined"
-                        size="small"
-                      />
-                    </>
-                  )}
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
                       Profile Picture
@@ -1836,7 +1356,6 @@ const UsersTable = () => {
                       </Box>
                     )}
                   </Box>
-                  {activeTab === 0 && (
                     <FormControl fullWidth variant="outlined" size="small">
                       <InputLabel>Role</InputLabel>
                       <Select
@@ -1846,14 +1365,11 @@ const UsersTable = () => {
                         }
                         label="Role"
                       >
-                        <MenuItem value="super_admin">Super Admin</MenuItem>
-                        <MenuItem value="project_manager">
-                          Project Manager
-                        </MenuItem>
-                        <MenuItem value="engineer">Engineer</MenuItem>
+                      <MenuItem value="super-admin">Super Admin</MenuItem>
+                      <MenuItem value="admin">Admin</MenuItem>
+                      <MenuItem value="regular user">Regular User</MenuItem>
                       </Select>
                     </FormControl>
-                  )}
                   {openCreateDialog && (
                     <TextField
                       fullWidth
@@ -1915,11 +1431,14 @@ const UsersTable = () => {
                 setSelectedUser(null);
                 setShowPassword(false);
                 setUserForm({
-                  name: "",
+                  full_name: "",
                   email: "",
                   phone: "",
-                  role: "campaign_manager",
+                  position: "",
+                  role: "admin",
                   password: "",
+                  profile_picture: null,
+                  profile_picture_preview: "",
                   isActive: true,
                 });
               }}
@@ -1972,14 +1491,7 @@ const UsersTable = () => {
                   transition: "all 0.3s ease",
                 }}
                 disabled={
-                  activeTab === 0
-                    ? !userForm.name ||
-                      !userForm.email ||
-                      (openCreateDialog && !userForm.password) ||
-                      isCreating ||
-                      isUpdating
-                    : !userForm.organization_name ||
-                      !userForm.contact_person ||
+                  !userForm.full_name ||
                       !userForm.email ||
                       (openCreateDialog && !userForm.password) ||
                       isCreating ||

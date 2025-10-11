@@ -23,8 +23,8 @@ export default function EditUserDetails({
 }) {
   const [isError, setIsError] = useState("");
   const [body, updateBody] = useState({
-    Email: "",
-    Name: "",
+    email: "",
+    full_name: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const rfPhone = useRef();
@@ -33,16 +33,16 @@ export default function EditUserDetails({
   const editDetails = () => {
     if (isAuthenticated) {
       const d = {
-        Email: rfPhone.current.value,
-        Name: rfName.current.value,
+        email: rfPhone.current.value,
+        full_name: rfName.current.value,
       };
 
-      if (!d.Name.includes(" ")) {
+      if (!d.full_name.includes(" ")) {
         return setIsError(
           "Enter a valid name including your Surname and Firstname"
         );
       }
-      if (d.Name.length < 3) {
+      if (d.full_name.length < 3) {
         return setIsError("Name too short");
       }
 
@@ -50,7 +50,7 @@ export default function EditUserDetails({
       updateBody(d);
       setIsError("");
 
-      fetch(`/api/users/${currentUser.ID}`, {
+      fetch(`/api/admin-users/${currentUser.id}`, {
         method: "PUT",
         credentials: "include",
         headers: {
@@ -140,7 +140,7 @@ export default function EditUserDetails({
             Edit Account Details
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.9, fontSize: "0.9rem" }}>
-            {currentUser.Name}
+            {currentUser.full_name}
           </Typography>
         </Box>
 
@@ -205,7 +205,7 @@ export default function EditUserDetails({
               inputRef={rfName}
               label="Change Name"
               variant="outlined"
-              defaultValue={currentUser.Name}
+              defaultValue={currentUser.full_name}
               fullWidth
               sx={{
                 "& .MuiOutlinedInput-root": {
@@ -245,7 +245,7 @@ export default function EditUserDetails({
               label="Change Email"
               variant="outlined"
               type="email"
-              defaultValue={currentUser.Email}
+              defaultValue={currentUser.email}
               fullWidth
               sx={{
                 "& .MuiOutlinedInput-root": {

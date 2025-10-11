@@ -93,12 +93,17 @@ const UsersTable = () => {
     email: "",
     phone: "",
     position: "",
+    description: "",
     role: "admin",
     password: "",
     profile_picture: null,
     profile_picture_preview: "",
     profile_picture_path: "", // For storing the relative path
     isActive: true,
+    whatsapp_link: "",
+    google_link: "",
+    twitter_link: "",
+    facebook_link: "",
   });
 
   // Role tabs configuration
@@ -237,12 +242,17 @@ const UsersTable = () => {
       email: user.email || "",
       phone: user.phone || "",
       position: user.position || "",
+      description: user.description || "",
       role: user.role || "admin",
       password: "",
       profile_picture: null,
       profile_picture_preview: profilePictureUrl,
       profile_picture_path: profilePicturePath, // Store the existing path
       isActive: user.isActive !== undefined ? user.isActive : true,
+      whatsapp_link: user.whatsapp_link || "",
+      google_link: user.google_link || "",
+      twitter_link: user.twitter_link || "",
+      facebook_link: user.facebook_link || "",
     });
     setOpenEditDialog(true);
   };
@@ -318,8 +328,13 @@ const UsersTable = () => {
       formData.append("email", userForm.email);
       formData.append("phone", userForm.phone);
       formData.append("position", userForm.position);
+      formData.append("description", userForm.description);
       formData.append("role", userForm.role);
       formData.append("isActive", userForm.isActive);
+      formData.append("whatsapp_link", userForm.whatsapp_link);
+      formData.append("google_link", userForm.google_link);
+      formData.append("twitter_link", userForm.twitter_link);
+      formData.append("facebook_link", userForm.facebook_link);
 
       // If a new file is selected, send the file
       // If no new file but there's an existing path, send the path
@@ -348,12 +363,17 @@ const UsersTable = () => {
         email: "",
         phone: "",
         position: "",
+        description: "",
         role: "admin",
         password: "",
         profile_picture: null,
         profile_picture_preview: "",
         profile_picture_path: "",
         isActive: true,
+        whatsapp_link: "",
+        google_link: "",
+        twitter_link: "",
+        facebook_link: "",
       });
       setOpenEditDialog(false);
       setSelectedUser(null);
@@ -391,12 +411,17 @@ const UsersTable = () => {
 
       const formData = new FormData();
       formData.append("full_name", userForm.full_name);
-        formData.append("email", userForm.email);
-        formData.append("phone", userForm.phone);
+      formData.append("email", userForm.email);
+      formData.append("phone", userForm.phone);
       formData.append("position", userForm.position);
-        formData.append("role", userForm.role);
-        formData.append("password", userForm.password);
-        formData.append("isActive", userForm.isActive);
+      formData.append("description", userForm.description);
+      formData.append("role", userForm.role);
+      formData.append("password", userForm.password);
+      formData.append("isActive", userForm.isActive);
+      formData.append("whatsapp_link", userForm.whatsapp_link);
+      formData.append("google_link", userForm.google_link);
+      formData.append("twitter_link", userForm.twitter_link);
+      formData.append("facebook_link", userForm.facebook_link);
 
       if (userForm.profile_picture) {
         formData.append("profile_image", userForm.profile_picture);
@@ -421,11 +446,17 @@ const UsersTable = () => {
         email: "",
         phone: "",
         position: "",
+        description: "",
         role: "admin",
         password: "",
         profile_picture: null,
         profile_picture_preview: "",
+        profile_picture_path: "",
         isActive: true,
+        whatsapp_link: "",
+        google_link: "",
+        twitter_link: "",
+        facebook_link: "",
       });
       setOpenCreateDialog(false);
       setSelectedUser(null);
@@ -540,12 +571,17 @@ const UsersTable = () => {
                     email: "",
                     phone: "",
                     position: "",
+                    description: "",
                     role: "admin",
                     password: "",
                     profile_picture: null,
                     profile_picture_preview: "",
                     profile_picture_path: "",
                     isActive: true,
+                    whatsapp_link: "",
+                    google_link: "",
+                    twitter_link: "",
+                    facebook_link: "",
                   });
                   setOpenCreateDialog(true);
                 }}
@@ -848,11 +884,17 @@ const UsersTable = () => {
               email: "",
               phone: "",
               position: "",
+              description: "",
               role: "admin",
               password: "",
               profile_picture: null,
               profile_picture_preview: "",
+              profile_picture_path: "",
               isActive: true,
+              whatsapp_link: "",
+              google_link: "",
+              twitter_link: "",
+              facebook_link: "",
             });
           }}
           maxWidth="sm"
@@ -1218,6 +1260,27 @@ const UsersTable = () => {
                         variant="body2"
                         sx={{ color: "#7f8c8d", mb: 0.5 }}
                       >
+                        <strong>Description:</strong>{" "}
+                        {selectedUser?.description || "N/A"}
+                      </Typography>
+                    </Card>
+                    <Card
+                      sx={{
+                        background: "white",
+                        borderRadius: 2,
+                        p: 2,
+                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                          transform: "translateY(-2px)",
+                        },
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#7f8c8d", mb: 0.5 }}
+                      >
                         <strong>Created:</strong>{" "}
                         {selectedUser?.createdAt
                           ? new Date(
@@ -1253,6 +1316,120 @@ const UsersTable = () => {
                     </Card>
                   </Stack>
                 </Box>
+
+                {/* Social Media Links Section */}
+                {(selectedUser?.whatsapp_link || selectedUser?.google_link || selectedUser?.twitter_link || selectedUser?.facebook_link) && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 600, mb: 2, color: "#2c3e50" }}
+                    >
+                      Social Media Links
+                    </Typography>
+                    <Stack spacing={2}>
+                      {selectedUser?.whatsapp_link && (
+                        <Card
+                          sx={{
+                            background: "white",
+                            borderRadius: 2,
+                            p: 2,
+                            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                              transform: "translateY(-2px)",
+                            },
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#7f8c8d", mb: 0.5 }}
+                          >
+                            <strong>WhatsApp:</strong>{" "}
+                            <a href={selectedUser.whatsapp_link} target="_blank" rel="noopener noreferrer" style={{ color: "#25D366" }}>
+                              {selectedUser.whatsapp_link}
+                            </a>
+                          </Typography>
+                        </Card>
+                      )}
+                      {selectedUser?.google_link && (
+                        <Card
+                          sx={{
+                            background: "white",
+                            borderRadius: 2,
+                            p: 2,
+                            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                              transform: "translateY(-2px)",
+                            },
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#7f8c8d", mb: 0.5 }}
+                          >
+                            <strong>Google:</strong>{" "}
+                            <a href={selectedUser.google_link} target="_blank" rel="noopener noreferrer" style={{ color: "#4285F4" }}>
+                              {selectedUser.google_link}
+                            </a>
+                          </Typography>
+                        </Card>
+                      )}
+                      {selectedUser?.twitter_link && (
+                        <Card
+                          sx={{
+                            background: "white",
+                            borderRadius: 2,
+                            p: 2,
+                            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                              transform: "translateY(-2px)",
+                            },
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#7f8c8d", mb: 0.5 }}
+                          >
+                            <strong>Twitter:</strong>{" "}
+                            <a href={selectedUser.twitter_link} target="_blank" rel="noopener noreferrer" style={{ color: "#1DA1F2" }}>
+                              {selectedUser.twitter_link}
+                            </a>
+                          </Typography>
+                        </Card>
+                      )}
+                      {selectedUser?.facebook_link && (
+                        <Card
+                          sx={{
+                            background: "white",
+                            borderRadius: 2,
+                            p: 2,
+                            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                              transform: "translateY(-2px)",
+                            },
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#7f8c8d", mb: 0.5 }}
+                          >
+                            <strong>Facebook:</strong>{" "}
+                            <a href={selectedUser.facebook_link} target="_blank" rel="noopener noreferrer" style={{ color: "#1877F2" }}>
+                              {selectedUser.facebook_link}
+                            </a>
+                          </Typography>
+                        </Card>
+                      )}
+                    </Stack>
+                  </Box>
+                )}
               </Box>
             ) : (
               // Create/Edit User Form
@@ -1304,6 +1481,18 @@ const UsersTable = () => {
                         }
                         variant="outlined"
                         size="small"
+                      />
+                      <TextField
+                        fullWidth
+                        label="Description"
+                        value={userForm.description}
+                        onChange={(e) =>
+                          setUserForm({ ...userForm, description: e.target.value })
+                        }
+                        variant="outlined"
+                        size="small"
+                        multiline
+                        rows={3}
                       />
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
@@ -1416,6 +1605,53 @@ const UsersTable = () => {
                     }
                     label="Active User"
                   />
+                  <Typography variant="body2" sx={{ mt: 2, mb: 1, fontWeight: 600, color: "#2c3e50" }}>
+                    Social Media Links (Optional)
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    label="WhatsApp Link"
+                    value={userForm.whatsapp_link}
+                    onChange={(e) =>
+                      setUserForm({ ...userForm, whatsapp_link: e.target.value })
+                    }
+                    variant="outlined"
+                    size="small"
+                    placeholder="https://wa.me/..."
+                  />
+                  <TextField
+                    fullWidth
+                    label="Google Link"
+                    value={userForm.google_link}
+                    onChange={(e) =>
+                      setUserForm({ ...userForm, google_link: e.target.value })
+                    }
+                    variant="outlined"
+                    size="small"
+                    placeholder="https://google.com/..."
+                  />
+                  <TextField
+                    fullWidth
+                    label="Twitter Link"
+                    value={userForm.twitter_link}
+                    onChange={(e) =>
+                      setUserForm({ ...userForm, twitter_link: e.target.value })
+                    }
+                    variant="outlined"
+                    size="small"
+                    placeholder="https://twitter.com/..."
+                  />
+                  <TextField
+                    fullWidth
+                    label="Facebook Link"
+                    value={userForm.facebook_link}
+                    onChange={(e) =>
+                      setUserForm({ ...userForm, facebook_link: e.target.value })
+                    }
+                    variant="outlined"
+                    size="small"
+                    placeholder="https://facebook.com/..."
+                  />
                 </Stack>
               </Box>
             )}
@@ -1435,11 +1671,17 @@ const UsersTable = () => {
                   email: "",
                   phone: "",
                   position: "",
+                  description: "",
                   role: "admin",
                   password: "",
                   profile_picture: null,
                   profile_picture_preview: "",
+                  profile_picture_path: "",
                   isActive: true,
+                  whatsapp_link: "",
+                  google_link: "",
+                  twitter_link: "",
+                  facebook_link: "",
                 });
               }}
               variant="outlined"

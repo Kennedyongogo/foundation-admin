@@ -50,6 +50,7 @@ import {
 import {
   Analytics as AnalyticsIcon,
   TrendingUp,
+  TrendingUp as TrendingUpIcon,
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
   Map as MapIcon,
@@ -63,6 +64,10 @@ import {
   Assessment as AssessmentIcon,
   Insights as InsightsIcon,
   Refresh as RefreshIcon,
+  Description as DescriptionIcon,
+  AccountCircle as AccountCircleIcon,
+  Add as AddIcon,
+  CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 
 // Color palette for charts
@@ -127,19 +132,16 @@ const Analytics = () => {
   const [performanceHelpOpen, setPerformanceHelpOpen] = useState(false);
   const [equipmentMaterialsHelpOpen, setEquipmentMaterialsHelpOpen] =
     useState(false);
+  const [inquiriesHelpOpen, setInquiriesHelpOpen] = useState(false);
 
   const tabs = [
     { label: "Overview", icon: <AnalyticsIcon />, value: 0 },
     { label: "Projects", icon: <MapIcon />, value: 1 },
-    { label: "Tasks", icon: <BarChartIcon />, value: 2 },
-    { label: "Budget", icon: <PieChartIcon />, value: 3 },
-    { label: "Performance", icon: <Timeline />, value: 4 },
-    { label: "Equipment & Materials", icon: <GaugeIcon />, value: 5 },
+    { label: "Inquiries", icon: <BarChartIcon />, value: 2 },
   ];
 
   useEffect(() => {
     fetchAnalyticsData();
-    fetchProjectsByDate();
   }, [dateRange]);
 
   const fetchAnalyticsData = async () => {
@@ -152,7 +154,7 @@ const Analytics = () => {
         throw new Error("No authentication token found");
       }
 
-      const response = await fetch("/api/admins/dashboard/stats", {
+      const response = await fetch("/api/analytics", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -165,7 +167,7 @@ const Analytics = () => {
       }
 
       const data = await response.json();
-      console.log("Dashboard API Response:", data); // Debug log
+      console.log("Analytics API Response:", data); // Debug log
 
       if (data.success) {
         setAnalyticsData(data.data);
@@ -182,32 +184,6 @@ const Analytics = () => {
     }
   };
 
-  const fetchProjectsByDate = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      const response = await fetch(
-        `/api/admins/projects/by-date?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}&groupBy=day`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setProjectsByDate(data.data.chartData);
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching projects by date:", err);
-    }
-  };
 
   // Overview Help Dialog Component
   const OverviewHelpDialog = () => (
@@ -221,14 +197,14 @@ const Analytics = () => {
         <Box display="flex" alignItems="center" gap={1}>
           <InfoIcon color="primary" />
           <Typography variant="h6" fontWeight="bold">
-            Construction Overview - Data Explanation
+            Mwalimu Hope Foundation - Overview Data Explanation
           </Typography>
         </Box>
       </DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          This overview provides key metrics and insights about your
-          construction projects. Here's what each section means:
+          This overview provides comprehensive insights about your foundation's activities, 
+          including inquiries, projects, documents, users, and system activity. Here's what each section means:
         </Typography>
 
         {/* Key Metrics Cards */}
@@ -238,11 +214,124 @@ const Analytics = () => {
         <List dense>
           <ListItem>
             <ListItemIcon>
-              <MapIcon color="primary" />
+              <BarChartIcon color="primary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Total Inquiries"
+              secondary="The total number of inquiries received by the foundation"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <MapIcon color="secondary" />
             </ListItemIcon>
             <ListItemText
               primary="Total Projects"
-              secondary="The total number of construction projects in your system"
+              secondary="The total number of projects currently managed by the foundation"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <DescriptionIcon color="success" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Total Documents"
+              secondary="The total number of documents stored in the system"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <PeopleIcon color="warning" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Total Users"
+              secondary="The total number of users (admin and super-admin) in the system"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <AccountCircleIcon color="info" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Active Users"
+              secondary="The number of currently active users in the system"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <TrendingUpIcon color="primary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Recent Inquiries (30d)"
+              secondary="Number of new inquiries received in the last 30 days"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <AddIcon color="secondary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Recent Projects (30d)"
+              secondary="Number of new projects created in the last 30 days"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <CheckCircleIcon color="success" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Completed Projects (30d)"
+              secondary="Number of projects completed in the last 30 days"
+            />
+          </ListItem>
+        </List>
+
+        {/* Quick Stats Sections */}
+        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
+          📈 Quick Stats Sections
+        </Typography>
+        <List dense>
+          <ListItem>
+            <ListItemIcon>
+              <Chip label="Inquiry Metrics" color="primary" size="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Inquiry Metrics"
+              secondary="Shows pending inquiries and recently resolved inquiries (30 days)"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <Chip label="Project Progress" color="success" size="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Project Progress"
+              secondary="Displays average project progress and number of projects in progress"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <Chip label="Recent Activity" color="warning" size="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Recent Activity"
+              secondary="Shows activity count for the last 7 days and number of active users"
+            />
+          </ListItem>
+        </List>
+
+        {/* Additional Charts */}
+        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
+          📊 Additional Analytics Charts
+        </Typography>
+        <List dense>
+          <ListItem>
+            <ListItemIcon>
+              <PieChartIcon color="primary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Documents by Type"
+              secondary="Pie chart showing distribution of documents by file type (Word, PDF, etc.)"
             />
           </ListItem>
           <ListItem>
@@ -250,111 +339,78 @@ const Analytics = () => {
               <BarChartIcon color="secondary" />
             </ListItemIcon>
             <ListItemText
-              primary="Total Tasks"
-              secondary="The total number of tasks across all projects"
+              primary="Users by Role"
+              secondary="Bar chart showing distribution of users by their roles (admin, super-admin)"
             />
           </ListItem>
           <ListItem>
             <ListItemIcon>
-              <PeopleIcon color="success" />
+              <AssessmentIcon color="success" />
             </ListItemIcon>
             <ListItemText
-              primary="Total Labor"
-              secondary="The total number of workers assigned to projects"
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <GaugeIcon color="warning" />
-            </ListItemIcon>
-            <ListItemText
-              primary="Total Equipment"
-              secondary="The total number of equipment items available"
+              primary="Activity by Action (Last 7 Days)"
+              secondary="Bar chart showing system activity breakdown by action type (create, update, download)"
             />
           </ListItem>
         </List>
 
-        {/* Project Metrics */}
+        {/* 30-Day Trends */}
         <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
-          📈 Project Metrics
+          📅 30-Day Trends Summary
         </Typography>
         <List dense>
           <ListItem>
             <ListItemIcon>
-              <AssessmentIcon color="primary" />
+              <Chip label="New Inquiries" color="primary" size="small" />
             </ListItemIcon>
             <ListItemText
-              primary="Average Progress"
-              secondary="The average completion percentage across all projects"
+              primary="New Inquiries"
+              secondary="Number of new inquiries received in the last 30 days"
             />
           </ListItem>
           <ListItem>
             <ListItemIcon>
-              <PieChartIcon color="secondary" />
+              <Chip label="Resolved Inquiries" color="success" size="small" />
             </ListItemIcon>
             <ListItemText
-              primary="Budget Utilization"
-              secondary="Percentage of budget that has been spent (Actual ÷ Budgeted × 100)"
-            />
-          </ListItem>
-        </List>
-
-        {/* Resource Analysis */}
-        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
-          🏗️ Resource Analysis
-        </Typography>
-        <List dense>
-          <ListItem>
-            <ListItemIcon>
-              <GaugeIcon color="success" />
-            </ListItemIcon>
-            <ListItemText
-              primary="Material Utilization"
-              secondary="Percentage of materials that have been used (Used ÷ Required × 100)"
+              primary="Resolved Inquiries"
+              secondary="Number of inquiries resolved in the last 30 days"
             />
           </ListItem>
           <ListItem>
             <ListItemIcon>
-              <GaugeIcon color="info" />
+              <Chip label="New Projects" color="warning" size="small" />
             </ListItemIcon>
             <ListItemText
-              primary="Total Equipment"
-              secondary="Total number of equipment items in your inventory"
-            />
-          </ListItem>
-        </List>
-
-        {/* Performance Insights */}
-        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
-          💡 Performance Insights
-        </Typography>
-        <List dense>
-          <ListItem>
-            <ListItemIcon>
-              <PeopleIcon color="primary" />
-            </ListItemIcon>
-            <ListItemText
-              primary="Top Engineer"
-              secondary="The engineer managing the most projects"
+              primary="New Projects"
+              secondary="Number of new projects created in the last 30 days"
             />
           </ListItem>
           <ListItem>
             <ListItemIcon>
-              <AssessmentIcon color="warning" />
+              <Chip label="Completed Projects" color="success" size="small" />
             </ListItemIcon>
             <ListItemText
-              primary="Projects at Risk"
-              secondary="Number of projects that may be behind schedule or over budget"
+              primary="Completed Projects"
+              secondary="Number of projects completed in the last 30 days"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <Chip label="New Documents" color="info" size="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="New Documents"
+              secondary="Number of new documents uploaded in the last 30 days"
             />
           </ListItem>
         </List>
 
         <Alert severity="info" sx={{ mt: 3 }}>
           <Typography variant="body2">
-            <strong>💡 Tip:</strong> These metrics help you understand project
-            performance, identify areas needing attention, and track progress
-            over time. Higher percentages generally indicate better performance
-            and resource utilization.
+            <strong>💡 Tip:</strong> These metrics help you understand your foundation's 
+            performance, track engagement, monitor project progress, and identify areas 
+            needing attention. Use the trends to spot patterns and make data-driven decisions.
           </Typography>
         </Alert>
       </DialogContent>
@@ -378,29 +434,106 @@ const Analytics = () => {
         <Box display="flex" alignItems="center" gap={1}>
           <MapIcon color="primary" />
           <Typography variant="h6" fontWeight="bold">
-            Projects Tab - Data Explanation
+            Mwalimu Hope Foundation - Projects Data Explanation
           </Typography>
         </Box>
       </DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          The Projects tab shows project status distribution, construction
-          types, and recent project information. Here's how to understand what
-          you're seeing:
+          The Projects tab provides comprehensive insights into your foundation's project portfolio, 
+          including status distribution, categories, geographical spread, and progress metrics. 
+          Here's how to understand what you're seeing:
         </Typography>
 
-        {/* Project Status Chart */}
+        {/* Project Summary Cards */}
+        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
+          📊 Project Summary Cards
+        </Typography>
+        <List dense>
+          <ListItem>
+            <ListItemIcon>
+              <MapIcon color="primary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Total Projects"
+              secondary="The total number of projects currently managed by the foundation"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <AssessmentIcon color="secondary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Average Progress"
+              secondary="The average completion percentage across all projects"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <TrendingUpIcon color="success" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Completion Rate"
+              secondary="The percentage of projects that have been completed"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <CheckCircleIcon color="info" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Completed Projects"
+              secondary="The total number of projects that have been finished"
+            />
+          </ListItem>
+        </List>
+
+        {/* Progress Statistics */}
+        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
+          📈 Progress Statistics
+        </Typography>
+        <List dense>
+          <ListItem>
+            <ListItemIcon>
+              <Chip label="Minimum Progress" color="info" size="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Minimum Progress"
+              secondary="The lowest progress percentage among all projects"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <Chip label="Maximum Progress" color="success" size="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Maximum Progress"
+              secondary="The highest progress percentage among all projects"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <Chip label="Average Progress" color="primary" size="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Average Progress"
+              secondary="The mean progress percentage across all projects"
+            />
+          </ListItem>
+        </List>
+
+        {/* Project Status Distribution */}
         <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
           📊 Project Status Distribution
         </Typography>
         <List dense>
           <ListItem>
             <ListItemIcon>
-              <Chip label="Planning" color="info" size="small" />
+              <Chip label="Pending" color="warning" size="small" />
             </ListItemIcon>
             <ListItemText
-              primary="Planning"
-              secondary="Projects in the initial planning phase - not yet started"
+              primary="Pending"
+              secondary="Projects that are approved but not yet started"
             />
           </ListItem>
           <ListItem>
@@ -409,21 +542,12 @@ const Analytics = () => {
             </ListItemIcon>
             <ListItemText
               primary="In Progress"
-              secondary="Projects currently under construction"
+              secondary="Projects currently being implemented"
             />
           </ListItem>
           <ListItem>
             <ListItemIcon>
-              <Chip label="Completed" color="success" size="small" />
-            </ListItemIcon>
-            <ListItemText
-              primary="Completed"
-              secondary="Projects that have been finished"
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <Chip label="On Hold" color="warning" size="small" />
+              <Chip label="On Hold" color="default" size="small" />
             </ListItemIcon>
             <ListItemText
               primary="On Hold"
@@ -432,70 +556,18 @@ const Analytics = () => {
           </ListItem>
           <ListItem>
             <ListItemIcon>
-              <Chip label="Cancelled" color="error" size="small" />
+              <Chip label="Completed" color="success" size="small" />
             </ListItemIcon>
             <ListItemText
-              primary="Cancelled"
-              secondary="Projects that have been terminated"
+              primary="Completed"
+              secondary="Projects that have been successfully finished"
             />
           </ListItem>
         </List>
 
-        {/* Construction Type Chart */}
+        {/* Project Category Distribution */}
         <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
-          🏗️ Construction Type Distribution
-        </Typography>
-        <List dense>
-          <ListItem>
-            <ListItemIcon>
-              <MapIcon color="primary" />
-            </ListItemIcon>
-            <ListItemText
-              primary="Building"
-              secondary="Residential and commercial building construction projects"
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <LocationIcon color="secondary" />
-            </ListItemIcon>
-            <ListItemText
-              primary="Infrastructure"
-              secondary="Roads, bridges, utilities, and public infrastructure projects"
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <GaugeIcon color="success" />
-            </ListItemIcon>
-            <ListItemText
-              primary="Industrial"
-              secondary="Factories, warehouses, and industrial facility construction"
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <AssessmentIcon color="warning" />
-            </ListItemIcon>
-            <ListItemText
-              primary="Specialized"
-              secondary="Unique or specialized construction projects"
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemIcon>
-              <InfoIcon color="info" />
-            </ListItemIcon>
-            <ListItemText
-              primary="Other"
-              secondary="Projects that don't fit into the above categories"
-            />
-          </ListItem>
-        </List>
-
-        {/* Recent Projects */}
-        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
-          📋 Recent Projects
+          🏗️ Project Category Distribution
         </Typography>
         <List dense>
           <ListItem>
@@ -503,8 +575,8 @@ const Analytics = () => {
               <PeopleIcon color="primary" />
             </ListItemIcon>
             <ListItemText
-              primary="Project Name"
-              secondary="The name of the construction project"
+              primary="Volunteer"
+              secondary="Projects focused on volunteer programs and community service"
             />
           </ListItem>
           <ListItem>
@@ -512,22 +584,327 @@ const Analytics = () => {
               <AssessmentIcon color="secondary" />
             </ListItemIcon>
             <ListItemText
-              primary="Status & Engineer"
-              secondary="Current project status and the engineer in charge"
+              primary="Education"
+              secondary="Educational initiatives, schools, and learning programs"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <InfoIcon color="success" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Mental Health"
+              secondary="Mental health awareness, counseling, and support programs"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <LocationIcon color="warning" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Community"
+              secondary="Community development and social welfare projects"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <TrendingUpIcon color="info" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Donation"
+              secondary="Fundraising and donation management projects"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <GaugeIcon color="default" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Partnership"
+              secondary="Collaborative projects with other organizations"
+            />
+          </ListItem>
+        </List>
+
+        {/* Geographical Distribution */}
+        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
+          🌍 Geographical Distribution
+        </Typography>
+        <List dense>
+          <ListItem>
+            <ListItemIcon>
+              <LocationIcon color="primary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Projects by County"
+              secondary="Distribution of projects across different counties in Kenya"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <MapIcon color="secondary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Geographic Spread"
+              secondary="Visual representation of project locations and coverage"
+            />
+          </ListItem>
+        </List>
+
+        {/* Visual Charts */}
+        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
+          📊 Visual Analytics
+        </Typography>
+        <List dense>
+          <ListItem>
+            <ListItemIcon>
+              <PieChartIcon color="primary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Project Status Pie Chart"
+              secondary="Visual breakdown of projects by status (pending, in progress, on hold, completed)"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <BarChartIcon color="secondary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Category Bar Chart"
+              secondary="Bar chart showing distribution of projects by category"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <AssessmentIcon color="success" />
+            </ListItemIcon>
+            <ListItemText
+              primary="County Distribution Chart"
+              secondary="Bar chart showing projects distributed across different counties"
             />
           </ListItem>
         </List>
 
         <Alert severity="info" sx={{ mt: 3 }}>
           <Typography variant="body2">
-            <strong>💡 Tip:</strong> Use these charts to track project progress,
-            identify bottlenecks, and understand the distribution of your
-            project portfolio across different types and statuses.
+            <strong>💡 Tip:</strong> Use these metrics to track project performance, 
+            identify areas needing attention, understand your foundation's impact across 
+            different categories and regions, and make data-driven decisions for future projects.
           </Typography>
         </Alert>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setProjectsHelpOpen(false)} color="primary">
+          Got it!
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  // Inquiries Help Dialog Component
+  const InquiriesHelpDialog = () => (
+    <Dialog
+      open={inquiriesHelpOpen}
+      onClose={() => setInquiriesHelpOpen(false)}
+      maxWidth="md"
+      fullWidth
+    >
+      <DialogTitle>
+        <Box display="flex" alignItems="center" gap={1}>
+          <BarChartIcon color="primary" />
+          <Typography variant="h6" fontWeight="bold">
+            Mwalimu Hope Foundation - Inquiries Data Explanation
+          </Typography>
+        </Box>
+      </DialogTitle>
+      <DialogContent>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          The Inquiries tab provides comprehensive insights into all inquiries received by the foundation, 
+          including status distribution, category breakdown, and resolution performance. Here's how to understand what you're seeing:
+        </Typography>
+
+        {/* Summary Cards */}
+        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
+          📊 Summary Cards
+        </Typography>
+        <List dense>
+          <ListItem>
+            <ListItemIcon>
+              <InfoIcon color="primary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Total Inquiries"
+              secondary="The total number of inquiries received by the foundation from the public"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <Timeline color="warning" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Pending Inquiries"
+              secondary="Number of inquiries waiting to be addressed or currently being reviewed"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <TrendingUp color="success" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Resolved Inquiries"
+              secondary="Number of inquiries that have been successfully addressed and closed"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <GaugeIcon color="secondary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Average Resolution Time"
+              secondary="The average time (in hours) it takes to resolve an inquiry from submission to resolution"
+            />
+          </ListItem>
+        </List>
+
+        {/* Inquiry Status Distribution */}
+        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
+          📈 Inquiry Status Distribution
+        </Typography>
+        <List dense>
+          <ListItem>
+            <ListItemIcon>
+              <Chip label="Pending" color="warning" size="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Pending"
+              secondary="Inquiries that have been received but not yet started being processed"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <Chip label="In Progress" color="primary" size="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="In Progress"
+              secondary="Inquiries currently being reviewed and worked on by the team"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <Chip label="Resolved" color="success" size="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Resolved"
+              secondary="Inquiries that have been successfully addressed and closed"
+            />
+          </ListItem>
+        </List>
+
+        {/* Inquiry Category Distribution */}
+        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
+          🏷️ Inquiry Category Distribution
+        </Typography>
+        <List dense>
+          <ListItem>
+            <ListItemIcon>
+              <PeopleIcon color="primary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Volunteer"
+              secondary="Inquiries related to volunteer opportunities, applications, and volunteer programs"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <AssessmentIcon color="secondary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Education"
+              secondary="Inquiries about educational programs, scholarships, and learning opportunities"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <InfoIcon color="success" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Mental Health"
+              secondary="Inquiries regarding mental health services, counseling, and support resources"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <LocationIcon color="warning" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Community"
+              secondary="General community inquiries, event information, and local initiatives"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <TrendingUpIcon color="info" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Donation"
+              secondary="Inquiries about making donations, fundraising events, and contribution methods"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <GaugeIcon color="default" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Partnership"
+              secondary="Inquiries from organizations interested in partnering with the foundation"
+            />
+          </ListItem>
+        </List>
+
+        {/* Visual Charts */}
+        <Typography variant="h6" fontWeight="600" sx={{ mb: 2, mt: 3 }}>
+          📊 Visual Analytics
+        </Typography>
+        <List dense>
+          <ListItem>
+            <ListItemIcon>
+              <PieChartIcon color="primary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Inquiry Status Pie Chart"
+              secondary="Visual breakdown of all inquiries by their current status (pending, in progress, resolved)"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <BarChartIcon color="secondary" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Category Bar Chart"
+              secondary="Bar chart showing the distribution of inquiries across different categories"
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemIcon>
+              <AssessmentIcon color="success" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Category Breakdown Table"
+              secondary="Detailed table showing inquiry count and percentage for each category"
+            />
+          </ListItem>
+        </List>
+
+        <Alert severity="info" sx={{ mt: 3 }}>
+          <Typography variant="body2">
+            <strong>💡 Tip:</strong> Monitor these metrics regularly to ensure timely responses to inquiries, 
+            identify popular inquiry categories, and improve your foundation's response times. 
+            A lower average resolution time indicates better service quality and responsiveness.
+          </Typography>
+        </Alert>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setInquiriesHelpOpen(false)} color="primary">
           Got it!
         </Button>
       </DialogActions>
@@ -1344,69 +1721,69 @@ const Analytics = () => {
   const CardItem = (props) => {
     const getCardStyle = (title) => {
       switch (title) {
-        case "Total Projects":
+        case "Total Inquiries":
           return {
-            icon: <MapIcon sx={{ fontSize: 40, color: "#1976d2" }} />,
+            icon: <InfoIcon sx={{ fontSize: 40, color: "#1976d2" }} />,
             bgColor: "linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)",
             borderColor: "#1976d2",
             textColor: "#1976d2",
             iconBg: "rgba(25, 118, 210, 0.1)",
           };
-        case "Total Tasks":
+        case "Total Projects":
           return {
-            icon: <BarChartIcon sx={{ fontSize: 40, color: "#7b1fa2" }} />,
+            icon: <MapIcon sx={{ fontSize: 40, color: "#7b1fa2" }} />,
             bgColor: "linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%)",
             borderColor: "#7b1fa2",
             textColor: "#7b1fa2",
             iconBg: "rgba(123, 31, 162, 0.1)",
           };
-        case "Total Labor":
+        case "Total Documents":
           return {
-            icon: <PeopleIcon sx={{ fontSize: 40, color: "#388e3c" }} />,
+            icon: <AssessmentIcon sx={{ fontSize: 40, color: "#388e3c" }} />,
             bgColor: "linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%)",
             borderColor: "#388e3c",
             textColor: "#388e3c",
             iconBg: "rgba(56, 142, 60, 0.1)",
           };
-        case "Total Equipment":
+        case "Total Users":
           return {
-            icon: <GaugeIcon sx={{ fontSize: 40, color: "#f57c00" }} />,
+            icon: <PeopleIcon sx={{ fontSize: 40, color: "#f57c00" }} />,
             bgColor: "linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%)",
             borderColor: "#f57c00",
             textColor: "#f57c00",
             iconBg: "rgba(245, 124, 0, 0.1)",
           };
-        case "Total Materials":
+        case "Active Users":
           return {
-            icon: <AssessmentIcon sx={{ fontSize: 40, color: "#d32f2f" }} />,
-            bgColor: "linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%)",
-            borderColor: "#d32f2f",
-            textColor: "#d32f2f",
-            iconBg: "rgba(211, 47, 47, 0.1)",
-          };
-        case "Total Issues":
-          return {
-            icon: <InfoIcon sx={{ fontSize: 40, color: "#9c27b0" }} />,
-            bgColor: "linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%)",
-            borderColor: "#9c27b0",
-            textColor: "#9c27b0",
-            iconBg: "rgba(156, 39, 176, 0.1)",
-          };
-        case "Task Completion":
-          return {
-            icon: <TrendingUp sx={{ fontSize: 40, color: "#2e7d32" }} />,
+            icon: <PeopleIcon sx={{ fontSize: 40, color: "#2e7d32" }} />,
             bgColor: "linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%)",
             borderColor: "#2e7d32",
             textColor: "#2e7d32",
             iconBg: "rgba(46, 125, 50, 0.1)",
           };
-        case "Overdue Tasks":
+        case "Recent Inquiries (30d)":
           return {
-            icon: <Timeline sx={{ fontSize: 40, color: "#f44336" }} />,
-            bgColor: "linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%)",
-            borderColor: "#f44336",
-            textColor: "#f44336",
-            iconBg: "rgba(244, 67, 54, 0.1)",
+            icon: <TrendingUp sx={{ fontSize: 40, color: "#0288d1" }} />,
+            bgColor: "linear-gradient(135deg, #E1F5FE 0%, #B3E5FC 100%)",
+            borderColor: "#0288d1",
+            textColor: "#0288d1",
+            iconBg: "rgba(2, 136, 209, 0.1)",
+          };
+        case "Recent Projects (30d)":
+          return {
+            icon: <TrendingUp sx={{ fontSize: 40, color: "#7b1fa2" }} />,
+            bgColor: "linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%)",
+            borderColor: "#7b1fa2",
+            textColor: "#7b1fa2",
+            iconBg: "rgba(123, 31, 162, 0.1)",
+          };
+        case "Completed Projects (30d)":
+          return {
+            icon: <InsightsIcon sx={{ fontSize: 40, color: "#2e7d32" }} />,
+            bgColor: "linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%)",
+            borderColor: "#2e7d32",
+            textColor: "#2e7d32",
+            iconBg: "rgba(46, 125, 50, 0.1)",
           };
         default:
           return {
@@ -1529,7 +1906,7 @@ const Analytics = () => {
         sx={{ mb: 3 }}
       >
         <Typography variant="h5" fontWeight="bold" color="text.primary">
-          Construction Overview
+          System Overview
         </Typography>
         <IconButton
           onClick={() => setOverviewHelpOpen(true)}
@@ -1567,43 +1944,43 @@ const Analytics = () => {
       {/* Data Content */}
       {dataLoaded && (
         <>
-          {/* Key Metrics Cards - Same as Home.jsx */}
+          {/* Key Metrics Cards */}
           <Grid container spacing={3}>
+            <CardItem
+              title="Total Inquiries"
+              value={analyticsData.overview?.totalInquiries || 0}
+            />
             <CardItem
               title="Total Projects"
               value={analyticsData.overview?.totalProjects || 0}
             />
             <CardItem
-              title="Total Tasks"
-              value={analyticsData.overview?.totalTasks || 0}
+              title="Total Documents"
+              value={analyticsData.overview?.totalDocuments || 0}
             />
             <CardItem
-              title="Total Labor"
-              value={analyticsData.overview?.totalLabor || 0}
+              title="Total Users"
+              value={analyticsData.overview?.totalUsers || 0}
             />
             <CardItem
-              title="Total Equipment"
-              value={analyticsData.overview?.totalEquipment || 0}
+              title="Active Users"
+              value={analyticsData.overview?.activeUsers || 0}
             />
             <CardItem
-              title="Total Materials"
-              value={analyticsData.overview?.totalMaterials || 0}
+              title="Recent Inquiries (30d)"
+              value={analyticsData.trends?.last30Days?.inquiries || 0}
             />
             <CardItem
-              title="Total Issues"
-              value={analyticsData.overview?.totalIssues || 0}
+              title="Recent Projects (30d)"
+              value={analyticsData.trends?.last30Days?.projects || 0}
             />
             <CardItem
-              title="Task Completion"
-              value={`${analyticsData.performance?.taskCompletionRate || 0}%`}
-            />
-            <CardItem
-              title="Overdue Tasks"
-              value={analyticsData.overview?.overdueTasks || 0}
+              title="Completed Projects (30d)"
+              value={analyticsData.trends?.last30Days?.completedProjects || 0}
             />
           </Grid>
 
-          {/* Quick Stats - 4 columns with 2 stacked vertically each */}
+          {/* Quick Stats - 3 columns */}
           <Grid container spacing={3} sx={{ mt: 3 }}>
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Card
@@ -1629,7 +2006,7 @@ const Analytics = () => {
                   }}
                 >
                   <Typography variant="h6" gutterBottom fontWeight="600">
-                    Project Metrics
+                    Inquiry Metrics
                   </Typography>
                   <Stack spacing={2} sx={{ flex: 1 }}>
                     <Box
@@ -1643,12 +2020,10 @@ const Analytics = () => {
                         border: "1px solid rgba(25, 118, 210, 0.1)",
                       }}
                     >
-                      <Typography fontWeight="500">Average Progress</Typography>
+                      <Typography fontWeight="500">Pending</Typography>
                       <Chip
-                        label={`${parseFloat(
-                          analyticsData.projects?.progress?.avgProgress || 0
-                        ).toFixed(1)}%`}
-                        color="primary"
+                        label={analyticsData.inquiries?.byStatus?.find(s => s.status === 'pending')?.count || 0}
+                        color="warning"
                       />
                     </Box>
                     <Box
@@ -1663,13 +2038,11 @@ const Analytics = () => {
                       }}
                     >
                       <Typography fontWeight="500">
-                        Budget Utilization
+                        Resolved (30d)
                       </Typography>
                       <Chip
-                        label={`${
-                          analyticsData.budget?.utilizationPercent || 0
-                        }%`}
-                        color="secondary"
+                        label={analyticsData.inquiries?.recentResolved || 0}
+                        color="success"
                       />
                     </Box>
                   </Stack>
@@ -1701,7 +2074,7 @@ const Analytics = () => {
                   }}
                 >
                   <Typography variant="h6" gutterBottom fontWeight="600">
-                    Resource Analysis
+                    Project Progress
                   </Typography>
                   <Stack spacing={2} sx={{ flex: 1 }}>
                     <Box
@@ -1716,13 +2089,10 @@ const Analytics = () => {
                       }}
                     >
                       <Typography fontWeight="500">
-                        Material Utilization
+                        Average Progress
                       </Typography>
                       <Chip
-                        label={`${
-                          analyticsData.materials?.summary
-                            ?.utilizationPercent || 0
-                        }%`}
+                        label={`${analyticsData.projects?.averageProgress || 0}%`}
                         color="success"
                       />
                     </Box>
@@ -1737,9 +2107,9 @@ const Analytics = () => {
                         border: "1px solid rgba(0, 188, 212, 0.1)",
                       }}
                     >
-                      <Typography fontWeight="500">Total Equipment</Typography>
+                      <Typography fontWeight="500">In Progress</Typography>
                       <Chip
-                        label={`${analyticsData.overview?.totalEquipment || 0}`}
+                        label={analyticsData.projects?.byStatus?.find(s => s.status === 'in_progress')?.count || 0}
                         color="info"
                       />
                     </Box>
@@ -1772,7 +2142,7 @@ const Analytics = () => {
                   }}
                 >
                   <Typography variant="h6" gutterBottom fontWeight="600">
-                    Performance Insights
+                    Recent Activity
                   </Typography>
                   <Stack spacing={2} sx={{ flex: 1 }}>
                     <Box
@@ -1786,9 +2156,9 @@ const Analytics = () => {
                         border: "1px solid rgba(25, 118, 210, 0.1)",
                       }}
                     >
-                      <Typography fontWeight="500">Top Engineer</Typography>
+                      <Typography fontWeight="500">Last 7 Days</Typography>
                       <Chip
-                        label={analyticsData.engineers?.top?.name || "N/A"}
+                        label={analyticsData.activity?.last7Days || 0}
                         color="primary"
                       />
                     </Box>
@@ -1803,16 +2173,374 @@ const Analytics = () => {
                         border: "1px solid rgba(255, 152, 0, 0.1)",
                       }}
                     >
-                      <Typography fontWeight="500">Projects at Risk</Typography>
+                      <Typography fontWeight="500">Active Users</Typography>
                       <Chip
-                        label={`${
-                          analyticsData.performance?.projectsAtRisk || 0
-                        }`}
+                        label={analyticsData.overview?.activeUsers || 0}
                         color="warning"
                       />
                     </Box>
                   </Stack>
                 </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
+          {/* Additional Analytics Charts */}
+          <Grid container spacing={3} sx={{ mt: 3 }}>
+            {/* Documents by Type */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ p: 3, height: 400 }}>
+                <Typography variant="h6" gutterBottom fontWeight="600">
+                  Documents by Type
+                </Typography>
+                <ResponsiveContainer width="100%" height={300}>
+                  {(analyticsData.documents?.byType || []).length > 0 ? (
+                    <PieChart>
+                      <Pie
+                        data={(analyticsData.documents?.byType || []).map(
+                          (item) => ({
+                            name: item.file_type.toUpperCase(),
+                            value: parseInt(item.count) || 0,
+                          })
+                        )}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius="80%"
+                        fill="#8884d8"
+                      >
+                        {(analyticsData.documents?.byType || []).map(
+                          (entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          )
+                        )}
+                      </Pie>
+                      <Tooltip formatter={(value) => [value, "Documents"]} />
+                      <Legend />
+                    </PieChart>
+                  ) : (
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      height="100%"
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        No document data available
+                      </Typography>
+                    </Box>
+                  )}
+                </ResponsiveContainer>
+              </Card>
+            </Grid>
+
+            {/* Users by Role */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ p: 3, height: 400 }}>
+                <Typography variant="h6" gutterBottom fontWeight="600">
+                  Users by Role
+                </Typography>
+                <ResponsiveContainer width="100%" height={300}>
+                  {(analyticsData.users?.byRole || []).length > 0 ? (
+                    <BarChart
+                      data={(analyticsData.users?.byRole || []).map(
+                        (item) => ({
+                          name: item.role.replace('-', ' ').toUpperCase(),
+                          count: parseInt(item.count) || 0,
+                        })
+                      )}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [value, "Users"]} />
+                      <Bar dataKey="count" fill="#43e97b" />
+                    </BarChart>
+                  ) : (
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      height="100%"
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        No user role data available
+                      </Typography>
+                    </Box>
+                  )}
+                </ResponsiveContainer>
+              </Card>
+            </Grid>
+
+            {/* Activity by Action - Full Width */}
+            <Grid size={{ xs: 12 }}>
+              <Card sx={{ p: 3, height: 400 }}>
+                <Typography variant="h6" gutterBottom fontWeight="600">
+                  Activity by Action (Last 7 Days)
+                </Typography>
+                <ResponsiveContainer width="100%" height={300}>
+                  {(analyticsData.activity?.byAction || []).length > 0 ? (
+                    <BarChart
+                      data={(analyticsData.activity?.byAction || []).map(
+                        (item) => ({
+                          name: item.action.toUpperCase(),
+                          count: parseInt(item.count) || 0,
+                        })
+                      )}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [value, "Actions"]} />
+                      <Bar dataKey="count" fill="#f5576c" />
+                    </BarChart>
+                  ) : (
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      height="100%"
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        No activity data available
+                      </Typography>
+                    </Box>
+                  )}
+                </ResponsiveContainer>
+              </Card>
+            </Grid>
+
+            {/* Trends Summary */}
+            <Grid size={{ xs: 12 }}>
+              <Card 
+                sx={{ 
+                  p: 3,
+                  border: '1px solid #e0e0e0',
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+              >
+                <Typography 
+                  variant="h6" 
+                  gutterBottom 
+                  fontWeight="600"
+                  sx={{ mb: 3, color: '#333' }}
+                >
+                  30-Day Trends Summary
+                </Typography>
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    gap: 2, 
+                    flexWrap: 'nowrap',
+                    justifyContent: 'space-between',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <Card
+                    sx={{
+                      flex: '1',
+                      minWidth: 0,
+                      p: 3,
+                      textAlign: "center",
+                      background: 'linear-gradient(135deg, #f5f5f5 0%, #e8f5e8 100%)',
+                      border: 'none',
+                      borderRadius: 3,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.2s ease-in-out',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }
+                    }}
+                  >
+                    <Typography 
+                      variant="h3" 
+                      fontWeight="bold"
+                      sx={{ 
+                        color: '#2e7d32',
+                        mb: 1,
+                        fontSize: '2.5rem'
+                      }}
+                    >
+                      {analyticsData.trends?.last30Days?.inquiries || 0}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: '#666',
+                        fontWeight: 500,
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      New Inquiries
+                    </Typography>
+                  </Card>
+                  
+                  <Card
+                    sx={{
+                      flex: '1',
+                      minWidth: 0,
+                      p: 3,
+                      textAlign: "center",
+                      background: 'linear-gradient(135deg, #f0f8f0 0%, #e8f5e8 100%)',
+                      border: 'none',
+                      borderRadius: 3,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.2s ease-in-out',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }
+                    }}
+                  >
+                    <Typography 
+                      variant="h3" 
+                      fontWeight="bold"
+                      sx={{ 
+                        color: '#2e7d32',
+                        mb: 1,
+                        fontSize: '2.5rem'
+                      }}
+                    >
+                      {analyticsData.trends?.last30Days?.resolvedInquiries || 0}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: '#666',
+                        fontWeight: 500,
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      Resolved Inquiries
+                    </Typography>
+                  </Card>
+                  
+                  <Card
+                    sx={{
+                      flex: '1',
+                      minWidth: 0,
+                      p: 3,
+                      textAlign: "center",
+                      background: 'linear-gradient(135deg, #fff8e1 0%, #fff3c4 100%)',
+                      border: 'none',
+                      borderRadius: 3,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.2s ease-in-out',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }
+                    }}
+                  >
+                    <Typography 
+                      variant="h3" 
+                      fontWeight="bold"
+                      sx={{ 
+                        color: '#f57c00',
+                        mb: 1,
+                        fontSize: '2.5rem'
+                      }}
+                    >
+                      {analyticsData.trends?.last30Days?.projects || 0}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: '#666',
+                        fontWeight: 500,
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      New Projects
+                    </Typography>
+                  </Card>
+                  
+                  <Card
+                    sx={{
+                      flex: '1',
+                      minWidth: 0,
+                      p: 3,
+                      textAlign: "center",
+                      background: 'linear-gradient(135deg, #f0f8f0 0%, #e8f5e8 100%)',
+                      border: 'none',
+                      borderRadius: 3,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.2s ease-in-out',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }
+                    }}
+                  >
+                    <Typography 
+                      variant="h3" 
+                      fontWeight="bold"
+                      sx={{ 
+                        color: '#2e7d32',
+                        mb: 1,
+                        fontSize: '2.5rem'
+                      }}
+                    >
+                      {analyticsData.trends?.last30Days?.completedProjects || 0}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: '#666',
+                        fontWeight: 500,
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      Completed Projects
+                    </Typography>
+                  </Card>
+                  
+                  <Card
+                    sx={{
+                      flex: '1',
+                      minWidth: 0,
+                      p: 3,
+                      textAlign: "center",
+                      background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
+                      border: 'none',
+                      borderRadius: 3,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.2s ease-in-out',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }
+                    }}
+                  >
+                    <Typography 
+                      variant="h3" 
+                      fontWeight="bold"
+                      sx={{ 
+                        color: '#ef6c00',
+                        mb: 1,
+                        fontSize: '2.5rem'
+                      }}
+                    >
+                      {analyticsData.trends?.last30Days?.documents || 0}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: '#666',
+                        fontWeight: 500,
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      New Documents
+                    </Typography>
+                  </Card>
+                </Box>
               </Card>
             </Grid>
           </Grid>
@@ -1900,6 +2628,170 @@ const Analytics = () => {
       {/* Data Content */}
       {dataLoaded && (
         <>
+          {/* Project Summary Cards */}
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card
+                sx={{
+                  p: 3,
+                  textAlign: "center",
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  borderRadius: 3,
+                  boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
+                }}
+              >
+                <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
+                  {analyticsData.projects?.total || 0}
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Total Projects
+                </Typography>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card
+                sx={{
+                  p: 3,
+                  textAlign: "center",
+                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                  color: 'white',
+                  borderRadius: 3,
+                  boxShadow: '0 4px 20px rgba(240, 147, 251, 0.3)',
+                }}
+              >
+                <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
+                  {analyticsData.projects?.progress?.average || 0}%
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Average Progress
+                </Typography>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card
+                sx={{
+                  p: 3,
+                  textAlign: "center",
+                  background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                  color: 'white',
+                  borderRadius: 3,
+                  boxShadow: '0 4px 20px rgba(79, 172, 254, 0.3)',
+                }}
+              >
+                <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
+                  {analyticsData.projects?.completionRate || "0%"}
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Completion Rate
+                </Typography>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card
+                sx={{
+                  p: 3,
+                  textAlign: "center",
+                  background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                  color: 'white',
+                  borderRadius: 3,
+                  boxShadow: '0 4px 20px rgba(67, 233, 123, 0.3)',
+                }}
+              >
+                <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
+                  {analyticsData.projects?.completedProjects || 0}
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Completed Projects
+                </Typography>
+              </Card>
+            </Grid>
+          </Grid>
+
+          {/* Progress Details */}
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Card sx={{ p: 3, height: 200 }}>
+                <Typography variant="h6" gutterBottom fontWeight="600">
+                  Progress Statistics
+                </Typography>
+                <Stack spacing={2}>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="body2" color="text.secondary">
+                      Minimum Progress
+                    </Typography>
+                    <Chip 
+                      label={`${analyticsData.projects?.progress?.minimum || 0}%`} 
+                      color="info" 
+                    />
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="body2" color="text.secondary">
+                      Maximum Progress
+                    </Typography>
+                    <Chip 
+                      label={`${analyticsData.projects?.progress?.maximum || 0}%`} 
+                      color="success" 
+                    />
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="body2" color="text.secondary">
+                      Average Progress
+                    </Typography>
+                    <Chip 
+                      label={`${analyticsData.projects?.progress?.average || 0}%`} 
+                      color="primary" 
+                    />
+                  </Box>
+                </Stack>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Card sx={{ p: 3, height: 200 }}>
+                <Typography variant="h6" gutterBottom fontWeight="600">
+                  Project Status Summary
+                </Typography>
+                <Stack spacing={2}>
+                  {(analyticsData.projects?.byStatus || []).map((status, index) => (
+                    <Box key={index} display="flex" justifyContent="space-between" alignItems="center">
+                      <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
+                        {status.status.replace('_', ' ')}
+                      </Typography>
+                      <Chip 
+                        label={status.count} 
+                        color={
+                          status.status === 'completed' ? 'success' :
+                          status.status === 'in_progress' ? 'primary' :
+                          status.status === 'pending' ? 'warning' : 'default'
+                        } 
+                      />
+                    </Box>
+                  ))}
+                </Stack>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Card sx={{ p: 3, height: 200 }}>
+                <Typography variant="h6" gutterBottom fontWeight="600">
+                  County Distribution
+                </Typography>
+                <Stack spacing={2}>
+                  {(analyticsData.projects?.byCounty || []).map((county, index) => (
+                    <Box key={index} display="flex" justifyContent="space-between" alignItems="center">
+                      <Typography variant="body2" color="text.secondary">
+                        {county.county}
+                      </Typography>
+                      <Chip 
+                        label={county.count} 
+                        color="secondary" 
+                      />
+                    </Box>
+                  ))}
+                </Stack>
+              </Card>
+            </Grid>
+          </Grid>
+
           <Grid container spacing={3}>
             {/* Project Status Chart */}
             <Grid size={{ xs: 12, md: 6 }}>
@@ -1953,23 +2845,24 @@ const Analytics = () => {
               </Card>
             </Grid>
 
-            {/* Construction Type Chart */}
+            {/* Project Category Chart */}
             <Grid size={{ xs: 12, md: 6 }}>
               <Card sx={{ p: 3, height: 400 }}>
                 <Typography variant="h6" gutterBottom fontWeight="600">
-                  Construction Type Distribution
+                  Project Category Distribution
                 </Typography>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart
-                    data={(analyticsData.projects?.byType || []).map(
+                    data={(analyticsData.projects?.byCategory || []).map(
                       (item) => ({
                         ...item,
+                        name: item.category,
                         count: parseInt(item.count) || 0,
                       })
                     )}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="construction_type" />
+                    <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip formatter={(value) => [value, "Projects"]} />
                     <Bar dataKey="count" fill="#f093fb" />
@@ -1978,77 +2871,27 @@ const Analytics = () => {
               </Card>
             </Grid>
 
-            {/* Projects Timeline Bar Chart */}
+            {/* Project by County Chart */}
             <Grid size={{ xs: 12 }}>
               <Card sx={{ p: 3, height: 400 }}>
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  mb={2}
-                >
-                  <Typography variant="h6" fontWeight="600">
-                    Projects Starting by Date (
-                    {formatDateForDisplay(dateRange.startDate)} to{" "}
-                    {formatDateForDisplay(dateRange.endDate)})
-                  </Typography>
-
-                  {/* Date Filter Controls */}
-                  <Box display="flex" gap={2} alignItems="center">
-                    <TextField
-                      label="Start Date"
-                      type="date"
-                      value={dateRange.startDate}
-                      onChange={(e) =>
-                        setDateRange({
-                          ...dateRange,
-                          startDate: e.target.value,
-                        })
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      size="small"
-                      sx={{ minWidth: 140 }}
-                    />
-                    <TextField
-                      label="End Date"
-                      type="date"
-                      value={dateRange.endDate}
-                      onChange={(e) =>
-                        setDateRange({ ...dateRange, endDate: e.target.value })
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      size="small"
-                      sx={{ minWidth: 140 }}
-                    />
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => {
-                        const currentYear = new Date().getFullYear();
-                        setDateRange({
-                          startDate: new Date(currentYear, 0, 1)
-                            .toISOString()
-                            .split("T")[0],
-                          endDate: new Date(currentYear, 11, 31)
-                            .toISOString()
-                            .split("T")[0],
-                        });
-                      }}
-                      sx={{ minWidth: 80 }}
-                    >
-                      Reset
-                    </Button>
-                  </Box>
-                </Box>
-                <ResponsiveContainer width="100%" height={400}>
-                  {projectsByDate.length > 0 ? (
+                <Typography variant="h6" gutterBottom fontWeight="600">
+                  Projects by County
+                </Typography>
+                <ResponsiveContainer width="100%" height={300}>
+                  {(analyticsData.projects?.byCounty || []).length > 0 ? (
                     <BarChart
-                      data={projectsByDate}
+                      data={(analyticsData.projects?.byCounty || []).map(
+                        (item) => ({
+                          ...item,
+                          name: item.county,
+                          count: parseInt(item.count) || 0,
+                        })
+                      )}
                       margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                       <XAxis
-                        dataKey="date"
+                        dataKey="name"
                         angle={-45}
                         textAnchor="end"
                         height={100}
@@ -2067,7 +2910,7 @@ const Analytics = () => {
                       />
                       <Legend />
                       <Bar
-                        dataKey="total"
+                        dataKey="count"
                         fill="#667eea"
                         name="Total Projects"
                         radius={[4, 4, 0, 0]}
@@ -2081,42 +2924,11 @@ const Analytics = () => {
                       height="100%"
                     >
                       <Typography variant="body2" color="text.secondary">
-                        No project data available for the selected date range
+                        No county data available
                       </Typography>
                     </Box>
                   )}
                 </ResponsiveContainer>
-              </Card>
-            </Grid>
-
-            {/* Recent Projects */}
-            <Grid size={{ xs: 12 }}>
-              <Card sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom fontWeight="600">
-                  Recent Projects
-                </Typography>
-                <List>
-                  {(analyticsData.projects?.recent || []).map((project) => (
-                    <ListItem key={project.id}>
-                      <ListItemIcon>
-                        <MapIcon color="primary" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={project.name}
-                        secondary={`Status: ${project.status} | Engineer: ${
-                          project.engineer?.name || "N/A"
-                        }`}
-                      />
-                      <Chip
-                        label={project.status}
-                        color={
-                          project.status === "completed" ? "success" : "primary"
-                        }
-                        size="small"
-                      />
-                    </ListItem>
-                  ))}
-                </List>
               </Card>
             </Grid>
           </Grid>
@@ -3297,17 +4109,326 @@ const Analytics = () => {
       case 1:
         return renderProjects();
       case 2:
-        return renderTasksLabor();
-      case 3:
-        return renderBudgetResources();
-      case 4:
-        return renderPerformance();
-      case 5:
-        return renderEquipmentMaterials();
+        return renderInquiries();
       default:
         return renderOverview();
     }
   };
+  
+  // Inquiries tab render function
+  const renderInquiries = () => (
+    <Box>
+      {/* Header */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          mb: 3,
+        }}
+      >
+        <Box>
+          <Typography variant="h6" fontWeight="600" color="text.primary">
+            Inquiry Status & Distribution
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Inquiry status breakdown and category distribution
+          </Typography>
+        </Box>
+        <IconButton
+          onClick={() => setInquiriesHelpOpen(true)}
+          color="primary"
+          sx={{
+            backgroundColor: "rgba(25, 118, 210, 0.1)",
+            "&:hover": {
+              backgroundColor: "rgba(25, 118, 210, 0.2)",
+            },
+          }}
+          title="Click to understand the data shown here"
+        >
+          <HelpIcon />
+        </IconButton>
+      </Box>
+
+      {/* Loading State */}
+      {loading && !dataLoaded && (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="200px"
+          mb={3}
+        >
+          <Box textAlign="center">
+            <CircularProgress size={40} sx={{ mb: 2 }} />
+            <Typography variant="body2" color="text.secondary">
+              Loading inquiry data...
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      {/* Data Content */}
+      {dataLoaded && (
+        <>
+          <Grid container spacing={3}>
+            {/* Summary Cards */}
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+                    transform: "translateY(-2px)",
+                  },
+                  height: "100%",
+                }}
+              >
+                <CardContent sx={{ p: 3, textAlign: "center" }}>
+                  <InfoIcon sx={{ fontSize: 48, color: "#1976d2", mb: 2 }} />
+                  <Typography variant="h3" fontWeight="bold" color="primary">
+                    {analyticsData.inquiries?.total || 0}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Total Inquiries
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+                    transform: "translateY(-2px)",
+                  },
+                  height: "100%",
+                }}
+              >
+                <CardContent sx={{ p: 3, textAlign: "center" }}>
+                  <Timeline sx={{ fontSize: 48, color: "#f57c00", mb: 2 }} />
+                  <Typography variant="h3" fontWeight="bold" color="warning.main">
+                    {analyticsData.inquiries?.byStatus?.find(s => s.status === 'pending')?.count || 0}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Pending Inquiries
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+                    transform: "translateY(-2px)",
+                  },
+                  height: "100%",
+                }}
+              >
+                <CardContent sx={{ p: 3, textAlign: "center" }}>
+                  <TrendingUp sx={{ fontSize: 48, color: "#2e7d32", mb: 2 }} />
+                  <Typography variant="h3" fontWeight="bold" color="success.main">
+                    {analyticsData.inquiries?.byStatus?.find(s => s.status === 'resolved')?.count || 0}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Resolved Inquiries
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 3 }}>
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+                    transform: "translateY(-2px)",
+                  },
+                  height: "100%",
+                }}
+              >
+                <CardContent sx={{ p: 3, textAlign: "center" }}>
+                  <GaugeIcon sx={{ fontSize: 48, color: "#7b1fa2", mb: 2 }} />
+                  <Typography variant="h3" fontWeight="bold" color="secondary.main">
+                    {analyticsData.inquiries?.averageResolutionTimeHours || "0.00"}h
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Avg Resolution Time
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Inquiry Status Chart */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ p: 3, height: 400 }}>
+                <Typography variant="h6" gutterBottom fontWeight="600">
+                  Inquiry Status Distribution
+                </Typography>
+                <ResponsiveContainer width="100%" height={300}>
+                  {(analyticsData.inquiries?.byStatus || []).length > 0 ? (
+                    <PieChart>
+                      <Pie
+                        data={(analyticsData.inquiries?.byStatus || []).map(
+                          (item) => ({
+                            name: item.status.replace('_', ' ').toUpperCase(),
+                            value: parseInt(item.count) || 0,
+                          })
+                        )}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius="90%"
+                        innerRadius="50%"
+                        fill="#8884d8"
+                      >
+                        {(analyticsData.inquiries?.byStatus || []).map(
+                          (entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          )
+                        )}
+                      </Pie>
+                      <Tooltip formatter={(value) => [value, "Inquiries"]} />
+                      <Legend />
+                    </PieChart>
+                  ) : (
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      height="100%"
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        No inquiry data available
+                      </Typography>
+                    </Box>
+                  )}
+                </ResponsiveContainer>
+              </Card>
+            </Grid>
+
+            {/* Inquiry Category Chart */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ p: 3, height: 400 }}>
+                <Typography variant="h6" gutterBottom fontWeight="600">
+                  Inquiry Category Distribution
+                </Typography>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={(analyticsData.inquiries?.byCategory || []).map(
+                      (item) => ({
+                        ...item,
+                        name: item.category.replace('_', ' ').toUpperCase(),
+                        count: parseInt(item.count) || 0,
+                      })
+                    )}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [value, "Inquiries"]} />
+                    <Bar dataKey="count" fill="#667eea" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+            </Grid>
+
+            {/* Category Breakdown Table */}
+            <Grid size={{ xs: 12 }}>
+              <Card sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom fontWeight="600">
+                  Category Breakdown
+                </Typography>
+                <Box sx={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ backgroundColor: "rgba(102, 126, 234, 0.05)" }}>
+                        <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid rgba(102, 126, 234, 0.2)" }}>
+                          Category
+                        </th>
+                        <th style={{ padding: "12px", textAlign: "center", borderBottom: "2px solid rgba(102, 126, 234, 0.2)" }}>
+                          Count
+                        </th>
+                        <th style={{ padding: "12px", textAlign: "center", borderBottom: "2px solid rgba(102, 126, 234, 0.2)" }}>
+                          Percentage
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(analyticsData.inquiries?.byCategory || []).map((item, index) => {
+                        const total = analyticsData.inquiries?.total || 1;
+                        const percentage = ((parseInt(item.count) / total) * 100).toFixed(1);
+                        return (
+                          <tr key={index} style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
+                            <td style={{ padding: "12px", textTransform: "capitalize" }}>
+                              {item.category.replace('_', ' ')}
+                            </td>
+                            <td style={{ padding: "12px", textAlign: "center", fontWeight: "bold" }}>
+                              {item.count}
+                            </td>
+                            <td style={{ padding: "12px", textAlign: "center" }}>
+                              <Chip 
+                                label={`${percentage}%`} 
+                                color="primary" 
+                                size="small"
+                                variant="outlined"
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </Box>
+              </Card>
+            </Grid>
+          </Grid>
+        </>
+      )}
+
+      {/* Fallback when data is not loaded */}
+      {!dataLoaded && !loading && (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="200px"
+          mb={3}
+        >
+          <Box textAlign="center">
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+              No inquiry data available
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={fetchAnalyticsData}
+              startIcon={<RefreshIcon />}
+            >
+              Load Data
+            </Button>
+          </Box>
+        </Box>
+      )}
+    </Box>
+  );
 
   // Show error message if there's an error
   if (error) {
@@ -3339,7 +4460,7 @@ const Analytics = () => {
           WebkitTextFillColor: "transparent",
         }}
       >
-        Construction Management Dashboard
+        Mwalimu Hope Foundation Dashboard
       </Typography>
 
       <Card
@@ -3402,6 +4523,7 @@ const Analytics = () => {
       {/* Help Dialogs */}
       <OverviewHelpDialog />
       <ProjectsHelpDialog />
+      <InquiriesHelpDialog />
       <TasksLaborHelpDialog />
       <BudgetResourcesHelpDialog />
       <PerformanceHelpDialog />

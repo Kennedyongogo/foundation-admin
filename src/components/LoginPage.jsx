@@ -179,7 +179,7 @@ export default function LoginPage(props) {
       });
 
       try {
-        const response = await fetch("/api/admin-users/forgot-password", {
+        const response = await fetch("/api/auth/forgot", {
           method: "POST",
           credentials: "include",
           headers: {

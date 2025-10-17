@@ -26,6 +26,7 @@ import {
   Business,
   Folder,
   History,
+  Assessment,
 } from "@mui/icons-material";
 import { Money } from "@phosphor-icons/react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -128,9 +129,8 @@ const Navbar = (props) => {
     return window.innerWidth >= theme.breakpoints.values.md;
   });
   const [openSections, setOpenSections] = useState({
-    customerService: false,
-    riskManagement: false,
-    debtCollection: false,
+    Resources: false,
+    System: false,
   });
   const [menuItems, setMenuItems] = useState([]);
 
@@ -161,29 +161,51 @@ const Navbar = (props) => {
       path: "/projects",
     },
     {
-      text: "Issues",
-      icon: <Warning />,
-      path: "/issues",
-    },
-    {
-      text: "Charity Map",
-      icon: <Map />,
-      path: "/map",
-    },
-    {
-      text: "Documents",
-      icon: <Folder />,
-      path: "/documents",
-    },
-    {
-      text: "Audit Trail",
-      icon: <History />,
-      path: "/audit",
+      text: "Reports",
+      icon: <Assessment />,
+      path: "/reports",
     },
     {
       text: "Users",
       icon: <PeopleAlt />,
       path: "/users",
+    },
+    {
+      text: "Resources",
+      icon: <Folder />,
+      subItems: [
+        {
+          text: "Documents",
+          icon: <Folder />,
+          path: "/documents",
+        },
+        {
+          text: "Charity Map",
+          icon: <Map />,
+          path: "/map",
+        },
+        {
+          text: "Issues",
+          icon: <Warning />,
+          path: "/issues",
+        },
+      ],
+    },
+    {
+      text: "System",
+      icon: <Settings />,
+      subItems: [
+        {
+          text: "Audit Trail",
+          icon: <History />,
+          path: "/audit",
+        },
+        {
+          text: "Settings",
+          icon: <Settings />,
+          path: "/settings",
+        },
+      ],
     },
   ];
 
@@ -357,41 +379,6 @@ const Navbar = (props) => {
         </List>
         <Divider />
         <List>
-          <ListItem
-            button
-            onClick={() => navigate("/settings")}
-            selected={location.pathname === "/settings"}
-            sx={{
-              cursor: "pointer",
-              bgcolor:
-                location.pathname === "/settings"
-                  ? "action.selected"
-                  : "transparent",
-            }}
-          >
-            <ListItemIcon>
-              <Gear
-                size={24}
-                color={
-                  location.pathname === "/settings"
-                    ? "primary"
-                    : "textSecondary"
-                }
-              />
-            </ListItemIcon>
-            <ListItemText
-              primary="Settings"
-              sx={{
-                cursor: "pointer",
-                color:
-                  location.pathname === "/settings"
-                    ? "primary"
-                    : "textSecondary",
-                fontWeight:
-                  location.pathname === "/settings" ? "bold" : "normal",
-              }}
-            />
-          </ListItem>
           <ListItem button onClick={logout} sx={{ cursor: "pointer" }}>
             <ListItemIcon>
               <Logout />

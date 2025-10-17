@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, Card } from "@mui/material";
 import Navbar from "./Navbar";
 import Settings from "../Pages/Settings";
 import NotFound from "../Pages/NotFound";
@@ -14,6 +14,10 @@ import Documents from "./Documents/Documents";
 import UsersTable from "./Users/UsersTable";
 import Analytics from "./Analytics/Analytics";
 import Audit from "./Audit/Audit";
+import { lazy, Suspense } from "react";
+
+// Lazy load the Reports component to avoid loading date picker dependencies on every page
+const Reports = lazy(() => import("./Reports/Reports"));
 
 function PageRoutes() {
   const [user, setUser] = useState(null);
@@ -66,6 +70,57 @@ function PageRoutes() {
             <Route path="documents" element={<Documents />} />
             <Route path="audit" element={<Audit />} />
             <Route path="analytics" element={<Analytics />} />
+            <Route 
+              path="reports" 
+              element={
+                <Suspense fallback={
+                  <Box
+                    sx={{
+                      flexGrow: 1,
+                      p: { xs: 1, sm: 1.5 },
+                      minHeight: "100vh",
+                      background: "#f5f7fa",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Card
+                      sx={{
+                        background: "white",
+                        borderRadius: 4,
+                        boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                        overflow: "hidden",
+                        position: "relative",
+                        "&::before": {
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: "4px",
+                          background: "linear-gradient(90deg, #667eea, #764ba2, #f093fb)",
+                        },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          height: "400px",
+                          width: "600px",
+                        }}
+                      >
+                        <CircularProgress size={60} sx={{ color: "#667eea" }} />
+                      </Box>
+                    </Card>
+                  </Box>
+                }>
+                  <Reports />
+                </Suspense>
+              } 
+            />
             <Route path="users" element={<UsersTable />} />
             <Route path="settings" element={<Settings user={user} />} />
             <Route path="*" element={<NotFound />} />

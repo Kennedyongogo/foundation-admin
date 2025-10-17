@@ -6,6 +6,22 @@ import svgr from "vite-plugin-svgr";
 // https://vitejs.dev/config/
 export default defineConfig({
   base: "/",
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate date picker into its own chunk
+          'date-pickers': ['@mui/x-date-pickers', '@mui/x-date-pickers-pro'],
+          // Separate MUI components
+          'mui-core': ['@mui/material', '@mui/icons-material'],
+          // Separate animation library
+          'framer-motion': ['framer-motion'],
+        },
+      },
+    },
+    // Increase chunk size warning limit
+    chunkSizeWarningLimit: 1000,
+  },
   plugins: [
     react(),
     VitePWA({

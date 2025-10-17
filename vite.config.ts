@@ -11,7 +11,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           // Separate date picker into its own chunk
-          'date-pickers': ['@mui/x-date-pickers', '@mui/x-date-pickers-pro'],
+          'date-pickers': ['@mui/x-date-pickers'],
           // Separate MUI components
           'mui-core': ['@mui/material', '@mui/icons-material'],
           // Separate animation library

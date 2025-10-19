@@ -27,6 +27,7 @@ import {
   Folder,
   History,
   Assessment,
+  RateReview,
 } from "@mui/icons-material";
 import { Money } from "@phosphor-icons/react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -188,6 +189,11 @@ const Navbar = (props) => {
           text: "Issues",
           icon: <Warning />,
           path: "/issues",
+        },
+        {
+          text: "Testimonies",
+          icon: <RateReview />,
+          path: "/testimonies",
         },
       ],
     },

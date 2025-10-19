@@ -9,6 +9,7 @@ import ProjectView from "./Projects/ProjectView";
 import ProjectEdit from "./Projects/ProjectEdit";
 import ProjectCreate from "./Projects/ProjectCreate";
 import Issues from "./Issues/Issues";
+import Testimony from "./Testimony/Testimony";
 import CharityMap from "../CharityMap";
 import Documents from "./Documents/Documents";
 import UsersTable from "./Users/UsersTable";
@@ -66,6 +67,7 @@ function PageRoutes() {
             <Route path="projects/:id" element={<ProjectView />} />
             <Route path="projects/:id/edit" element={<ProjectEdit />} />
             <Route path="issues" element={<Issues />} />
+            <Route path="testimonies" element={<Testimony />} />
             <Route path="map" element={<CharityMap />} />
             <Route path="documents" element={<Documents />} />
             <Route path="audit" element={<Audit />} />

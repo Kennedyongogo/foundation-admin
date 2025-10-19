@@ -33,7 +33,7 @@ import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
 import { fromLonLat } from "ol/proj";
-import { defaults as defaultControls, ScaleLine, ZoomSlider } from "ol/control";
+import { defaults as defaultControls, ScaleLine } from "ol/control";
 import XYZ from "ol/source/XYZ";
 import MapIcon from "@mui/icons-material/Map";
 import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
@@ -75,20 +75,14 @@ const CharityMap = () => {
     x: 0,
     y: 0,
   });
-  const [visibleStatuses, setVisibleStatuses] = useState({
-    pending: true,
-    in_progress: true,
-    completed: true,
-    on_hold: true,
-    cancelled: true,
-  });
 
   const [visibleCategories, setVisibleCategories] = useState({
     volunteer: true,
-    donation: true,
-    fundraising: true,
+    education: true,
+    mental_health: true,
     community: true,
-    other: true,
+    donation: true,
+    partnership: true,
   });
 
   // Search and filter states
@@ -293,7 +287,7 @@ const CharityMap = () => {
           center: fromLonLat([36.7758, -1.2921]), // Center near Nairobi, Kenya where the construction project is
           zoom: 10, // Closer view to see the construction project
         }),
-        controls: defaultControls().extend([new ScaleLine(), new ZoomSlider()]),
+        controls: defaultControls().extend([new ScaleLine()]),
       });
 
       // Click interaction will be handled in the application-specific useEffect
@@ -571,7 +565,6 @@ const CharityMap = () => {
         (project) =>
           project.longitude !== null &&
           project.latitude !== null &&
-          visibleStatuses[project.status] &&
           visibleCategories[project.category]
       )
       .map((project) => {
@@ -686,7 +679,6 @@ const CharityMap = () => {
     charityProjects,
     searchResults,
     mapInitialized,
-    visibleStatuses,
     visibleCategories,
     nearMeMode,
     nearMeResults,
@@ -719,22 +711,28 @@ const CharityMap = () => {
     setTabValue(newValue);
   };
 
+  // Project categories matching the API
+  const PROJECT_CATEGORIES = {
+    volunteer: { label: "Volunteer Opportunities", color: "#4caf50" },
+    education: { label: "Educational Support", color: "#2196f3" },
+    mental_health: { label: "Mental Health Services", color: "#e91e63" },
+    community: { label: "Community Programs", color: "#ff9800" },
+    donation: { label: "Donations & Support", color: "#9c27b0" },
+    partnership: { label: "Partnership Opportunities", color: "#00bcd4" },
+  };
+
+  // Project status colors
+  const STATUS_COLORS = {
+    pending: "#ff9800", // Orange
+    in_progress: "#4caf50", // Green
+    completed: "#2196f3", // Blue
+    on_hold: "#ff5722", // Deep Orange
+    cancelled: "#f44336", // Red
+  };
+
   // Helper function to get status color
   const getStatusColor = (status) => {
-    switch (status) {
-      case "pending":
-        return "#ff9800"; // Orange
-      case "in_progress":
-        return "#4caf50"; // Green
-      case "completed":
-        return "#2196f3"; // Blue
-      case "on_hold":
-        return "#ff5722"; // Deep Orange
-      case "cancelled":
-        return "#f44336"; // Red
-      default:
-        return "#666"; // Gray
-    }
+    return STATUS_COLORS[status] || "#666";
   };
 
   // Helper function to get category marker
@@ -764,6 +762,19 @@ const CharityMap = () => {
           </svg>
         `;
         break;
+      case "education":
+        svgIcon = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="${outerRadius}" fill="${statusColor}" stroke="white" stroke-width="${strokeWidth}"/>
+            ${
+              isSearchResult
+                ? `<circle cx="12" cy="12" r="14" fill="none" stroke="#ff6b35" stroke-width="2" opacity="0.8"/>`
+                : ""
+            }
+            <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="white"/>
+          </svg>
+        `;
+        break;
       case "donation":
         svgIcon = `
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -777,7 +788,7 @@ const CharityMap = () => {
           </svg>
         `;
         break;
-      case "fundraising":
+      case "mental_health":
         svgIcon = `
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="${outerRadius}" fill="${statusColor}" stroke="white" stroke-width="${strokeWidth}"/>
@@ -786,7 +797,7 @@ const CharityMap = () => {
                 ? `<circle cx="12" cy="12" r="14" fill="none" stroke="#ff6b35" stroke-width="2" opacity="0.8"/>`
                 : ""
             }
-            <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.42 0 2.13.54 2.39 1.4.12.4.45.7.87.7h.3c.66 0 1.13-.65.9-1.27-.42-1.18-1.4-2.16-2.96-2.54V4.5c0-.83-.67-1.5-1.5-1.5S10 3.67 10 4.5v.66c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-1.65 0-2.5-.59-2.83-1.43-.15-.39-.49-.67-.9-.67h-.28c-.67 0-1.14.68-.89 1.3.57 1.39 1.9 2.21 3.4 2.53v.67c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-.65c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" fill="white"/>
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="white"/>
           </svg>
         `;
         break;
@@ -803,7 +814,19 @@ const CharityMap = () => {
           </svg>
         `;
         break;
-      case "other":
+      case "partnership":
+        svgIcon = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="${outerRadius}" fill="${statusColor}" stroke="white" stroke-width="${strokeWidth}"/>
+            ${
+              isSearchResult
+                ? `<circle cx="12" cy="12" r="14" fill="none" stroke="#ff6b35" stroke-width="2" opacity="0.8"/>`
+                : ""
+            }
+            <path d="M9 11.75c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zm6 0c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86 2.36-1.05 4.23-2.98 5.21-5.37C11.07 8.33 14.05 10 17.42 10c.78 0 1.53-.09 2.25-.26.21.71.33 1.47.33 2.26 0 4.41-3.59 8-8 8z" fill="white"/>
+          </svg>
+        `;
+        break;
       default:
         svgIcon = `
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -822,13 +845,6 @@ const CharityMap = () => {
     return svgIcon;
   };
 
-  // Handle status toggle
-  const handleStatusToggle = (status) => {
-    setVisibleStatuses((prev) => ({
-      ...prev,
-      [status]: !prev[status],
-    }));
-  };
 
   // Handle category toggle
   const handleCategoryToggle = (category) => {
@@ -840,36 +856,24 @@ const CharityMap = () => {
 
   // Handle select all/deselect all
   const handleSelectAll = () => {
-    setVisibleStatuses({
-      pending: true,
-      in_progress: true,
-      completed: true,
-      on_hold: true,
-      cancelled: true,
-    });
     setVisibleCategories({
       volunteer: true,
-      donation: true,
-      fundraising: true,
+      education: true,
+      mental_health: true,
       community: true,
-      other: true,
+      donation: true,
+      partnership: true,
     });
   };
 
   const handleDeselectAll = () => {
-    setVisibleStatuses({
-      pending: false,
-      in_progress: false,
-      completed: false,
-      on_hold: false,
-      cancelled: false,
-    });
     setVisibleCategories({
       volunteer: false,
-      donation: false,
-      fundraising: false,
+      education: false,
+      mental_health: false,
       community: false,
-      other: false,
+      donation: false,
+      partnership: false,
     });
   };
 
@@ -903,23 +907,10 @@ const CharityMap = () => {
     }
   };
 
-  // Get status and category counts
-  const getStatusCounts = () => {
+  // Get category counts
+  const getCategoryCounts = () => {
     const counts = {};
-    const statuses = [
-      "pending",
-      "in_progress",
-      "completed",
-      "on_hold",
-      "cancelled",
-    ];
-    const categories = [
-      "volunteer",
-      "donation",
-      "fundraising",
-      "community",
-      "other",
-    ];
+    const categories = Object.keys(PROJECT_CATEGORIES);
     let dataToCount;
 
     if (nearMeMode && nearMeResults.length > 0) {
@@ -929,15 +920,6 @@ const CharityMap = () => {
     } else {
       dataToCount = charityProjects;
     }
-
-    statuses.forEach((status) => {
-      counts[status] = dataToCount.filter(
-        (project) =>
-          project.status === status &&
-          project.longitude !== null &&
-          project.latitude !== null
-      ).length;
-    });
 
     categories.forEach((category) => {
       counts[category] = dataToCount.filter(
@@ -951,7 +933,7 @@ const CharityMap = () => {
     return counts;
   };
 
-  const statusCounts = getStatusCounts();
+  const categoryCounts = getCategoryCounts();
 
   return (
     <>
@@ -1336,23 +1318,6 @@ const CharityMap = () => {
               justifyContent: "center",
             },
           },
-          "& .ol-zoomslider": {
-            top: "7em",
-            left: "1em",
-            height: "150px",
-            width: "28px",
-            background: "rgba(255,255,255,0.8)",
-            border: "1px solid #ccc",
-            borderRadius: "2px",
-            margin: "2px",
-            padding: 0,
-            "& .ol-zoomslider-thumb": {
-              height: "20px",
-              width: "24px",
-              backgroundColor: "#666",
-              margin: "2px",
-            },
-          },
         }}
       >
         {/* Tooltip */}
@@ -1415,7 +1380,7 @@ const CharityMap = () => {
           sx={{
             position: "absolute",
             left: "1em",
-            top: "calc(7em + 150px + 1em)",
+            top: "7em",
             zIndex: 1000,
             backgroundColor: "rgba(255,255,255,0.8)",
             borderRadius: "2px",
@@ -1608,10 +1573,10 @@ const CharityMap = () => {
                     sx={{
                       padding: 0.1,
                       "&.Mui-checked": {
-                        color: "#2196f3",
+                        color: PROJECT_CATEGORIES[category]?.color,
                       },
                       "&:hover": {
-                        backgroundColor: "#2196f320",
+                        backgroundColor: `${PROJECT_CATEGORIES[category]?.color}20`,
                       },
                     }}
                   />
@@ -1620,7 +1585,7 @@ const CharityMap = () => {
                       width: 10,
                       height: 10,
                       borderRadius: "50%",
-                      backgroundColor: "#2196f3",
+                      backgroundColor: PROJECT_CATEGORIES[category]?.color,
                       mr: 0.25,
                       transition: "all 0.2s ease-in-out",
                       opacity: isVisible ? 1 : 0.5,
@@ -1645,14 +1610,14 @@ const CharityMap = () => {
                       textTransform: "capitalize",
                     }}
                   >
-                    {category.replace("_", " ")}
+                    {PROJECT_CATEGORIES[category]?.label || category.replace("_", " ")}
                   </Typography>
                   <Typography
                     variant="caption"
                     sx={{
                       fontSize: "8px",
                       color: "text.secondary",
-                      backgroundColor: isVisible ? "#2196f320" : "#f5f5f5",
+                      backgroundColor: isVisible ? `${PROJECT_CATEGORIES[category]?.color}20` : "#f5f5f5",
                       px: 0.25,
                       py: 0.05,
                       borderRadius: 0.25,
@@ -1661,95 +1626,13 @@ const CharityMap = () => {
                       textAlign: "center",
                     }}
                   >
-                    {statusCounts[category]}
+                    {categoryCounts[category]}
                   </Typography>
                 </Box>
               )
             )}
           </Box>
 
-          {/* Project Status Colors with Checkboxes */}
-          <Typography
-            variant="body2"
-            sx={{
-              fontSize: "11px",
-              fontWeight: "bold",
-              mb: 0.25,
-              color: "text.secondary",
-            }}
-          >
-            Project Status
-          </Typography>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
-            {Object.entries(visibleStatuses).map(([status, isVisible]) => (
-              <Box
-                key={status}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.25,
-                  transition: "all 0.2s ease-in-out",
-                }}
-              >
-                <Checkbox
-                  checked={isVisible}
-                  onChange={() => handleStatusToggle(status)}
-                  size="small"
-                  sx={{
-                    padding: 0.1,
-                    "&.Mui-checked": {
-                      color: getStatusColor(status),
-                    },
-                    "&:hover": {
-                      backgroundColor: `${getStatusColor(status)}20`,
-                    },
-                  }}
-                />
-                <Box
-                  sx={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: "50%",
-                    backgroundColor: getStatusColor(status),
-                    mr: 0.25,
-                    transition: "all 0.2s ease-in-out",
-                    opacity: isVisible ? 1 : 0.5,
-                  }}
-                />
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontSize: "10px",
-                    fontWeight: isVisible ? 600 : 400,
-                    color: isVisible ? "text.primary" : "text.secondary",
-                    transition: "all 0.2s ease-in-out",
-                    flexGrow: 1,
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {status.replace("_", " ")}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: "8px",
-                    color: "text.secondary",
-                    backgroundColor: isVisible
-                      ? `${getStatusColor(status)}20`
-                      : "#f5f5f5",
-                    px: 0.25,
-                    py: 0.05,
-                    borderRadius: 0.25,
-                    fontWeight: 600,
-                    minWidth: "14px",
-                    textAlign: "center",
-                  }}
-                >
-                  {statusCounts[status]}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
 
           {/* Summary */}
           <Box
@@ -1780,9 +1663,9 @@ const CharityMap = () => {
                 fontSize: "9px",
               }}
             >
-              {Object.entries(visibleStatuses)
+              {Object.entries(visibleCategories)
                 .filter(([_, isVisible]) => isVisible)
-                .reduce((sum, [status, _]) => sum + statusCounts[status], 0)}
+                .reduce((sum, [category, _]) => sum + categoryCounts[category], 0)}
             </Typography>
           </Box>
         </Box>
@@ -2051,16 +1934,15 @@ const CharityMap = () => {
                             px: 2,
                             py: 0.5,
                             borderRadius: 3,
-                            backgroundColor: "#e3f2fd",
-                            color: "#1976d2",
+                            backgroundColor: `${PROJECT_CATEGORIES[selectedProjectDetails.category]?.color}20`,
+                            color: PROJECT_CATEGORIES[selectedProjectDetails.category]?.color,
                             fontWeight: 600,
                             fontSize: "0.85rem",
                           }}
                         >
-                          {selectedProjectDetails.category
-                            ?.charAt(0)
-                            .toUpperCase() +
-                            selectedProjectDetails.category?.slice(1) || "-"}
+                          {PROJECT_CATEGORIES[selectedProjectDetails.category]?.label || 
+                           selectedProjectDetails.category?.charAt(0).toUpperCase() + 
+                           selectedProjectDetails.category?.slice(1) || "-"}
                         </Box>
                       </Box>
 

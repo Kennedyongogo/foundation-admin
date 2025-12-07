@@ -8,6 +8,14 @@ import Projects from "./Projects/Projects";
 import ProjectView from "./Projects/ProjectView";
 import ProjectEdit from "./Projects/ProjectEdit";
 import ProjectCreate from "./Projects/ProjectCreate";
+import MissionCategories from "./MissionCategories/MissionCategories";
+import MissionCategoryView from "./MissionCategories/MissionCategoryView";
+import MissionCategoryCreate from "./MissionCategories/MissionCategoryCreate";
+import MissionCategoryEdit from "./MissionCategories/MissionCategoryEdit";
+import Posts from "./Posts/Posts";
+import PostView from "./Posts/PostView";
+import PostCreate from "./Posts/PostCreate";
+import PostEdit from "./Posts/PostEdit";
 import Issues from "./Issues/Issues";
 import Testimony from "./Testimony/Testimony";
 import CharityMap from "../CharityMap";
@@ -66,6 +74,14 @@ function PageRoutes() {
             <Route path="projects/create" element={<ProjectCreate />} />
             <Route path="projects/:id" element={<ProjectView />} />
             <Route path="projects/:id/edit" element={<ProjectEdit />} />
+            <Route path="mission-categories" element={<MissionCategories />} />
+            <Route path="mission-categories/create" element={<MissionCategoryCreate />} />
+            <Route path="mission-categories/:id" element={<MissionCategoryView />} />
+            <Route path="mission-categories/:id/edit" element={<MissionCategoryEdit />} />
+            <Route path="posts" element={<Posts />} />
+            <Route path="posts/create" element={<PostCreate />} />
+            <Route path="posts/:id" element={<PostView />} />
+            <Route path="posts/:id/edit" element={<PostEdit />} />
             <Route path="issues" element={<Issues />} />
             <Route path="testimonies" element={<Testimony />} />
             <Route path="map" element={<CharityMap />} />

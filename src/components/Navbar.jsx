@@ -28,6 +28,9 @@ import {
   History,
   Assessment,
   RateReview,
+  Favorite,
+  Article,
+  Event,
 } from "@mui/icons-material";
 import { Money } from "@phosphor-icons/react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
@@ -179,6 +182,16 @@ const Navbar = (props) => {
           text: "Documents",
           icon: <Folder />,
           path: "/documents",
+        },
+        {
+          text: "Mission Categories",
+          icon: <Favorite />,
+          path: "/mission-categories",
+        },
+        {
+          text: "Posts",
+          icon: <Article />,
+          path: "/posts",
         },
         {
           text: "Charity Map",

@@ -24,15 +24,21 @@ import {
   People,
   LocationOn,
   Event,
+  CloudUpload,
+  Image as ImageIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import LocationMapPicker from "./LocationMapPicker";
 
 const ProjectCreate = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [filePreviews, setFilePreviews] = useState([]);
   const [projectForm, setProjectForm] = useState({
     name: "",
     description: "",
@@ -62,23 +68,89 @@ const ProjectCreate = () => {
     }));
   };
 
+  const handleFileSelect = (event) => {
+    const files = Array.from(event.target.files);
+    const validFiles = files.filter((file) => {
+      if (file.size > 10 * 1024 * 1024) {
+        Swal.fire({
+          icon: "error",
+          title: "File too large",
+          text: `${file.name} is larger than 10MB`,
+        });
+        return false;
+      }
+      if (!file.type.startsWith("image/")) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid file type",
+          text: `${file.name} is not an image file`,
+        });
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...validFiles]);
+      
+      // Create previews for new files
+      validFiles.forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFilePreviews((prev) => [
+            ...prev,
+            { file, preview: reader.result, name: file.name },
+          ]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    
+    // Reset input to allow selecting the same file again
+    event.target.value = "";
+  };
+
+  const removeSelectedFile = (index) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setFilePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleCreate = async () => {
     try {
       setSaving(true);
 
       const token = localStorage.getItem("token");
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      
+      // Add all project form fields
+      Object.keys(projectForm).forEach((key) => {
+        if (projectForm[key] !== null && projectForm[key] !== undefined && projectForm[key] !== "") {
+          formData.append(key, projectForm[key]);
+        }
+      });
+      
+      // Add image files
+      selectedFiles.forEach((file) => {
+        formData.append("update_images", file);
+      });
+
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify(projectForm),
+        body: formData,
       });
 
       const result = await response.json();
 
       if (result.success) {
+        // Clear selected files after successful creation
+        setSelectedFiles([]);
+        setFilePreviews([]);
+        
         await Swal.fire({
           title: "Success!",
           text: "Project created successfully!",
@@ -319,68 +391,64 @@ const ProjectCreate = () => {
                 </Box>
 
                 <Grid container spacing={3} sx={{ flexDirection: "column" }}>
+                  {/* Map Picker for Location - Includes County and Subcounty Selection */}
                   <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="County"
-                      value={projectForm.county}
-                      onChange={(e) =>
-                        handleInputChange("county", e.target.value)
-                      }
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
+                    <LocationMapPicker
+                      county={projectForm.county}
+                      subcounty={projectForm.subcounty}
+                      latitude={projectForm.latitude}
+                      longitude={projectForm.longitude}
+                      onCountyChange={(value) => handleInputChange("county", value)}
+                      onSubcountyChange={(value) => handleInputChange("subcounty", value)}
+                      onLocationChange={(lat, lng) => {
+                        handleInputChange("latitude", lat);
+                        handleInputChange("longitude", lng);
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Sub-County"
-                      value={projectForm.subcounty}
-                      onChange={(e) =>
-                        handleInputChange("subcounty", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Latitude"
-                      type="number"
-                      value={projectForm.latitude}
-                      onChange={(e) =>
-                        handleInputChange("latitude", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Longitude"
-                      type="number"
-                      value={projectForm.longitude}
-                      onChange={(e) =>
-                        handleInputChange("longitude", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
+
+                  {/* Display coordinates (read-only) */}
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Latitude"
+                        type="number"
+                        value={projectForm.latitude}
+                        onChange={(e) =>
+                          handleInputChange("latitude", e.target.value)
+                        }
+                        placeholder="Click on map to set"
+                        InputProps={{
+                          readOnly: false,
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "transparent",
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Longitude"
+                        type="number"
+                        value={projectForm.longitude}
+                        onChange={(e) =>
+                          handleInputChange("longitude", e.target.value)
+                        }
+                        placeholder="Click on map to set"
+                        InputProps={{
+                          readOnly: false,
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "transparent",
+                          },
+                        }}
+                      />
+                    </Grid>
                   </Grid>
                 </Grid>
               </CardContent>
@@ -477,6 +545,136 @@ const ProjectCreate = () => {
                     />
                   </Grid>
                 </Grid>
+              </CardContent>
+            </Card>
+
+            {/* Project Images */}
+            <Card
+              sx={{
+                backgroundColor: "white",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+                border: "1px solid #e0e0e0",
+                mb: 3,
+              }}
+            >
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={1} mb={3}>
+                  <ImageIcon sx={{ color: "#43e97b" }} />
+                  <Typography variant="h5" sx={{ color: "#333" }}>
+                    Project Images
+                  </Typography>
+                </Box>
+
+                {/* Image Upload */}
+                <Box mb={3}>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={handleFileSelect}
+                    style={{ display: "none" }}
+                    id="file-upload"
+                    accept="image/*"
+                  />
+                  <label htmlFor="file-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<CloudUpload />}
+                      sx={{
+                        color: "#43e97b",
+                        borderColor: "#43e97b",
+                        "&:hover": {
+                          borderColor: "#43e97b",
+                          backgroundColor: "rgba(67, 233, 123, 0.1)",
+                        },
+                        mb: 2,
+                      }}
+                    >
+                      Upload Images
+                    </Button>
+                  </label>
+                </Box>
+
+                {/* Selected Images Preview */}
+                {filePreviews.length > 0 && (
+                  <Box>
+                    <Typography variant="subtitle2" mb={2}>
+                      Selected Images ({filePreviews.length}):
+                    </Typography>
+                    <Grid container spacing={2}>
+                      {filePreviews.map((preview, index) => (
+                        <Grid item xs={12} sm={6} md={4} key={index}>
+                          <Box
+                            sx={{
+                              p: 2,
+                              backgroundColor: "#f8f9fa",
+                              borderRadius: 2,
+                              border: "1px solid #e0e0e0",
+                              position: "relative",
+                            }}
+                          >
+                            <IconButton
+                              onClick={() => removeSelectedFile(index)}
+                              sx={{
+                                position: "absolute",
+                                top: 8,
+                                right: 8,
+                                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                                color: "white",
+                                "&:hover": {
+                                  backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                },
+                                zIndex: 2,
+                              }}
+                              size="small"
+                            >
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                            <img
+                              src={preview.preview}
+                              alt={preview.name}
+                              style={{
+                                width: "100%",
+                                height: "150px",
+                                objectFit: "cover",
+                                borderRadius: "8px",
+                                marginBottom: "8px",
+                              }}
+                            />
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: "#333",
+                                display: "block",
+                                textAlign: "center",
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {preview.name}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Box>
+                )}
+
+                {filePreviews.length === 0 && (
+                  <Box
+                    sx={{
+                      border: "2px dashed #ccc",
+                      borderRadius: 2,
+                      p: 3,
+                      textAlign: "center",
+                      bgcolor: "#f9f9f9",
+                    }}
+                  >
+                    <ImageIcon sx={{ fontSize: 48, opacity: 0.3 }} />
+                    <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+                      No images selected. Click "Upload Images" to add images.
+                    </Typography>
+                  </Box>
+                )}
               </CardContent>
             </Card>
 

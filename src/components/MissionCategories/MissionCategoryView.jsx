@@ -208,9 +208,20 @@ const MissionCategoryView = () => {
                 variant="outlined"
                 startIcon={<ArrowBackIcon />}
                 onClick={() => navigate("/mission-categories")}
+                size="small"
                 sx={{
                   color: "white",
                   borderColor: "rgba(255, 255, 255, 0.3)",
+                  px: 1.5,
+                  py: 0.5,
+                  fontSize: "0.75rem",
+                  minHeight: "auto",
+                  "& .MuiButton-startIcon": {
+                    marginRight: 0.5,
+                    "& > *:nth-of-type(1)": {
+                      fontSize: "0.875rem",
+                    },
+                  },
                   "&:hover": {
                     borderColor: "rgba(255, 255, 255, 0.5)",
                     backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -219,19 +230,21 @@ const MissionCategoryView = () => {
               >
                 Back
               </Button>
-              <Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography
                   variant="h4"
                   sx={{
                     fontWeight: 800,
                     mb: 1,
                     textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                    fontSize: { xs: "0.9rem", sm: "1.1rem", md: "1.3rem" },
+                    lineHeight: 1.1,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
                   {category.title}
-                </Typography>
-                <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                  Mission Category Details
                 </Typography>
               </Box>
             </Box>
@@ -239,10 +252,21 @@ const MissionCategoryView = () => {
               variant="contained"
               startIcon={<EditIcon />}
               onClick={() => navigate(`/mission-categories/${id}/edit`)}
+              size="small"
               sx={{
                 backgroundColor: "rgba(255, 255, 255, 0.2)",
                 color: "white",
                 border: "1px solid rgba(255, 255, 255, 0.3)",
+                px: 1.5,
+                py: 0.5,
+                fontSize: "0.75rem",
+                minHeight: "auto",
+                "& .MuiButton-startIcon": {
+                  marginRight: 0.5,
+                  "& > *:nth-of-type(1)": {
+                    fontSize: "0.875rem",
+                  },
+                },
                 "&:hover": {
                   backgroundColor: "rgba(255, 255, 255, 0.3)",
                 },
@@ -301,14 +325,29 @@ const MissionCategoryView = () => {
                     </Box>
                   </Box>
                   {category.impact && (
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <MissionIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Impact
-                        </Typography>
+                    <Box>
+                      <Typography variant="body2" sx={{ color: "#666", mb: 1 }}>
+                        Impact{Array.isArray(category.impact) && category.impact.length > 1 ? 's' : ''}
+                      </Typography>
+                      {Array.isArray(category.impact) && category.impact.length > 0 ? (
+                        <Box component="ul" sx={{ pl: 3, mb: 0, mt: 0.5, "& li": { mb: 1, lineHeight: 1.7 } }}>
+                          {category.impact.map((impactItem, index) => (
+                            <Typography
+                              key={index}
+                              component="li"
+                              variant="body1"
+                              sx={{
+                                color: "#333",
+                                fontSize: "0.95rem",
+                              }}
+                            >
+                              {impactItem}
+                            </Typography>
+                          ))}
+                        </Box>
+                      ) : (
                         <Chip
-                          label={category.impact}
+                          label={typeof category.impact === 'string' ? category.impact : 'N/A'}
                           size="small"
                           sx={{
                             mt: 0.5,
@@ -318,7 +357,7 @@ const MissionCategoryView = () => {
                             textTransform: "capitalize",
                           }}
                         />
-                      </Box>
+                      )}
                     </Box>
                   )}
                 </Stack>

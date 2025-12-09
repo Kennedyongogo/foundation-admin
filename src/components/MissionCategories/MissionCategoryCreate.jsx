@@ -39,8 +39,9 @@ const MissionCategoryCreate = () => {
     title: "",
     description: "",
     category: "educational_support",
-    impact: "",
+    impact: [],
   });
+  const [impactInputs, setImpactInputs] = useState([""]);
 
   const categoryOptions = [
     { value: "educational_support", label: "Educational Support", color: "#2196f3" },
@@ -94,6 +95,22 @@ const MissionCategoryCreate = () => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleImpactChange = (index, value) => {
+    const newInputs = [...impactInputs];
+    newInputs[index] = value;
+    setImpactInputs(newInputs);
+  };
+
+  const addImpactInput = () => {
+    setImpactInputs((prev) => [...prev, ""]);
+  };
+
+  const removeImpactInput = (index) => {
+    if (impactInputs.length > 1) {
+      setImpactInputs((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
+
   const handleCreate = async () => {
     try {
       if (!categoryForm.title || !categoryForm.description) {
@@ -113,12 +130,18 @@ const MissionCategoryCreate = () => {
         throw new Error("No authentication token found");
       }
 
+      // Collect non-empty impacts
+      const impacts = impactInputs.filter(imp => imp && imp.trim());
+      
       // Create FormData for file upload
       const formData = new FormData();
       formData.append("title", categoryForm.title);
       formData.append("description", categoryForm.description);
       formData.append("category", categoryForm.category);
-      if (categoryForm.impact) formData.append("impact", categoryForm.impact);
+      if (impacts.length > 0) {
+        // Send impacts as JSON string array
+        formData.append("impact", JSON.stringify(impacts));
+      }
       
       // Append multiple images
       selectedImages.forEach((image) => {
@@ -344,18 +367,44 @@ const MissionCategoryCreate = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Impact"
-                  value={categoryForm.impact}
-                  onChange={(e) => handleInputChange("impact", e.target.value)}
-                  helperText="e.g., High Impact"
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "transparent",
-                    },
-                  }}
-                />
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                    Impacts (List multiple key impacts)
+                  </Typography>
+                  {impactInputs.map((impact, index) => (
+                    <Box key={index} sx={{ display: "flex", gap: 1, mb: 1 }}>
+                      <TextField
+                        fullWidth
+                        label={`Impact ${index + 1}`}
+                        value={impact}
+                        onChange={(e) => handleImpactChange(index, e.target.value)}
+                        placeholder="e.g., Over 200 students received scholarship support"
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "transparent",
+                          },
+                        }}
+                      />
+                      {impactInputs.length > 1 && (
+                        <IconButton
+                          onClick={() => removeImpactInput(index)}
+                          color="error"
+                          sx={{ mt: 0.5 }}
+                        >
+                          <CloseIcon />
+                        </IconButton>
+                      )}
+                    </Box>
+                  ))}
+                  <Button
+                    onClick={addImpactInput}
+                    variant="outlined"
+                    size="small"
+                    sx={{ mt: 1 }}
+                  >
+                    + Add Another Impact
+                  </Button>
+                </Box>
               </Grid>
                 </Grid>
               </CardContent>

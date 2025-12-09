@@ -416,20 +416,19 @@ const MissionCategories = () => {
                   <TableCell>Title</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Category</TableCell>
-                  <TableCell>Impact</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                       <CircularProgress sx={{ color: "#667eea" }} />
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                       <Typography color="error" variant="h6">
                         {error}
                       </Typography>
@@ -437,7 +436,7 @@ const MissionCategories = () => {
                   </TableRow>
                 ) : paginatedCategories.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                       <Typography variant="h6" color="text.secondary">
                         No mission categories found.
                       </Typography>
@@ -512,19 +511,6 @@ const MissionCategories = () => {
                             fontWeight: 600,
                             borderRadius: 2,
                             backgroundColor: getCategoryColor(category.category),
-                            color: "white",
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={category.impact || "N/A"}
-                          size="small"
-                          sx={{
-                            textTransform: "capitalize",
-                            fontWeight: 600,
-                            borderRadius: 2,
-                            backgroundColor: "#667eea",
                             color: "white",
                           }}
                         />

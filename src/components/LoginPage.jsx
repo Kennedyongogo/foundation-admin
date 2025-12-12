@@ -13,6 +13,7 @@ import {
   DialogContentText,
   DialogTitle,
   Card,
+  CardContent,
   Snackbar,
   Alert,
   Grid,
@@ -275,7 +276,7 @@ export default function LoginPage(props) {
       position="relative"
       sx={{ 
         overflow: "hidden",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        background: "transparent"
       }}
     >
       <div
@@ -291,7 +292,7 @@ export default function LoginPage(props) {
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           transition: "opacity 1s ease-in-out",
-          filter: "brightness(0.4) contrast(1.2)",
+          filter: "none",
         }}
       />
       
@@ -336,11 +337,7 @@ export default function LoginPage(props) {
           left: 0,
           width: "100%",
           height: "100%",
-          background: `linear-gradient(135deg, 
-            rgba(102, 126, 234, 0.8) 0%, 
-            rgba(118, 75, 162, 0.8) 50%, 
-            rgba(0,0,0,0.6) 100%)`,
-          backdropFilter: "blur(1px)",
+          background: "transparent",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -517,10 +514,7 @@ export default function LoginPage(props) {
                         sx={{
                           textShadow: "2px 2px 8px rgba(0,0,0,0.6)",
                           letterSpacing: "1px",
-                          background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8))",
-                          backgroundClip: "text",
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
+                          color: "white",
                           fontSize: { xs: "1.5rem", sm: "1.8rem", md: "2rem" },
                         }}
                       >
@@ -793,6 +787,71 @@ export default function LoginPage(props) {
               </Slide>
             </Grid>
           </Grid>
+          
+          {/* Developed by Card */}
+          <Box sx={{ display: "flex", justifyContent: "center", mt: { xs: 2, sm: 2.5, md: 3 } }}>
+            <Fade in timeout={2000}>
+              <Card
+                sx={{
+                  width: { xs: "auto", sm: "30%" },
+                  minWidth: "fit-content",
+                  background: "linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(56, 142, 60, 0.9) 50%, rgba(46, 125, 50, 0.9) 100%)",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  borderRadius: "12px",
+                  boxShadow: "0 8px 32px rgba(76, 175, 80, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 12px 48px rgba(76, 175, 80, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                    borderColor: "rgba(255, 255, 255, 0.25)",
+                    background: "linear-gradient(135deg, rgba(76, 175, 80, 1) 0%, rgba(56, 142, 60, 1) 50%, rgba(46, 125, 50, 1) 100%)",
+                  },
+                }}
+              >
+                <CardContent sx={{ p: { xs: 0.75, sm: 1 }, "&:last-child": { pb: { xs: 0.75, sm: 1 } } }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: { xs: 0.5, md: 1 },
+                      textAlign: "center",
+                      flexWrap: "nowrap",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: "white",
+                        fontWeight: 600,
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        whiteSpace: "nowrap",
+                        display: "inline",
+                      }}
+                    >
+                      Developed by
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: "white",
+                        fontWeight: 600,
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                        whiteSpace: "nowrap",
+                        display: "inline",
+                      }}
+                    >
+                      Carlvyne Technologies Ltd
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Fade>
+          </Box>
         </Container>
       </Box>
 

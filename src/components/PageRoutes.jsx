@@ -23,6 +23,7 @@ import Documents from "./Documents/Documents";
 import UsersTable from "./Users/UsersTable";
 import Analytics from "./Analytics/Analytics";
 import Audit from "./Audit/Audit";
+import PublicMembers from "./PublicMembers/PublicMembers";
 import { lazy, Suspense } from "react";
 
 // Lazy load the Reports component to avoid loading date picker dependencies on every page
@@ -86,6 +87,7 @@ function PageRoutes() {
             <Route path="testimonies" element={<Testimony />} />
             <Route path="map" element={<CharityMap />} />
             <Route path="documents" element={<Documents />} />
+            <Route path="public-members" element={<PublicMembers />} />
             <Route path="audit" element={<Audit />} />
             <Route path="analytics" element={<Analytics />} />
             <Route 

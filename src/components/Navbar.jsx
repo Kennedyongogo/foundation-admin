@@ -208,6 +208,11 @@ const Navbar = (props) => {
           icon: <RateReview />,
           path: "/testimonies",
         },
+        {
+          text: "Public Members",
+          icon: <People />,
+          path: "/public-members",
+        },
       ],
     },
     {

@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import {
   Box,
-  Container,
   Typography,
-  Card,
-  CardContent,
+  Paper,
   Grid,
   TextField,
   Button,
@@ -27,14 +25,26 @@ import {
   CloudUpload,
   Image as ImageIcon,
   Close as CloseIcon,
+  Add,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
 import LocationMapPicker from "./LocationMapPicker";
+import { brand } from "../../brandColors";
+import {
+  fieldSx,
+  sectionCardSx,
+  SectionHeader,
+  categoryOptions,
+  outerPaperSx,
+  pageHeaderSx,
+  dateGridSx,
+} from "./projectFormUi";
 
 const ProjectCreate = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -52,20 +62,8 @@ const ProjectCreate = () => {
     longitude: "",
   });
 
-  const categoryOptions = [
-    { value: "volunteer", label: "Volunteer Program", color: "#2196f3" },
-    { value: "education", label: "Education", color: "#ff9800" },
-    { value: "mental_health", label: "Mental Health", color: "#9c27b0" },
-    { value: "community", label: "Community Development", color: "#4caf50" },
-    { value: "donation", label: "Donation Drive", color: "#f44336" },
-    { value: "partnership", label: "Partnership", color: "#00bcd4" },
-  ];
-
   const handleInputChange = (field, value) => {
-    setProjectForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setProjectForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleFileSelect = (event) => {
@@ -76,6 +74,7 @@ const ProjectCreate = () => {
           icon: "error",
           title: "File too large",
           text: `${file.name} is larger than 10MB`,
+          confirmButtonColor: brand.green,
         });
         return false;
       }
@@ -84,6 +83,7 @@ const ProjectCreate = () => {
           icon: "error",
           title: "Invalid file type",
           text: `${file.name} is not an image file`,
+          confirmButtonColor: brand.green,
         });
         return false;
       }
@@ -92,8 +92,6 @@ const ProjectCreate = () => {
 
     if (validFiles.length > 0) {
       setSelectedFiles((prev) => [...prev, ...validFiles]);
-      
-      // Create previews for new files
       validFiles.forEach((file) => {
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -105,8 +103,6 @@ const ProjectCreate = () => {
         reader.readAsDataURL(file);
       });
     }
-    
-    // Reset input to allow selecting the same file again
     event.target.value = "";
   };
 
@@ -118,125 +114,81 @@ const ProjectCreate = () => {
   const handleCreate = async () => {
     try {
       setSaving(true);
-
       const token = localStorage.getItem("token");
-      
-      // Create FormData for file upload
       const formData = new FormData();
-      
-      // Add all project form fields
+
       Object.keys(projectForm).forEach((key) => {
         if (projectForm[key] !== null && projectForm[key] !== undefined && projectForm[key] !== "") {
           formData.append(key, projectForm[key]);
         }
       });
-      
-      // Add image files
+
       selectedFiles.forEach((file) => {
         formData.append("update_images", file);
       });
 
       const response = await fetch("/api/projects", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
       const result = await response.json();
 
       if (result.success) {
-        // Clear selected files after successful creation
         setSelectedFiles([]);
         setFilePreviews([]);
-        
         await Swal.fire({
           title: "Success!",
           text: "Project created successfully!",
           icon: "success",
-          confirmButtonColor: "#667eea",
+          confirmButtonColor: brand.green,
         });
         navigate("/projects");
       } else {
         throw new Error(result.message || "Failed to create project");
       }
-    } catch (error) {
-      console.error("Error creating project:", error);
+    } catch (err) {
+      console.error("Error creating project:", err);
       await Swal.fire({
         title: "Error!",
-        text: error.message || "Failed to create project",
+        text: err.message || "Failed to create project",
         icon: "error",
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: brand.green,
       });
     } finally {
       setSaving(false);
     }
   };
 
-  const isFormValid = () => {
-    return (
-      projectForm.name.trim() &&
-      projectForm.description.trim() &&
-      projectForm.category &&
-      projectForm.county.trim()
-    );
-  };
+  const isFormValid = () =>
+    projectForm.name.trim() &&
+    projectForm.description.trim() &&
+    projectForm.category &&
+    projectForm.county.trim();
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-      >
-        <CircularProgress size={60} />
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+        <CircularProgress sx={{ color: brand.green }} size={48} />
       </Box>
     );
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        py: 4,
-      }}
-    >
-      <Container maxWidth="xl">
+    <Box>
+      <Paper elevation={0} sx={outerPaperSx}>
         {/* Header */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-            borderRadius: 2,
-            mb: 4,
-          }}
-        >
+        <Box sx={pageHeaderSx}>
           <Box
             sx={{
               position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
+              top: -40,
+              right: -40,
+              width: 140,
+              height: 140,
               borderRadius: "50%",
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
+              bgcolor: alpha("#fff", 0.06),
             }}
           />
           <Stack
@@ -247,494 +199,377 @@ const ProjectCreate = () => {
           >
             <IconButton
               onClick={() => navigate("/projects")}
+              aria-label="Back to projects"
               sx={{
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.3)",
-                },
+                bgcolor: alpha("#fff", 0.12),
+                color: "#fff",
+                border: `1px solid ${alpha("#fff", 0.2)}`,
+                "&:hover": { bgcolor: alpha(brand.gold, 0.25) },
               }}
             >
               <ArrowBack />
             </IconButton>
-            <VolunteerActivism sx={{ fontSize: 40 }} />
-            <Typography
-              variant="h3"
+            <Box
               sx={{
-                fontWeight: "bold",
-                textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: alpha("#fff", 0.12),
+                border: `1px solid ${alpha(brand.gold, 0.45)}`,
               }}
             >
-              Create New Project
-            </Typography>
+              <Add sx={{ fontSize: 26, color: brand.gold }} />
+            </Box>
+            <Box>
+              <Typography
+                variant="h5"
+                fontWeight={800}
+                sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" }, lineHeight: 1.2 }}
+              >
+                Create New Project
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.88, mt: 0.25 }}>
+                Add a new foundation project or community program
+              </Typography>
+            </Box>
           </Stack>
-
           {error && (
-            <Alert
-              severity="error"
-              sx={{ mt: 2, position: "relative", zIndex: 1 }}
-            >
+            <Alert severity="error" sx={{ mt: 2, position: "relative", zIndex: 1 }}>
               {error}
             </Alert>
           )}
         </Box>
 
-        <Grid container spacing={4} sx={{ width: "100%" }}>
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
           {/* Basic Information */}
-          <Grid item xs={12} sx={{ width: "100%" }}>
-            <Card
-              sx={{
-                backgroundColor: "white",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e0e0e0",
-                mb: 3,
-              }}
-            >
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={3}>
-                  <VolunteerActivism sx={{ color: "#667eea" }} />
-                  <Typography variant="h5" sx={{ color: "#333" }}>
-                    Basic Information
-                  </Typography>
-                </Box>
-
-                <Grid container spacing={3} sx={{ flexDirection: "column" }}>
-                  <Grid item xs={12} sx={{ width: "100%", maxWidth: "100%" }}>
-                    <TextField
-                      fullWidth
-                      label="Project Name"
-                      value={projectForm.name}
-                      onChange={(e) =>
-                        handleInputChange("name", e.target.value)
-                      }
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Description"
-                      multiline
-                      rows={4}
-                      value={projectForm.description}
-                      onChange={(e) =>
-                        handleInputChange("description", e.target.value)
-                      }
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FormControl
-                      fullWidth
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    >
-                      <InputLabel>Project Category</InputLabel>
-                      <Select
-                        value={projectForm.category}
-                        onChange={(e) =>
-                          handleInputChange("category", e.target.value)
-                        }
-                        label="Project Category"
-                      >
-                        {categoryOptions.map((option) => (
-                          <MenuItem key={option.value} value={option.value}>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <Box
-                                sx={{
-                                  width: 12,
-                                  height: 12,
-                                  borderRadius: "50%",
-                                  backgroundColor: option.color,
-                                }}
-                              />
-                              {option.label}
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-
-            {/* Location Information */}
-            <Card
-              sx={{
-                backgroundColor: "white",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e0e0e0",
-                mb: 3,
-              }}
-            >
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={3}>
-                  <LocationOn sx={{ color: "#f093fb" }} />
-                  <Typography variant="h5" sx={{ color: "#333" }}>
-                    Location Information
-                  </Typography>
-                </Box>
-
-                <Grid container spacing={3} sx={{ flexDirection: "column" }}>
-                  {/* Map Picker for Location - Includes County and Subcounty Selection */}
-                  <Grid item xs={12}>
-                    <LocationMapPicker
-                      county={projectForm.county}
-                      subcounty={projectForm.subcounty}
-                      latitude={projectForm.latitude}
-                      longitude={projectForm.longitude}
-                      onCountyChange={(value) => handleInputChange("county", value)}
-                      onSubcountyChange={(value) => handleInputChange("subcounty", value)}
-                      onLocationChange={(lat, lng) => {
-                        handleInputChange("latitude", lat);
-                        handleInputChange("longitude", lng);
-                      }}
-                    />
-                  </Grid>
-
-                  {/* Display coordinates (read-only) */}
-                  <Grid container spacing={2} sx={{ mt: 1 }}>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Latitude"
-                        type="number"
-                        value={projectForm.latitude}
-                        onChange={(e) =>
-                          handleInputChange("latitude", e.target.value)
-                        }
-                        placeholder="Click on map to set"
-                        InputProps={{
-                          readOnly: false,
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "transparent",
-                          },
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Longitude"
-                        type="number"
-                        value={projectForm.longitude}
-                        onChange={(e) =>
-                          handleInputChange("longitude", e.target.value)
-                        }
-                        placeholder="Click on map to set"
-                        InputProps={{
-                          readOnly: false,
-                        }}
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            backgroundColor: "transparent",
-                          },
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-
-            {/* Target Audience */}
-            <Card
-              sx={{
-                backgroundColor: "white",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e0e0e0",
-                mb: 3,
-              }}
-            >
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={3}>
-                  <People sx={{ color: "#4facfe" }} />
-                  <Typography variant="h5" sx={{ color: "#333" }}>
-                    Target Audience
-                  </Typography>
-                </Box>
-
-                <Grid container spacing={3} sx={{ flexDirection: "column" }}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Target Individual/Group"
-                      value={projectForm.target_individual}
-                      onChange={(e) =>
-                        handleInputChange("target_individual", e.target.value)
-                      }
-                      placeholder="e.g., Youth, Women, Elderly, Students"
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-
-            {/* Timeline */}
-            <Card
-              sx={{
-                backgroundColor: "white",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e0e0e0",
-                mb: 3,
-              }}
-            >
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={3}>
-                  <Event sx={{ color: "#43e97b" }} />
-                  <Typography variant="h5" sx={{ color: "#333" }}>
-                    Timeline
-                  </Typography>
-                </Box>
-
-                <Grid container spacing={3} sx={{ flexDirection: "column" }}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Start Date"
-                      type="date"
-                      value={projectForm.start_date}
-                      onChange={(e) =>
-                        handleInputChange("start_date", e.target.value)
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="End Date"
-                      type="date"
-                      value={projectForm.end_date}
-                      onChange={(e) =>
-                        handleInputChange("end_date", e.target.value)
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-
-            {/* Project Images */}
-            <Card
-              sx={{
-                backgroundColor: "white",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e0e0e0",
-                mb: 3,
-              }}
-            >
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={3}>
-                  <ImageIcon sx={{ color: "#43e97b" }} />
-                  <Typography variant="h5" sx={{ color: "#333" }}>
-                    Project Images
-                  </Typography>
-                </Box>
-
-                {/* Image Upload */}
-                <Box mb={3}>
-                  <input
-                    type="file"
-                    multiple
-                    onChange={handleFileSelect}
-                    style={{ display: "none" }}
-                    id="file-upload"
-                    accept="image/*"
-                  />
-                  <label htmlFor="file-upload">
-                    <Button
-                      variant="outlined"
-                      component="span"
-                      startIcon={<CloudUpload />}
-                      sx={{
-                        color: "#43e97b",
-                        borderColor: "#43e97b",
-                        "&:hover": {
-                          borderColor: "#43e97b",
-                          backgroundColor: "rgba(67, 233, 123, 0.1)",
-                        },
-                        mb: 2,
-                      }}
-                    >
-                      Upload Images
-                    </Button>
-                  </label>
-                </Box>
-
-                {/* Selected Images Preview */}
-                {filePreviews.length > 0 && (
-                  <Box>
-                    <Typography variant="subtitle2" mb={2}>
-                      Selected Images ({filePreviews.length}):
-                    </Typography>
-                    <Grid container spacing={2}>
-                      {filePreviews.map((preview, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={VolunteerActivism} title="Basic Information" />
+            <Box sx={{ p: 3 }}>
+              <Stack spacing={2.5}>
+                <TextField
+                  fullWidth
+                  label="Project Name"
+                  value={projectForm.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  required
+                  placeholder="e.g. Youth Empowerment Program"
+                  sx={fieldSx}
+                />
+                <TextField
+                  fullWidth
+                  label="Description"
+                  multiline
+                  rows={4}
+                  value={projectForm.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  required
+                  placeholder="Describe the project goals, activities, and expected impact..."
+                  sx={fieldSx}
+                />
+                <FormControl fullWidth required sx={fieldSx}>
+                  <InputLabel>Project Category</InputLabel>
+                  <Select
+                    value={projectForm.category}
+                    onChange={(e) => handleInputChange("category", e.target.value)}
+                    label="Project Category"
+                  >
+                    {categoryOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        <Box display="flex" alignItems="center" gap={1.5}>
                           <Box
                             sx={{
-                              p: 2,
-                              backgroundColor: "#f8f9fa",
-                              borderRadius: 2,
-                              border: "1px solid #e0e0e0",
-                              position: "relative",
+                              width: 10,
+                              height: 10,
+                              borderRadius: "50%",
+                              bgcolor: option.color,
+                            }}
+                          />
+                          {option.label}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Stack>
+            </Box>
+          </Paper>
+
+          {/* Location */}
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={LocationOn} title="Location Information" color={brand.blue} />
+            <Box sx={{ p: 3 }}>
+              <LocationMapPicker
+                county={projectForm.county}
+                subcounty={projectForm.subcounty}
+                latitude={projectForm.latitude}
+                longitude={projectForm.longitude}
+                onCountyChange={(value) => handleInputChange("county", value)}
+                onSubcountyChange={(value) => handleInputChange("subcounty", value)}
+                onLocationChange={(lat, lng) => {
+                  handleInputChange("latitude", lat);
+                  handleInputChange("longitude", lng);
+                }}
+              />
+              <Grid container spacing={2} sx={{ mt: 2 }}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Latitude"
+                    type="number"
+                    value={projectForm.latitude}
+                    onChange={(e) => handleInputChange("latitude", e.target.value)}
+                    placeholder="Click on map to set"
+                    sx={fieldSx}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Longitude"
+                    type="number"
+                    value={projectForm.longitude}
+                    onChange={(e) => handleInputChange("longitude", e.target.value)}
+                    placeholder="Click on map to set"
+                    sx={fieldSx}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          </Paper>
+
+          {/* Target Audience */}
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={People} title="Target Audience" color={brand.navy} />
+            <Box sx={{ p: 3 }}>
+              <TextField
+                fullWidth
+                label="Target Individual / Group"
+                value={projectForm.target_individual}
+                onChange={(e) => handleInputChange("target_individual", e.target.value)}
+                placeholder="e.g. Youth, Women, Elderly, Students"
+                sx={fieldSx}
+              />
+            </Box>
+          </Paper>
+
+          {/* Timeline */}
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={Event} title="Timeline" color={brand.gold} />
+            <Box sx={{ p: 3, width: "100%" }}>
+              <Box sx={dateGridSx}>
+                <TextField
+                  fullWidth
+                  label="Start Date"
+                  type="date"
+                  value={projectForm.start_date}
+                  onChange={(e) => handleInputChange("start_date", e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  sx={fieldSx}
+                />
+                <TextField
+                  fullWidth
+                  label="End Date"
+                  type="date"
+                  value={projectForm.end_date}
+                  onChange={(e) => handleInputChange("end_date", e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  sx={fieldSx}
+                />
+              </Box>
+            </Box>
+          </Paper>
+
+          {/* Images */}
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={ImageIcon} title="Project Images" color={brand.green} />
+            <Box sx={{ p: 3 }}>
+              <input
+                type="file"
+                multiple
+                onChange={handleFileSelect}
+                style={{ display: "none" }}
+                id="file-upload"
+                accept="image/*"
+              />
+              <label htmlFor="file-upload">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  startIcon={<CloudUpload />}
+                  sx={{
+                    mb: 2,
+                    color: brand.green,
+                    borderColor: brand.green,
+                    fontWeight: 600,
+                    textTransform: "none",
+                    borderRadius: 2,
+                    "&:hover": {
+                      borderColor: brand.greenDark,
+                      bgcolor: alpha(brand.green, 0.08),
+                    },
+                  }}
+                >
+                  Upload Images
+                </Button>
+              </label>
+
+              {filePreviews.length > 0 ? (
+                <Box>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight={600}
+                    color={brand.navy}
+                    mb={2}
+                  >
+                    Selected Images ({filePreviews.length})
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {filePreviews.map((preview, index) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Box
+                          sx={{
+                            p: 1.5,
+                            bgcolor: brand.sidebarBgAlt,
+                            borderRadius: 2,
+                            border: `1px solid ${brand.sidebarBorder}`,
+                            position: "relative",
+                          }}
+                        >
+                          <IconButton
+                            onClick={() => removeSelectedFile(index)}
+                            size="small"
+                            sx={{
+                              position: "absolute",
+                              top: 12,
+                              right: 12,
+                              bgcolor: alpha("#000", 0.55),
+                              color: "#fff",
+                              "&:hover": { bgcolor: "#c62828" },
+                              zIndex: 2,
                             }}
                           >
-                            <IconButton
-                              onClick={() => removeSelectedFile(index)}
-                              sx={{
-                                position: "absolute",
-                                top: 8,
-                                right: 8,
-                                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                color: "white",
-                                "&:hover": {
-                                  backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                },
-                                zIndex: 2,
-                              }}
-                              size="small"
-                            >
-                              <CloseIcon fontSize="small" />
-                            </IconButton>
-                            <img
-                              src={preview.preview}
-                              alt={preview.name}
-                              style={{
-                                width: "100%",
-                                height: "150px",
-                                objectFit: "cover",
-                                borderRadius: "8px",
-                                marginBottom: "8px",
-                              }}
-                            />
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: "#333",
-                                display: "block",
-                                textAlign: "center",
-                                wordBreak: "break-word",
-                              }}
-                            >
-                              {preview.name}
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Box>
-                )}
-
-                {filePreviews.length === 0 && (
-                  <Box
-                    sx={{
-                      border: "2px dashed #ccc",
-                      borderRadius: 2,
-                      p: 3,
-                      textAlign: "center",
-                      bgcolor: "#f9f9f9",
-                    }}
-                  >
-                    <ImageIcon sx={{ fontSize: 48, opacity: 0.3 }} />
-                    <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
-                      No images selected. Click "Upload Images" to add images.
-                    </Typography>
-                  </Box>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Action Buttons */}
-            <Card
-              sx={{
-                backgroundColor: "white",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e0e0e0",
-              }}
-            >
-              <CardContent>
-                <Box display="flex">
-                  <Button
-                    variant="contained"
-                    size="large"
-                    startIcon={
-                      saving ? <CircularProgress size={20} /> : <Save />
-                    }
-                    onClick={handleCreate}
-                    disabled={!isFormValid() || saving}
-                    sx={{
-                      flex: 1,
-                      background:
-                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                      color: "white",
-                      "&:hover": {
-                        background:
-                          "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
-                      },
-                      "&:disabled": {
-                        background: "#e0e0e0",
-                        color: "#999",
-                      },
-                    }}
-                  >
-                    {saving ? "Creating..." : "Create Project"}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    onClick={() => navigate("/projects")}
-                    sx={{
-                      flex: 1,
-                      color: "#667eea",
-                      borderColor: "#667eea",
-                      "&:hover": {
-                        borderColor: "#667eea",
-                        backgroundColor: "rgba(102, 126, 234, 0.1)",
-                      },
-                    }}
-                  >
-                    Cancel
-                  </Button>
+                            <CloseIcon fontSize="small" />
+                          </IconButton>
+                          <Box
+                            component="img"
+                            src={preview.preview}
+                            alt={preview.name}
+                            sx={{
+                              width: "100%",
+                              height: 150,
+                              objectFit: "cover",
+                              borderRadius: 1.5,
+                              mb: 1,
+                            }}
+                          />
+                          <Typography
+                            variant="caption"
+                            color={brand.sidebarTextMuted}
+                            display="block"
+                            textAlign="center"
+                            sx={{ wordBreak: "break-word" }}
+                          >
+                            {preview.name}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Grid>
                 </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </Container>
+              ) : (
+                <Box
+                  sx={{
+                    border: `2px dashed ${brand.sidebarBorder}`,
+                    borderRadius: 2,
+                    p: 4,
+                    textAlign: "center",
+                    bgcolor: brand.sidebarBgAlt,
+                  }}
+                >
+                  <ImageIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2) }} />
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    No images selected. Click &quot;Upload Images&quot; to add photos.
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Paper>
+
+          {/* Actions */}
+          <Paper
+            elevation={0}
+            sx={{
+              ...sectionCardSx,
+              mb: 0,
+              position: { md: "sticky" },
+              bottom: 16,
+              zIndex: 10,
+            }}
+          >
+            <Box sx={{ p: 2.5 }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <Save />}
+                  onClick={handleCreate}
+                  disabled={!isFormValid() || saving}
+                  sx={{
+                    py: 1.5,
+                    fontWeight: 700,
+                    textTransform: "none",
+                    borderRadius: 2,
+                    bgcolor: brand.green,
+                    boxShadow: `0 6px 20px ${alpha(brand.green, 0.4)}`,
+                    "&:hover": {
+                      bgcolor: brand.greenLight,
+                      boxShadow: `0 8px 24px ${alpha(brand.green, 0.45)}`,
+                    },
+                    "&:disabled": { bgcolor: "#e0e0e0", color: "#9e9e9e", boxShadow: "none" },
+                  }}
+                >
+                  {saving ? "Creating…" : "Create Project"}
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  fullWidth
+                  onClick={() => navigate("/projects")}
+                  sx={{
+                    py: 1.5,
+                    fontWeight: 600,
+                    textTransform: "none",
+                    borderRadius: 2,
+                    color: brand.navy,
+                    borderColor: brand.sidebarBorder,
+                    "&:hover": {
+                      borderColor: brand.navy,
+                      bgcolor: alpha(brand.navy, 0.04),
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Stack>
+              {!isFormValid() && (
+                <Typography
+                  variant="caption"
+                  display="block"
+                  textAlign="center"
+                  color="text.secondary"
+                  sx={{ mt: 1.5 }}
+                >
+                  Fill in project name, description, category, and county to continue.
+                </Typography>
+              )}
+            </Box>
+          </Paper>
+        </Box>
+      </Paper>
     </Box>
   );
 };

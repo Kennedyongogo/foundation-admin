@@ -7,51 +7,49 @@ import {
   Typography,
   CircularProgress,
   Avatar,
+  Chip,
+  Divider,
+  ListItemIcon,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
   ArrowDropDown as ArrowDropDownIcon,
-  Person as PersonIcon,
   AccountCircle as AccountCircleIcon,
   Lock as LockIcon,
   Logout as LogoutIcon,
+  AdminPanelSettings,
 } from "@mui/icons-material";
 import UserAccount from "./userAccount";
 import EditUserDetails from "./editUserDetails";
 import ChangePassword from "./changePassword";
 import { useNavigate } from "react-router-dom";
+import { alpha } from "@mui/material/styles";
+import { brand } from "../../brandColors";
 
 const LoadingScreen = () => (
   <Box
     sx={{
       position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
+      inset: 0,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      backgroundColor: "rgba(255, 255, 255, 1)",
-      zIndex: 1300, // Ensure it covers other components
+      bgcolor: "#fff",
+      zIndex: 1300,
     }}
   >
-    <CircularProgress />
+    <CircularProgress sx={{ color: brand.green }} />
   </Box>
 );
 
-// Helper to build URL for uploaded assets using Vite proxy
 const buildImageUrl = (imageUrl) => {
   if (!imageUrl) return "";
   if (imageUrl.startsWith("http")) return imageUrl;
-
-  // Use relative URLs - Vite proxy will handle routing to backend
   if (imageUrl.startsWith("uploads/")) return `/${imageUrl}`;
   if (imageUrl.startsWith("/uploads/")) return imageUrl;
   return imageUrl;
 };
 
-// Helper to get user initials
 const getInitials = (name) => {
   if (!name) return "U";
   const parts = name.trim().split(/\s+/);
@@ -70,7 +68,6 @@ export default function Header(props) {
 
   useEffect(() => {
     setLoading(true);
-    // Load user from localStorage instead of API call
     const savedUser = localStorage.getItem("user");
     const token = localStorage.getItem("token");
 
@@ -80,7 +77,6 @@ export default function Header(props) {
       props.setUser(userData);
       setLoading(false);
     } else {
-      // Redirect to login if no user or token
       window.location.href = "/";
     }
   }, []);
@@ -94,13 +90,15 @@ export default function Header(props) {
     });
   };
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const roleLabel =
+    currentUser?.role === "super-admin"
+      ? "Super Admin"
+      : currentUser?.role === "admin"
+        ? "Administrator"
+        : "Staff";
 
   return (
     <>
@@ -110,78 +108,192 @@ export default function Header(props) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          p: 2,
-          color: "white",
           width: "100%",
+          color: "#fff",
+          gap: 2,
         }}
       >
-        <IconButton
-          aria-label="open drawer"
-          onClick={props.handleDrawerOpen}
-          edge="start"
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+          <IconButton
+            aria-label="Open navigation"
+            onClick={props.handleDrawerOpen}
+            edge="start"
+            sx={{
+              color: "#fff",
+              bgcolor: alpha("#fff", 0.08),
+              border: `1px solid ${alpha("#fff", 0.12)}`,
+              ...(props.open && { display: "none" }),
+              "&:hover": {
+                bgcolor: alpha(brand.gold, 0.25),
+                borderColor: alpha(brand.gold, 0.4),
+              },
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+
+          {!props.open && (
+            <Box
+              sx={{
+                display: { xs: "none", sm: "flex" },
+                alignItems: "center",
+                gap: 1.25,
+                minWidth: 0,
+              }}
+            >
+              <Box
+                component="img"
+                src="/foundation-logo-removebg-preview.png"
+                alt="Mwalimu Hope Foundation"
+                sx={{ height: 38, width: "auto", objectFit: "contain" }}
+              />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography
+                  noWrap
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.95rem",
+                    lineHeight: 1.2,
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  Admin Portal
+                </Typography>
+                <Typography
+                  noWrap
+                  sx={{
+                    fontSize: "0.72rem",
+                    color: alpha("#fff", 0.72),
+                    fontWeight: 500,
+                  }}
+                >
+                  Mwalimu Hope Foundation
+                </Typography>
+              </Box>
+            </Box>
+          )}
+
+          {props.open && (
+            <Chip
+              icon={<AdminPanelSettings sx={{ fontSize: 16, color: `${brand.gold} !important` }} />}
+              label="Foundation Administration"
+              size="small"
+              sx={{
+                display: { xs: "none", md: "flex" },
+                bgcolor: alpha("#fff", 0.1),
+                color: "#fff",
+                border: `1px solid ${alpha(brand.gold, 0.35)}`,
+                fontWeight: 600,
+                fontSize: "0.75rem",
+                "& .MuiChip-label": { px: 1 },
+              }}
+            />
+          )}
+        </Box>
+
+        <Box sx={{ flexGrow: 1 }} />
+
+        <Box
+          onClick={handleClick}
           sx={{
-            color: "white",
-            marginRight: 5,
-            ...(props.open && { display: "none" }),
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            px: { xs: 0.75, sm: 1.25 },
+            py: 0.5,
+            borderRadius: 3,
+            cursor: "pointer",
+            bgcolor: alpha("#fff", 0.08),
+            border: `1px solid ${alpha("#fff", 0.14)}`,
+            transition: "all 0.2s ease",
+            "&:hover": {
+              bgcolor: alpha("#fff", 0.14),
+              borderColor: alpha(brand.gold, 0.45),
+            },
           }}
         >
-          <MenuIcon />
-        </IconButton>
-
-        <Box sx={{ flexGrow: 1 }}></Box>
-
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Typography variant="body1" sx={{ mr: 1 }}>
-            {currentUser?.full_name}
-          </Typography>
-
-          {/* Profile Picture or Avatar */}
-          <Box sx={{ mr: 1 }}>
-            {currentUser?.profile_image ? (
-              <Avatar
-                src={buildImageUrl(currentUser.profile_image)}
-                alt={currentUser?.full_name}
-                sx={{
-                  width: 32,
-                  height: 32,
-                  border: "2px solid rgba(255, 255, 255, 0.3)",
-                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-                }}
-              />
-            ) : (
-              <Avatar
-                sx={{
-                  width: 32,
-                  height: 32,
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                  border: "2px solid rgba(255, 255, 255, 0.3)",
-                  color: "white",
-                  fontWeight: "bold",
-                  fontSize: "0.875rem",
-                }}
-              >
-                {getInitials(currentUser?.full_name)}
-              </Avatar>
-            )}
+          <Box sx={{ textAlign: "right", display: { xs: "none", sm: "block" } }}>
+            <Typography
+              noWrap
+              sx={{ fontWeight: 600, fontSize: "0.875rem", lineHeight: 1.2, maxWidth: 160 }}
+            >
+              {currentUser?.full_name}
+            </Typography>
+            <Typography sx={{ fontSize: "0.7rem", color: brand.gold, fontWeight: 600 }}>
+              {roleLabel}
+            </Typography>
           </Box>
 
-          <IconButton color="inherit" onClick={handleClick}>
-            <ArrowDropDownIcon />
-          </IconButton>
+          {currentUser?.profile_image ? (
+            <Avatar
+              src={buildImageUrl(currentUser.profile_image)}
+              alt={currentUser?.full_name}
+              sx={{
+                width: 36,
+                height: 36,
+                border: `2px solid ${alpha(brand.gold, 0.6)}`,
+                boxShadow: `0 2px 8px ${alpha(brand.navyDark, 0.4)}`,
+              }}
+            />
+          ) : (
+            <Avatar
+              sx={{
+                width: 36,
+                height: 36,
+                bgcolor: brand.green,
+                border: `2px solid ${alpha(brand.gold, 0.5)}`,
+                fontWeight: 700,
+                fontSize: "0.8rem",
+              }}
+            >
+              {getInitials(currentUser?.full_name)}
+            </Avatar>
+          )}
+
+          <ArrowDropDownIcon sx={{ color: alpha("#fff", 0.85), fontSize: 22 }} />
         </Box>
 
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleClose}
+          transformOrigin={{ horizontal: "right", vertical: "top" }}
+          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+          PaperProps={{
+            elevation: 8,
+            sx: {
+              mt: 1,
+              minWidth: 220,
+              borderRadius: 2.5,
+              border: `1px solid ${alpha(brand.navy, 0.08)}`,
+              overflow: "hidden",
+              "& .MuiMenuItem-root": {
+                py: 1.25,
+                fontSize: "0.9rem",
+                fontWeight: 500,
+              },
+            },
+          }}
         >
+          <Box sx={{ px: 2, py: 1.5, bgcolor: alpha(brand.navy, 0.04) }}>
+            <Typography fontWeight={700} fontSize="0.9rem" color={brand.navy}>
+              {currentUser?.full_name}
+            </Typography>
+            <Typography fontSize="0.75rem" color="text.secondary">
+              {currentUser?.email}
+            </Typography>
+          </Box>
+          <Divider />
           <MenuItem
             onClick={() => {
               setToggleAccount(true);
               handleClose();
             }}
           >
-            <AccountCircleIcon sx={{ mr: 1 }} /> Account
+            <ListItemIcon>
+              <AccountCircleIcon fontSize="small" sx={{ color: brand.green }} />
+            </ListItemIcon>
+            My account
           </MenuItem>
           <MenuItem
             onClick={() => {
@@ -189,23 +301,29 @@ export default function Header(props) {
               handleClose();
             }}
           >
-            <LockIcon sx={{ mr: 1 }} /> Change Password
+            <ListItemIcon>
+              <LockIcon fontSize="small" sx={{ color: brand.blue }} />
+            </ListItemIcon>
+            Change password
           </MenuItem>
+          <Divider />
           <MenuItem
             onClick={() => {
               logout();
               handleClose();
             }}
+            sx={{ color: "#c62828" }}
           >
-            <LogoutIcon sx={{ mr: 1 }} /> Logout
+            <ListItemIcon>
+              <LogoutIcon fontSize="small" sx={{ color: "#c62828" }} />
+            </ListItemIcon>
+            Logout
           </MenuItem>
         </Menu>
 
         {currentUser && (
           <UserAccount
-            onClose={() => {
-              setToggleAccount(false);
-            }}
+            onClose={() => setToggleAccount(false)}
             open={toggleAccount}
             currentUser={currentUser}
           />
@@ -213,18 +331,14 @@ export default function Header(props) {
         {currentUser && (
           <EditUserDetails
             open={toggleEditDetails}
-            onClose={() => {
-              setToggleEditDetails(false);
-            }}
+            onClose={() => setToggleEditDetails(false)}
             currentUser={currentUser}
           />
         )}
         {currentUser && (
           <ChangePassword
             open={toggleChangePass}
-            onClose={() => {
-              setToggleChangePass(false);
-            }}
+            onClose={() => setToggleChangePass(false)}
             currentUser={currentUser}
           />
         )}

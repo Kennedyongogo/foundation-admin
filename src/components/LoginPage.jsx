@@ -1,4 +1,3 @@
-// import "../Styles/login.scss";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -6,23 +5,18 @@ import {
   Typography,
   Button,
   TextField,
-  Paper,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
   Card,
-  CardContent,
-  Snackbar,
-  Alert,
   Grid,
   Container,
   Stack,
   Divider,
   Fade,
   Slide,
-  Zoom,
   CircularProgress,
   InputAdornment,
   IconButton,
@@ -32,39 +26,72 @@ import {
   Visibility,
   VisibilityOff,
   Email,
-  Lock,
   Login,
   Security,
-  Shield,
-  VerifiedUser,
   AdminPanelSettings,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
 
 const images = ["/foundation1.jpg", "/foundation2.jpg", "/foundation3.jpg"];
 
-export default function LoginPage(props) {
+const darkFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    borderRadius: { xs: 3, sm: 4 },
+    border: "1px solid rgba(255, 255, 255, 0.15)",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    backdropFilter: "blur(10px)",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.12)",
+      border: "1px solid rgba(255, 255, 255, 0.3)",
+      transform: "translateY(-1px)",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+    },
+    "&.Mui-focused": {
+      backgroundColor: "rgba(255, 255, 255, 0.15)",
+      border: "2px solid rgba(255, 255, 255, 0.6)",
+      boxShadow: "0 0 0 4px rgba(255, 255, 255, 0.1), 0 8px 24px rgba(0, 0, 0, 0.2)",
+      transform: "translateY(-2px)",
+    },
+  },
+  "& .MuiInputLabel-root": {
+    color: "rgba(255, 255, 255, 0.8)",
+    fontWeight: 500,
+    fontSize: { xs: "0.9rem", sm: "1rem" },
+    "&.Mui-focused": {
+      color: "rgba(255, 255, 255, 0.95)",
+    },
+  },
+  "& .MuiInputBase-input": {
+    color: "white",
+    fontWeight: 400,
+    fontSize: { xs: "0.9rem", sm: "1rem" },
+    py: { xs: 1.2, sm: 1.5 },
+    "&::placeholder": {
+      color: "rgba(255, 255, 255, 0.5)",
+      opacity: 1,
+      fontSize: { xs: "0.85rem", sm: "0.9rem" },
+    },
+  },
+};
+
+export default function LoginPage() {
   const theme = useTheme();
   const rfEmail = useRef();
   const rsEmail = useRef();
   const rfPassword = useRef();
-  const code = useRef();
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [body, updateBody] = useState({
-    email: null,
-  });
-
+  const [bgIndex, setBgIndex] = useState(0);
+  const [body, updateBody] = useState({ email: null });
   const [openResetDialog, setOpenResetDialog] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [severity, setSeverity] = useState("error");
   const navigate = useNavigate();
 
   const login = async (e) => {
     if (e) e.preventDefault();
 
-    let d = body;
+    const d = body;
     d.email = rfEmail.current.value.toLowerCase().trim();
     d.password = rfPassword.current.value;
     updateBody(d);
@@ -89,75 +116,66 @@ export default function LoginPage(props) {
       return;
     }
 
-    if (validateEmail(body.email) && validatePassword(body.password)) {
-      setLoading(true);
-      Swal.fire({
-        title: "Signing in...",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
+    setLoading(true);
+    Swal.fire({
+      title: "Signing in...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    try {
+      const response = await fetch("/api/admin-users/login", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
+        body: JSON.stringify(body),
       });
+      const data = await response.json();
 
-      try {
-        const response = await fetch("/api/admin-users/login", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(body),
-        });
-        const data = await response.json();
-
-        if (!response.ok) {
-          Swal.fire({
-            icon: "error",
-            title: "Login Failed",
-            text: data.message,
-            confirmButtonColor: theme.palette.primary.main,
-          });
-        } else {
-          // Check if login was successful
-          if (data.success) {
-            Swal.fire({
-              icon: "success",
-              title: "Success!",
-              text: data.message,
-              timer: 1500,
-              showConfirmButton: false,
-            });
-            localStorage.setItem("token", data.data.token);
-            localStorage.setItem("userRole", data.data.admin.role);
-            localStorage.setItem("user", JSON.stringify(data.data.admin));
-            setTimeout(() => {
-              navigate("/analytics");
-            }, 1500);
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Login Failed",
-              text: data.message,
-              confirmButtonColor: theme.palette.primary.main,
-            });
-          }
-        }
-      } catch (err) {
+      if (!response.ok) {
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: "Login failed. Please try again.",
+          title: "Login Failed",
+          text: data.message,
           confirmButtonColor: theme.palette.primary.main,
         });
-      } finally {
-        setLoading(false);
+      } else if (data.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: data.message,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        localStorage.setItem("token", data.data.token);
+        localStorage.setItem("userRole", data.data.admin.role);
+        localStorage.setItem("user", JSON.stringify(data.data.admin));
+        setTimeout(() => navigate("/analytics"), 1500);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Login Failed",
+          text: data.message,
+          confirmButtonColor: theme.palette.primary.main,
+        });
       }
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Login failed. Please try again.",
+        confirmButtonColor: theme.palette.primary.main,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const reset = async () => {
-    let d = { Email: rsEmail.current.value.toLowerCase().trim() };
+    const d = { Email: rsEmail.current.value.toLowerCase().trim() };
 
     if (!validateEmail(d.Email)) {
       Swal.fire({
@@ -169,287 +187,225 @@ export default function LoginPage(props) {
       return;
     }
 
-    if (validateEmail(d.Email)) {
-      setResetLoading(true);
-      Swal.fire({
-        title: "Processing...",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
+    setResetLoading(true);
+    Swal.fire({
+      title: "Processing...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    try {
+      const response = await fetch("/api/auth/forgot", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
+        body: JSON.stringify(d),
       });
+      const data = await response.json();
 
-      try {
-        const response = await fetch("/api/auth/forgot", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(d),
+      if (response.ok) {
+        setOpenResetDialog(false);
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: data.message,
+          confirmButtonColor: theme.palette.primary.main,
         });
-        const data = await response.json();
-
-        if (response.ok) {
-          setOpenResetDialog(false);
-          Swal.fire({
-            icon: "success",
-            title: "Success",
-            text: data.message,
-            confirmButtonColor: theme.palette.primary.main,
-          });
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: data.message,
-            confirmButtonColor: theme.palette.primary.main,
-          });
-        }
-      } catch (err) {
+      } else {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: "Something went wrong. Please try again.",
+          text: data.message,
           confirmButtonColor: theme.palette.primary.main,
         });
-      } finally {
-        setResetLoading(false);
       }
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Something went wrong. Please try again.",
+        confirmButtonColor: theme.palette.primary.main,
+      });
+    } finally {
+      setResetLoading(false);
     }
   };
 
-  const validateEmail = (email) => {
-    return String(email)
+  const validateEmail = (email) =>
+    String(email)
       .toLowerCase()
       .match(
         /^(([^<>()[\]/.,;:\s@"]+(\.[^<>()[\]/.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       );
-  };
 
-  const validatePassword = (password) => {
-    return password.length >= 6;
-  };
+  const validatePassword = (password) => password.length >= 6;
 
   useEffect(() => {
-    let currentIndex = 0;
-    const backgroundElement = document.querySelector(".login-background");
-
-    // Preload images
-    images.forEach((imageSrc) => {
+    images.forEach((src) => {
       const img = new Image();
-      img.src = imageSrc;
+      img.src = src;
     });
-
-    const changeBackground = () => {
-      if (backgroundElement) {
-        // Fade out current image
-        backgroundElement.style.opacity = 0;
-
-        setTimeout(() => {
-          currentIndex = (currentIndex + 1) % images.length;
-          backgroundElement.style.backgroundImage = `url(${images[currentIndex]})`;
-          // Fade in new image
-          backgroundElement.style.opacity = 1;
-        }, 500);
-      }
-    };
-
-    // Initial setup
-    if (backgroundElement) {
-      backgroundElement.style.transition = "opacity 1s ease-in-out";
-      backgroundElement.style.opacity = 1;
-    }
-
-    const intervalId = setInterval(changeBackground, 5000); // Change every 5 seconds for testing
-
-    return () => clearInterval(intervalId);
+    const interval = setInterval(() => {
+      setBgIndex((i) => (i + 1) % images.length);
+    }, 7000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
     <Box
       display="flex"
-      alignItems="center"
-      justifyContent="center"
+      flexDirection="column"
       minHeight="100vh"
       position="relative"
-      sx={{ 
-        overflow: "hidden",
-        background: "transparent"
-      }}
+      sx={{ overflow: "hidden", bgcolor: "#0a1628" }}
     >
-      <div
-        className="login-background"
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `url(${images[0]})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          transition: "opacity 1s ease-in-out",
-          filter: "none",
-        }}
-      />
-      
-      {/* Animated geometric shapes for visual interest */}
+      {/* Cinematic background slideshow */}
+      {images.map((src, index) => (
+        <Box
+          key={src}
+          aria-hidden
+          sx={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `url(${src})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: bgIndex === index ? 1 : 0,
+            transform: bgIndex === index ? "scale(1.06)" : "scale(1)",
+            transition: "opacity 1.8s ease-in-out, transform 7s ease-out",
+            willChange: "opacity, transform",
+          }}
+        />
+      ))}
+
+      {/* Layered overlays for depth & readability */}
       <Box
         sx={{
           position: "absolute",
-          top: "10%",
-          left: "5%",
-          width: 100,
-          height: 100,
-          borderRadius: "50%",
-          background: "linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
-          animation: "float 6s ease-in-out infinite",
-          "@keyframes float": {
-            "0%, 100%": { transform: "translateY(0px) rotate(0deg)" },
-            "50%": { transform: "translateY(-20px) rotate(180deg)" }
-          }
+          inset: 0,
+          background: `
+            linear-gradient(115deg, rgba(6, 28, 18, 0.92) 0%, rgba(10, 40, 28, 0.75) 42%, rgba(8, 20, 40, 0.55) 100%),
+            radial-gradient(ellipse at 15% 50%, rgba(14, 141, 69, 0.35) 0%, transparent 55%),
+            radial-gradient(ellipse at 85% 20%, rgba(33, 150, 243, 0.2) 0%, transparent 45%)
+          `,
         }}
       />
       <Box
         sx={{
           position: "absolute",
-          bottom: "15%",
-          right: "8%",
-          width: 80,
-          height: 80,
-          borderRadius: "20px",
-          background: "linear-gradient(45deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
-          animation: "pulse 4s ease-in-out infinite",
-          "@keyframes pulse": {
-            "0%, 100%": { transform: "scale(1)" },
-            "50%": { transform: "scale(1.1)" }
-          }
+          inset: 0,
+          opacity: 0.04,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
         }}
       />
 
-      <Box
+      {/* Slideshow indicators */}
+      <Stack
+        direction="row"
+        spacing={1}
         sx={{
           position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          background: "transparent",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          bottom: { xs: 72, sm: 80 },
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 2,
         }}
       >
-        <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
+        {images.map((_, i) => (
+          <Box
+            key={i}
+            onClick={() => setBgIndex(i)}
+            role="button"
+            tabIndex={0}
+            aria-label={`Background image ${i + 1}`}
+            onKeyDown={(e) => e.key === "Enter" && setBgIndex(i)}
+            sx={{
+              width: bgIndex === i ? 28 : 8,
+              height: 8,
+              borderRadius: 4,
+              bgcolor: bgIndex === i ? "#40a86c" : "rgba(255,255,255,0.35)",
+              cursor: "pointer",
+              transition: "all 0.35s ease",
+              "&:hover": { bgcolor: "rgba(255,255,255,0.7)" },
+            }}
+          />
+        ))}
+      </Stack>
+
+      {/* Main content */}
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          position: "relative",
+          zIndex: 1,
+          width: "100%",
+          py: { xs: 3, sm: 4 },
+        }}
+      >
+        <Container
+          maxWidth={false}
+          sx={{ width: "100%", px: { xs: 2, sm: 3, md: 4, lg: 8, xl: 12 } }}
+        >
           <Grid
             container
-            spacing={{ xs: 2, sm: 3, md: 4 }}
+            spacing={{ xs: 4, md: 5, lg: 6 }}
             alignItems="center"
-            justifyContent="center"
+            justifyContent={{ xs: "center", lg: "space-between" }}
           >
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Fade in timeout={1000}>
+            {/* Brand panel */}
+            <Grid
+              size={{ xs: 12, lg: "auto" }}
+              sx={{
+                display: "flex",
+                justifyContent: { xs: "center", lg: "flex-start" },
+                pl: { lg: 2, xl: 4 },
+              }}
+            >
+              <Fade in timeout={900}>
                 <Stack
-                  spacing={4}
-                  alignItems={{ xs: "center", md: "flex-start" }}
+                  spacing={3}
+                  alignItems={{ xs: "center", lg: "flex-start" }}
                 >
-                  <Slide direction="up" in timeout={1200}>
-                    <Stack spacing={4} sx={{ textAlign: { xs: "center", md: "left" } }}>
-                      {/* Logo with enhanced styling */}
-                      <Box
-                        sx={{
-                          position: "relative",
-                          display: "inline-block",
-                          "&::before": {
-                            content: '""',
-                            position: "absolute",
-                            top: -10,
-                            left: -10,
-                            right: -10,
-                            bottom: -10,
-                            background: "linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))",
-                            borderRadius: "20px",
-                            filter: "blur(10px)",
-                            zIndex: -1,
-                          }
-                        }}
-                      >
-                        <Box
-                          component="img"
-                          src="/foundation-logo.png"
-                          alt="Mwalimu Hope Foundation"
-                          sx={{
-                            height: { xs: 80, sm: 100, md: 120, lg: 140 },
-                            width: "auto",
-                            filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.4)) brightness(1.1)",
-                            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                            "&:hover": {
-                              transform: "scale(1.05) rotate(2deg)",
-                              filter: "drop-shadow(0 12px 24px rgba(0,0,0,0.5)) brightness(1.2)",
-                            },
-                          }}
-                        />
-                      </Box>
-
-                      {/* Enhanced title with subtitle */}
-                      <Stack spacing={2}>
-                        <Typography
-                          variant="h1"
-                          sx={{
-                            color: "#fff",
-                            fontWeight: 900,
-                            fontSize: {
-                              xs: "1.8rem",
-                              sm: "2.2rem",
-                              md: "2.8rem",
-                              lg: "3.2rem",
-                            },
-                            textAlign: { xs: "center", md: "left" },
-                            letterSpacing: "0.5px",
-                            background: `linear-gradient(135deg, 
-                              rgba(255,255,255,0.95) 0%, 
-                              rgba(255,255,255,0.8) 50%, 
-                              rgba(255,255,255,0.9) 100%)`,
-                            backgroundClip: "text",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                            textShadow: "0 0 30px rgba(255,255,255,0.3)",
-                            lineHeight: 1.2,
-                            mb: 1,
-                          }}
-                        >
-                          Mwalimu Hope Foundation
-                        </Typography>
-                        
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            color: "rgba(255,255,255,0.9)",
-                            fontWeight: 400,
-                            fontSize: { xs: "0.9rem", sm: "1rem", md: "1.1rem" },
-                            textAlign: { xs: "center", md: "left" },
-                            letterSpacing: "0.5px",
-                            opacity: 0.9,
-                            maxWidth: { md: "350px" },
-                            lineHeight: 1.4,
-                          }}
-                        >
-                          Empowering Minds, Restoring Hope
-                        </Typography>
-
-                      </Stack>
-                    </Stack>
-                  </Slide>
+                  <Box sx={{ position: "relative" }}>
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        inset: "-20%",
+                        background: "radial-gradient(circle, rgba(14,141,69,0.25) 0%, transparent 70%)",
+                        filter: "blur(20px)",
+                      }}
+                    />
+                    <Box
+                      component="img"
+                      src="/foundation-logo-removebg-preview.png"
+                      alt="Mwalimu Hope Foundation"
+                      sx={{
+                        position: "relative",
+                        height: { xs: 180, sm: 220, md: 260, lg: 300 },
+                        width: "auto",
+                        maxWidth: { xs: "80vw", sm: 320, lg: 380 },
+                        objectFit: "contain",
+                        filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.45))",
+                      }}
+                    />
+                  </Box>
                 </Stack>
               </Fade>
             </Grid>
 
+            {/* Login card */}
             <Grid
-              size={{ xs: 12, md: 6 }}
-              sx={{ display: "flex", justifyContent: "center" }}
+              size={{ xs: 12, md: 6, lg: "auto" }}
+              sx={{
+                display: "flex",
+                justifyContent: { xs: "center", lg: "flex-end" },
+                pr: { lg: 2, xl: 4 },
+              }}
             >
               <Slide direction="left" in timeout={1500}>
                 <Card
@@ -490,26 +446,28 @@ export default function LoginPage(props) {
                         inset 0 1px 0 rgba(255, 255, 255, 0.2)
                       `,
                       border: "1px solid rgba(255, 255, 255, 0.25)",
-                      "&::before": {
-                        opacity: 1,
-                      },
+                      "&::before": { opacity: 1 },
                     },
                   }}
                 >
                   <form onSubmit={login}>
-                    {/* Enhanced header with admin icon */}
-                    <Stack direction="row" alignItems="center" justifyContent="center" spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: { xs: 3, sm: 4 } }}>
-                      <AdminPanelSettings 
-                        sx={{ 
-                          color: "rgba(255,255,255,0.9)", 
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="center"
+                      spacing={{ xs: 1.5, sm: 2 }}
+                      sx={{ mb: { xs: 3, sm: 4 } }}
+                    >
+                      <AdminPanelSettings
+                        sx={{
+                          color: "rgba(255,255,255,0.9)",
                           fontSize: { xs: 24, sm: 28, md: 32 },
-                          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
-                        }} 
+                          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+                        }}
                       />
                       <Typography
                         textAlign="center"
                         fontWeight="800"
-                        color="white"
                         variant="h4"
                         sx={{
                           textShadow: "2px 2px 8px rgba(0,0,0,0.6)",
@@ -533,57 +491,11 @@ export default function LoginPage(props) {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Email sx={{ 
-                              color: "rgba(255,255,255,0.7)",
-                              transition: "all 0.3s ease",
-                              fontSize: { xs: 20, sm: 24 },
-                            }} />
+                            <Email sx={{ color: "rgba(255,255,255,0.7)", fontSize: { xs: 20, sm: 24 } }} />
                           </InputAdornment>
                         ),
                       }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "rgba(255, 255, 255, 0.08)",
-                          borderRadius: { xs: 3, sm: 4 },
-                          border: "1px solid rgba(255, 255, 255, 0.15)",
-                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                          backdropFilter: "blur(10px)",
-                          "&:hover": {
-                            backgroundColor: "rgba(255, 255, 255, 0.12)",
-                            border: "1px solid rgba(255, 255, 255, 0.3)",
-                            transform: "translateY(-1px)",
-                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                          },
-                          "&.Mui-focused": {
-                            backgroundColor: "rgba(255, 255, 255, 0.15)",
-                            border: `2px solid rgba(255, 255, 255, 0.6)`,
-                            boxShadow: `
-                              0 0 0 4px rgba(255, 255, 255, 0.1),
-                              0 8px 24px rgba(0, 0, 0, 0.2)
-                            `,
-                            transform: "translateY(-2px)",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "rgba(255, 255, 255, 0.8)",
-                          fontWeight: 500,
-                          fontSize: { xs: "0.9rem", sm: "1rem" },
-                          "&.Mui-focused": {
-                            color: "rgba(255, 255, 255, 0.95)",
-                          },
-                        },
-                        "& .MuiInputBase-input": {
-                          color: "white",
-                          fontWeight: 400,
-                          fontSize: { xs: "0.9rem", sm: "1rem" },
-                          py: { xs: 1.2, sm: 1.5 },
-                          "&::placeholder": {
-                            color: "rgba(255, 255, 255, 0.5)",
-                            opacity: 1,
-                            fontSize: { xs: "0.85rem", sm: "0.9rem" },
-                          },
-                        },
-                      }}
+                      sx={darkFieldSx}
                     />
 
                     <TextField
@@ -597,11 +509,7 @@ export default function LoginPage(props) {
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
-                            <Security sx={{ 
-                              color: "rgba(255,255,255,0.7)",
-                              transition: "all 0.3s ease",
-                              fontSize: { xs: 20, sm: 24 },
-                            }} />
+                            <Security sx={{ color: "rgba(255,255,255,0.7)", fontSize: { xs: 20, sm: 24 } }} />
                           </InputAdornment>
                         ),
                         endAdornment: (
@@ -609,14 +517,12 @@ export default function LoginPage(props) {
                             <IconButton
                               onClick={() => setShowPassword(!showPassword)}
                               edge="end"
-                              sx={{ 
+                              sx={{
                                 color: "rgba(255,255,255,0.7)",
-                                transition: "all 0.3s ease",
                                 p: { xs: 0.8, sm: 1 },
                                 "&:hover": {
                                   color: "rgba(255,255,255,0.9)",
                                   backgroundColor: "rgba(255,255,255,0.1)",
-                                  transform: "scale(1.1)",
                                 },
                               }}
                             >
@@ -629,49 +535,7 @@ export default function LoginPage(props) {
                           </InputAdornment>
                         ),
                       }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "rgba(255, 255, 255, 0.08)",
-                          borderRadius: { xs: 3, sm: 4 },
-                          border: "1px solid rgba(255, 255, 255, 0.15)",
-                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                          backdropFilter: "blur(10px)",
-                          "&:hover": {
-                            backgroundColor: "rgba(255, 255, 255, 0.12)",
-                            border: "1px solid rgba(255, 255, 255, 0.3)",
-                            transform: "translateY(-1px)",
-                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                          },
-                          "&.Mui-focused": {
-                            backgroundColor: "rgba(255, 255, 255, 0.15)",
-                            border: `2px solid rgba(255, 255, 255, 0.6)`,
-                            boxShadow: `
-                              0 0 0 4px rgba(255, 255, 255, 0.1),
-                              0 8px 24px rgba(0, 0, 0, 0.2)
-                            `,
-                            transform: "translateY(-2px)",
-                          },
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "rgba(255, 255, 255, 0.8)",
-                          fontWeight: 500,
-                          fontSize: { xs: "0.9rem", sm: "1rem" },
-                          "&.Mui-focused": {
-                            color: "rgba(255, 255, 255, 0.95)",
-                          },
-                        },
-                        "& .MuiInputBase-input": {
-                          color: "white",
-                          fontWeight: 400,
-                          fontSize: { xs: "0.9rem", sm: "1rem" },
-                          py: { xs: 1.2, sm: 1.5 },
-                          "&::placeholder": {
-                            color: "rgba(255, 255, 255, 0.5)",
-                            opacity: 1,
-                            fontSize: { xs: "0.85rem", sm: "0.9rem" },
-                          },
-                        },
-                      }}
+                      sx={darkFieldSx}
                     />
 
                     <Typography
@@ -681,25 +545,20 @@ export default function LoginPage(props) {
                       sx={{
                         mt: 2,
                         cursor: "pointer",
-                        transition: "all 0.3s ease",
                         fontWeight: 500,
-                        "&:hover": {
-                          color: "rgba(255,255,255,0.95)",
-                          transform: "translateY(-1px)",
-                          textShadow: "0 2px 8px rgba(255,255,255,0.3)",
-                        },
+                        "&:hover": { color: "rgba(255,255,255,0.95)" },
                       }}
                       onClick={() => setOpenResetDialog(true)}
                     >
-                      Forgot your password? 
-                      <Box component="span" sx={{ 
-                        color: "rgba(255,255,255,0.9)",
-                        textDecoration: "underline",
-                        ml: 0.5,
-                        "&:hover": {
-                          color: "white",
-                        }
-                      }}>
+                      Forgot your password?
+                      <Box
+                        component="span"
+                        sx={{
+                          color: "rgba(255,255,255,0.9)",
+                          textDecoration: "underline",
+                          ml: 0.5,
+                        }}
+                      >
                         Reset here
                       </Box>
                     </Typography>
@@ -712,7 +571,7 @@ export default function LoginPage(props) {
                       disabled={loading}
                       startIcon={
                         loading ? (
-                          <CircularProgress size={{ xs: 20, sm: 24 }} color="inherit" />
+                          <CircularProgress size={20} color="inherit" />
                         ) : (
                           <Login sx={{ fontSize: { xs: 20, sm: 24 } }} />
                         )
@@ -721,62 +580,19 @@ export default function LoginPage(props) {
                         mt: { xs: 3, sm: 4 },
                         py: { xs: 1.5, sm: 2 },
                         borderRadius: { xs: 3, sm: 4 },
-                        background: `
-                          linear-gradient(135deg, 
-                            rgba(76, 175, 80, 0.9) 0%, 
-                            rgba(56, 142, 60, 0.9) 50%, 
-                            rgba(46, 125, 50, 0.9) 100%)
-                        `,
-                        boxShadow: `
-                          0 8px 32px rgba(76, 175, 80, 0.3),
-                          0 0 0 1px rgba(255, 255, 255, 0.1),
-                          inset 0 1px 0 rgba(255, 255, 255, 0.2)
-                        `,
-                        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                        background: `linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(56, 142, 60, 0.9) 50%, rgba(46, 125, 50, 0.9) 100%)`,
+                        boxShadow: "0 8px 32px rgba(76, 175, 80, 0.3)",
                         textTransform: "none",
                         fontSize: { xs: "1rem", sm: "1.1rem", md: "1.2rem" },
                         fontWeight: 700,
-                        letterSpacing: "0.5px",
-                        position: "relative",
-                        overflow: "hidden",
-                        "&::before": {
-                          content: '""',
-                          position: "absolute",
-                          top: 0,
-                          left: "-100%",
-                          width: "100%",
-                          height: "100%",
-                          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
-                          transition: "left 0.5s ease",
-                        },
                         "&:hover": {
-                          background: `
-                            linear-gradient(135deg, 
-                              rgba(76, 175, 80, 1) 0%, 
-                              rgba(56, 142, 60, 1) 50%, 
-                              rgba(46, 125, 50, 1) 100%)
-                          `,
-                          boxShadow: `
-                            0 12px 48px rgba(76, 175, 80, 0.4),
-                            0 0 0 1px rgba(255, 255, 255, 0.2),
-                            inset 0 1px 0 rgba(255, 255, 255, 0.3)
-                          `,
+                          background: `linear-gradient(135deg, rgba(76, 175, 80, 1) 0%, rgba(56, 142, 60, 1) 50%, rgba(46, 125, 50, 1) 100%)`,
+                          boxShadow: "0 12px 48px rgba(76, 175, 80, 0.4)",
                           transform: { xs: "translateY(-2px)", sm: "translateY(-3px) scale(1.02)" },
-                          "&::before": {
-                            left: "100%",
-                          },
-                        },
-                        "&:active": {
-                          transform: "translateY(-1px) scale(0.98)",
                         },
                         "&:disabled": {
                           background: "rgba(255, 255, 255, 0.1)",
                           color: "rgba(255, 255, 255, 0.5)",
-                          transform: "none",
-                          boxShadow: "none",
-                          "&::before": {
-                            display: "none",
-                          },
                         },
                       }}
                     >
@@ -787,74 +603,43 @@ export default function LoginPage(props) {
               </Slide>
             </Grid>
           </Grid>
-          
-          {/* Developed by Card */}
-          <Box sx={{ display: "flex", justifyContent: "center", mt: { xs: 2, sm: 2.5, md: 3 } }}>
-            <Fade in timeout={2000}>
-              <Card
-                sx={{
-                  width: { xs: "auto", sm: "30%" },
-                  minWidth: "fit-content",
-                  background: "linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(56, 142, 60, 0.9) 50%, rgba(46, 125, 50, 0.9) 100%)",
-                  backdropFilter: "blur(10px)",
-                  WebkitBackdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "12px",
-                  boxShadow: "0 8px 32px rgba(76, 175, 80, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 12px 48px rgba(76, 175, 80, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
-                    borderColor: "rgba(255, 255, 255, 0.25)",
-                    background: "linear-gradient(135deg, rgba(76, 175, 80, 1) 0%, rgba(56, 142, 60, 1) 50%, rgba(46, 125, 50, 1) 100%)",
-                  },
-                }}
-              >
-                <CardContent sx={{ p: { xs: 0.75, sm: 1 }, "&:last-child": { pb: { xs: 0.75, sm: 1 } } }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: { xs: 0.5, md: 1 },
-                      textAlign: "center",
-                      flexWrap: "nowrap",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        color: "white",
-                        fontWeight: 600,
-                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                        whiteSpace: "nowrap",
-                        display: "inline",
-                      }}
-                    >
-                      Developed by
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        color: "white",
-                        fontWeight: 600,
-                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                        whiteSpace: "nowrap",
-                        display: "inline",
-                      }}
-                    >
-                      Carlvyne Technologies Ltd
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Fade>
-          </Box>
         </Container>
       </Box>
 
+      {/* Footer credit */}
+      <Box
+        sx={{
+          flexShrink: 0,
+          py: { xs: 1.5, sm: 2 },
+          textAlign: "center",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        <Fade in timeout={1200}>
+          <Typography
+            variant="caption"
+            sx={{
+              color: "rgba(255,255,255,0.55)",
+              fontSize: "0.75rem",
+              letterSpacing: "0.03em",
+            }}
+          >
+            Developed by{" "}
+            <Box
+              component="span"
+              sx={{
+                color: "rgba(255,255,255,0.85)",
+                fontWeight: 600,
+              }}
+            >
+              Carlvyne Technologies Ltd
+            </Box>
+          </Typography>
+        </Fade>
+      </Box>
+
+      {/* Reset password dialog */}
       <Dialog
         open={openResetDialog}
         onClose={() => setOpenResetDialog(false)}
@@ -869,14 +654,12 @@ export default function LoginPage(props) {
             backdropFilter: "blur(20px)",
             border: "1px solid rgba(255, 255, 255, 0.2)",
             boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
-          }
+          },
         }}
       >
         <DialogTitle
           sx={{
-            background: `linear-gradient(135deg, 
-              rgba(76, 175, 80, 0.9) 0%, 
-              rgba(56, 142, 60, 0.9) 100%)`,
+            background: `linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(56, 142, 60, 0.9) 100%)`,
             color: "white",
             fontWeight: 700,
             fontSize: "1.3rem",
@@ -892,18 +675,19 @@ export default function LoginPage(props) {
         </DialogTitle>
         <Divider />
         <DialogContent sx={{ pt: 4, pb: 2 }}>
-          <DialogContentText 
-            sx={{ 
-              mb: 3, 
+          <DialogContentText
+            sx={{
+              mb: 3,
               fontSize: "1rem",
               color: "rgba(0,0,0,0.7)",
               textAlign: "center",
               lineHeight: 1.6,
             }}
           >
-            Enter your registered email address and we'll send you a secure link to reset your password.
+            Enter your registered email address and we&apos;ll send you a secure link to reset your password.
           </DialogContentText>
-          <form
+          <Box
+            component="form"
             onSubmit={(e) => {
               e.preventDefault();
               reset();
@@ -943,50 +727,37 @@ export default function LoginPage(props) {
               <Button
                 onClick={() => setOpenResetDialog(false)}
                 variant="outlined"
+                disabled={resetLoading}
                 sx={{
                   borderColor: "rgba(0,0,0,0.3)",
                   color: "rgba(0,0,0,0.7)",
                   borderRadius: 3,
                   px: 3,
-                  py: 1,
                   fontWeight: 600,
-                  "&:hover": {
-                    borderColor: "rgba(0,0,0,0.5)",
-                    backgroundColor: "rgba(0,0,0,0.05)",
-                  },
                 }}
-                disabled={resetLoading}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="contained"
+                disabled={resetLoading}
+                startIcon={
+                  resetLoading ? <CircularProgress size={18} color="inherit" /> : <Security />
+                }
                 sx={{
-                  background: `linear-gradient(135deg, 
-                    rgba(76, 175, 80, 0.9) 0%, 
-                    rgba(56, 142, 60, 0.9) 100%)`,
+                  background: `linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(56, 142, 60, 0.9) 100%)`,
                   borderRadius: 3,
                   px: 3,
-                  py: 1,
                   fontWeight: 600,
                   textTransform: "none",
                   boxShadow: "0 4px 12px rgba(76, 175, 80, 0.3)",
-                  "&:hover": {
-                    background: `linear-gradient(135deg, 
-                      rgba(76, 175, 80, 1) 0%, 
-                      rgba(56, 142, 60, 1) 100%)`,
-                    boxShadow: "0 6px 16px rgba(76, 175, 80, 0.4)",
-                    transform: "translateY(-1px)",
-                  },
                 }}
-                disabled={resetLoading}
-                startIcon={resetLoading ? <CircularProgress size={18} color="inherit" /> : <Security />}
               >
                 {resetLoading ? "Sending..." : "Send Reset Link"}
               </Button>
             </DialogActions>
-          </form>
+          </Box>
         </DialogContent>
       </Dialog>
     </Box>

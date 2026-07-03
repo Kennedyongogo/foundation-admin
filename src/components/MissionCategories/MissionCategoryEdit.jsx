@@ -2,11 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
-  Container,
   Typography,
-  Card,
-  CardContent,
-  Grid,
+  Paper,
   TextField,
   Button,
   Stack,
@@ -25,8 +22,20 @@ import {
   Image as ImageIcon,
   Favorite as MissionIcon,
   Close as CloseIcon,
+  Edit as EditIcon,
 } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
+import { brand } from "../../brandColors";
+import {
+  fieldSx,
+  sectionCardSx,
+  SectionHeader,
+  outerPaperSx,
+  pageHeaderSx,
+  missionCategoryOptions,
+  imageGridSx,
+} from "../Projects/projectFormUi";
 
 const MissionCategoryEdit = () => {
   const { id } = useParams();
@@ -44,15 +53,6 @@ const MissionCategoryEdit = () => {
     impact: "",
   });
 
-  const categoryOptions = [
-    { value: "educational_support", label: "Educational Support", color: "#2196f3" },
-    { value: "mental_health_awareness", label: "Mental Health Awareness", color: "#e91e63" },
-    { value: "poverty_alleviation", label: "Poverty Alleviation", color: "#4caf50" },
-    { value: "community_empowerment", label: "Community Empowerment", color: "#ff9800" },
-    { value: "healthcare_access", label: "Healthcare Access", color: "#9c27b0" },
-    { value: "youth_development", label: "Youth Development", color: "#00bcd4" },
-  ];
-
   useEffect(() => {
     fetchCategory();
   }, [id]);
@@ -69,9 +69,7 @@ const MissionCategoryEdit = () => {
       }
 
       const response = await fetch(`/api/mission-categories/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const result = await response.json();
@@ -84,18 +82,15 @@ const MissionCategoryEdit = () => {
           category: category.category || "educational_support",
           impact: category.impact || "",
         });
-        
-        // Set existing images
+
         if (category.images && Array.isArray(category.images)) {
           const imageUrls = category.images.map((img) => {
-            const path = typeof img === 'object' ? img.path : img;
+            const path = typeof img === "object" ? img.path : img;
             return buildImageUrl(path);
           });
           setExistingImages(imageUrls);
         } else if (category.image) {
-          // Backward compatibility with single image
-          const imageUrl = buildImageUrl(category.image);
-          setExistingImages([imageUrl]);
+          setExistingImages([buildImageUrl(category.image)]);
         }
       } else {
         setError(result.message || "Failed to fetch mission category");
@@ -117,10 +112,7 @@ const MissionCategoryEdit = () => {
   };
 
   const handleInputChange = (field, value) => {
-    setCategoryForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setCategoryForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleImageSelect = (event) => {
@@ -131,6 +123,7 @@ const MissionCategoryEdit = () => {
           icon: "error",
           title: "File too large",
           text: `${file.name} is larger than 10MB`,
+          confirmButtonColor: brand.green,
         });
         return false;
       }
@@ -139,19 +132,15 @@ const MissionCategoryEdit = () => {
 
     if (validFiles.length > 0) {
       setSelectedImages((prev) => [...prev, ...validFiles]);
-      
-      // Create previews for new files
       validFiles.forEach((file) => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setImagePreviews((prev) => [
-            ...prev,
-            { file, preview: reader.result },
-          ]);
+          setImagePreviews((prev) => [...prev, { file, preview: reader.result }]);
         };
         reader.readAsDataURL(file);
       });
     }
+    event.target.value = "";
   };
 
   const removeSelectedImage = (index) => {
@@ -170,6 +159,7 @@ const MissionCategoryEdit = () => {
           icon: "error",
           title: "Validation Error",
           text: "Please fill in all required fields (Title and Description)",
+          confirmButtonColor: brand.green,
         });
         return;
       }
@@ -178,34 +168,26 @@ const MissionCategoryEdit = () => {
       setError(null);
 
       const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
+      if (!token) throw new Error("No authentication token found");
 
-      // Create FormData for file upload
       const formData = new FormData();
       formData.append("title", categoryForm.title);
       formData.append("description", categoryForm.description);
       formData.append("category", categoryForm.category);
       if (categoryForm.impact) formData.append("impact", categoryForm.impact);
-      
-      // Append existing images to keep
+
       existingImages.forEach((imageUrl) => {
-        // Extract path from URL
-        const path = imageUrl.replace(/^\/uploads\//, 'uploads/').replace(/^\//, '');
+        const path = imageUrl.replace(/^\/uploads\//, "uploads/").replace(/^\//, "");
         formData.append("existing_images", path);
       });
-      
-      // Append new images
+
       selectedImages.forEach((image) => {
         formData.append("images", image);
       });
 
       const response = await fetch(`/api/mission-categories/${id}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -216,451 +198,359 @@ const MissionCategoryEdit = () => {
           title: "Success!",
           text: "Mission category updated successfully!",
           icon: "success",
-          confirmButtonColor: "#667eea",
+          confirmButtonColor: brand.green,
         });
-        navigate("/mission-categories");
+        navigate(`/mission-categories/${id}`);
       } else {
         throw new Error(result.message || "Failed to update mission category");
       }
-    } catch (error) {
-      console.error("Error updating mission category:", error);
-      setError(error.message || "Failed to update mission category");
+    } catch (err) {
+      console.error("Error updating mission category:", err);
+      setError(err.message || "Failed to update mission category");
       await Swal.fire({
         title: "Error!",
-        text: error.message || "Failed to update mission category",
+        text: err.message || "Failed to update mission category",
         icon: "error",
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: brand.green,
       });
     } finally {
       setSaving(false);
     }
   };
 
+  const isFormValid = () => categoryForm.title.trim() && categoryForm.description.trim();
+
+  const renderImageCard = (src, label, onRemove, onClick) => (
+    <Box
+      sx={{
+        p: 1.5,
+        bgcolor: brand.sidebarBgAlt,
+        borderRadius: 2,
+        border: `1px solid ${brand.sidebarBorder}`,
+        position: "relative",
+        cursor: onClick ? "pointer" : "default",
+        transition: "transform 0.2s",
+        "&:hover": onClick ? { transform: "scale(1.02)" } : undefined,
+      }}
+      onClick={onClick}
+    >
+      <IconButton
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+        size="small"
+        sx={{
+          position: "absolute",
+          top: 12,
+          right: 12,
+          bgcolor: alpha("#000", 0.55),
+          color: "#fff",
+          "&:hover": { bgcolor: "#c62828" },
+          zIndex: 2,
+        }}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+      <Box
+        component="img"
+        src={src}
+        alt={label}
+        sx={{
+          width: "100%",
+          height: 150,
+          objectFit: "cover",
+          borderRadius: 1.5,
+          mb: 1,
+        }}
+      />
+      <Typography
+        variant="caption"
+        color={brand.sidebarTextMuted}
+        display="block"
+        textAlign="center"
+        sx={{ wordBreak: "break-word" }}
+      >
+        {label}
+      </Typography>
+    </Box>
+  );
+
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-      >
-        <CircularProgress size={60} />
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+        <CircularProgress sx={{ color: brand.green }} size={48} />
       </Box>
     );
   }
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-        py: 3,
-      }}
-    >
-      <Container maxWidth="lg" sx={{ px: 0 }}>
-        {/* Header */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
+    <Box>
+      <Paper elevation={0} sx={outerPaperSx}>
+        <Box sx={pageHeaderSx}>
           <Box
             sx={{
               position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
+              top: -40,
+              right: -40,
+              width: 140,
+              height: 140,
               borderRadius: "50%",
-              zIndex: 0,
+              bgcolor: alpha("#fff", 0.06),
             }}
           />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            position="relative"
-            zIndex={1}
-          >
-            <Box display="flex" alignItems="center" gap={2}>
-              <Button
-                variant="outlined"
-                startIcon={<ArrowBack />}
-                onClick={() => navigate("/mission-categories")}
-                sx={{
-                  color: "white",
-                  borderColor: "rgba(255, 255, 255, 0.3)",
-                  "&:hover": {
-                    borderColor: "rgba(255, 255, 255, 0.5)",
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  },
-                }}
-              >
-                Back
-              </Button>
-              <Box>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 800,
-                    mb: 1,
-                    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                    fontSize: { xs: "1.1rem", sm: "1.3rem", md: "1.5rem" },
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Edit Mission Category
-                </Typography>
-                <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                  Update mission category details
-                </Typography>
-              </Box>
-            </Box>
-            <Button
-              variant="contained"
-              startIcon={<Save />}
-              onClick={handleUpdate}
-              disabled={saving}
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ position: "relative", zIndex: 1 }}>
+            <IconButton
+              onClick={() => navigate(`/mission-categories/${id}`)}
+              aria-label="Back to category"
               sx={{
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
-                color: "white",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.3)",
-                },
-                "&:disabled": {
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  color: "rgba(255, 255, 255, 0.5)",
-                },
+                bgcolor: alpha("#fff", 0.12),
+                color: "#fff",
+                border: `1px solid ${alpha("#fff", 0.2)}`,
+                "&:hover": { bgcolor: alpha(brand.gold, 0.25) },
               }}
             >
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-          </Box>
+              <ArrowBack />
+            </IconButton>
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: alpha("#fff", 0.12),
+                border: `1px solid ${alpha(brand.gold, 0.45)}`,
+              }}
+            >
+              <EditIcon sx={{ fontSize: 26, color: brand.gold }} />
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                variant="h5"
+                fontWeight={800}
+                sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" }, lineHeight: 1.2 }}
+              >
+                Edit Mission Category
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.88, mt: 0.25 }} noWrap>
+                {categoryForm.title}
+              </Typography>
+            </Box>
+          </Stack>
         </Box>
 
-        {/* Content */}
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>
               {error}
             </Alert>
           )}
 
-          <Grid container spacing={3} sx={{ flexDirection: "column" }}>
-            {/* Basic Information */}
-            <Grid item xs={12}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <MissionIcon sx={{ color: "#667eea" }} />
-                    <Typography variant="h6" sx={{ color: "#333" }}>
-                      Basic Information
-                    </Typography>
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={MissionIcon} title="Basic Information" />
+            <Box sx={{ p: 3 }}>
+              <Stack spacing={2.5}>
+                <TextField
+                  fullWidth
+                  label="Title"
+                  value={categoryForm.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  required
+                  sx={fieldSx}
+                />
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  label="Description"
+                  value={categoryForm.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  required
+                  sx={fieldSx}
+                />
+                <FormControl fullWidth required sx={fieldSx}>
+                  <InputLabel>Category Type</InputLabel>
+                  <Select
+                    value={categoryForm.category}
+                    onChange={(e) => handleInputChange("category", e.target.value)}
+                    label="Category Type"
+                  >
+                    {missionCategoryOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        <Box display="flex" alignItems="center" gap={1.5}>
+                          <Box
+                            sx={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: "50%",
+                              bgcolor: option.color,
+                            }}
+                          />
+                          {option.label}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  label="Impact"
+                  value={categoryForm.impact}
+                  onChange={(e) => handleInputChange("impact", e.target.value)}
+                  helperText="e.g., High Impact"
+                  sx={fieldSx}
+                />
+              </Stack>
+            </Box>
+          </Paper>
+
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={ImageIcon} title="Category Images" color={brand.green} />
+            <Box sx={{ p: 3 }}>
+              <input
+                type="file"
+                multiple
+                onChange={handleImageSelect}
+                style={{ display: "none" }}
+                id="images-upload"
+                accept="image/*"
+              />
+              <label htmlFor="images-upload">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  startIcon={<CloudUpload />}
+                  sx={{
+                    mb: 2,
+                    color: brand.green,
+                    borderColor: brand.green,
+                    fontWeight: 600,
+                    textTransform: "none",
+                    borderRadius: 2,
+                    "&:hover": {
+                      borderColor: brand.greenDark,
+                      bgcolor: alpha(brand.green, 0.08),
+                    },
+                  }}
+                >
+                  Upload Images
+                </Button>
+              </label>
+
+              {existingImages.length > 0 && (
+                <Box mb={3}>
+                  <Typography variant="subtitle2" fontWeight={600} color={brand.navy} mb={2}>
+                    Current Images ({existingImages.length})
+                  </Typography>
+                  <Box sx={imageGridSx(existingImages.length)}>
+                    {existingImages.map((imageUrl, index) => {
+                      const fileName = imageUrl.split("/").pop() || `Image ${index + 1}`;
+                      return (
+                        <Box key={`existing-${index}`}>
+                          {renderImageCard(imageUrl, fileName, () => removeExistingImage(index))}
+                        </Box>
+                      );
+                    })}
                   </Box>
-                  <Stack spacing={3}>
-                    <TextField
-                      fullWidth
-                      label="Title *"
-                      value={categoryForm.title}
-                      onChange={(e) => handleInputChange("title", e.target.value)}
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      label="Description *"
-                      value={categoryForm.description}
-                      onChange={(e) => handleInputChange("description", e.target.value)}
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <FormControl
-                      fullWidth
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    >
-                      <InputLabel>Category</InputLabel>
-                      <Select
-                        value={categoryForm.category}
-                        onChange={(e) => handleInputChange("category", e.target.value)}
-                        label="Category"
-                      >
-                        {categoryOptions.map((option) => (
-                          <MenuItem key={option.value} value={option.value}>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <Box
-                                sx={{
-                                  width: 12,
-                                  height: 12,
-                                  borderRadius: "50%",
-                                  backgroundColor: option.color,
-                                }}
-                              />
-                              {option.label}
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    <TextField
-                      fullWidth
-                      label="Impact"
-                      value={categoryForm.impact}
-                      onChange={(e) => handleInputChange("impact", e.target.value)}
-                      helperText="e.g., High Impact"
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
+                </Box>
+              )}
 
-            {/* Image Upload */}
-            <Grid item xs={12}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <ImageIcon sx={{ color: "#43e97b" }} />
-                    <Typography variant="h6" sx={{ color: "#333" }}>
-                      Category Image
-                    </Typography>
+              {imagePreviews.length > 0 && (
+                <Box mb={3}>
+                  <Typography variant="subtitle2" fontWeight={600} color={brand.navy} mb={2}>
+                    New Images ({imagePreviews.length})
+                  </Typography>
+                  <Box sx={imageGridSx(imagePreviews.length)}>
+                    {imagePreviews.map((preview, index) => (
+                      <Box key={`new-${index}`}>
+                        {renderImageCard(
+                          preview.preview,
+                          preview.file.name,
+                          () => removeSelectedImage(index)
+                        )}
+                      </Box>
+                    ))}
                   </Box>
-                  <Box mb={3}>
-                    <input
-                      type="file"
-                      multiple
-                      onChange={handleImageSelect}
-                      style={{ display: "none" }}
-                      id="images-upload"
-                      accept="image/*"
-                    />
-                    <label htmlFor="images-upload">
-                      <Button
-                        variant="outlined"
-                        component="span"
-                        startIcon={<CloudUpload />}
-                        sx={{
-                          color: "#43e97b",
-                          borderColor: "#43e97b",
-                          "&:hover": {
-                            borderColor: "#43e97b",
-                            backgroundColor: "rgba(67, 233, 123, 0.1)",
-                          },
-                        }}
-                      >
-                        Upload Images
-                      </Button>
-                    </label>
-                  </Box>
+                </Box>
+              )}
 
-                  {/* Existing Images */}
-                  {existingImages.length > 0 && (
-                    <Box mb={3}>
-                      <Typography variant="subtitle2" mb={2}>
-                        Current Images ({existingImages.length}):
-                      </Typography>
-                      <Grid container spacing={2}>
-                        {existingImages.map((imageUrl, index) => {
-                          const fileName = imageUrl.split("/").pop() || `Image ${index + 1}`;
-                          return (
-                            <Grid item xs={12} sm={6} md={4} key={index}>
-                              <Box
-                                sx={{
-                                  p: 2,
-                                  backgroundColor: "#f8f9fa",
-                                  borderRadius: 2,
-                                  border: "1px solid #e0e0e0",
-                                  position: "relative",
-                                }}
-                              >
-                                <IconButton
-                                  onClick={() => removeExistingImage(index)}
-                                  sx={{
-                                    position: "absolute",
-                                    top: 8,
-                                    right: 8,
-                                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                    color: "white",
-                                    "&:hover": {
-                                      backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                    },
-                                    zIndex: 2,
-                                  }}
-                                  size="small"
-                                >
-                                  <CloseIcon fontSize="small" />
-                                </IconButton>
-                                <img
-                                  src={imageUrl}
-                                  alt={fileName}
-                                  style={{
-                                    width: "100%",
-                                    height: "150px",
-                                    objectFit: "cover",
-                                    borderRadius: "8px",
-                                    marginBottom: "8px",
-                                  }}
-                                  onError={(e) => {
-                                    e.target.style.display = "none";
-                                  }}
-                                />
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    color: "#333",
-                                    display: "block",
-                                    textAlign: "center",
-                                    wordBreak: "break-word",
-                                  }}
-                                >
-                                  {fileName}
-                                </Typography>
-                              </Box>
-                            </Grid>
-                          );
-                        })}
-                      </Grid>
-                    </Box>
-                  )}
+              {existingImages.length === 0 && imagePreviews.length === 0 && (
+                <Box
+                  sx={{
+                    border: `2px dashed ${brand.sidebarBorder}`,
+                    borderRadius: 2,
+                    p: 4,
+                    textAlign: "center",
+                    bgcolor: brand.sidebarBgAlt,
+                  }}
+                >
+                  <ImageIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2) }} />
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    No images. Click &quot;Upload Images&quot; to add photos.
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Paper>
 
-                  {/* New Selected Images Preview */}
-                  {imagePreviews.length > 0 && (
-                    <Box mb={3}>
-                      <Typography variant="subtitle2" mb={2}>
-                        New Images ({imagePreviews.length}):
-                      </Typography>
-                      <Grid container spacing={2}>
-                        {imagePreviews.map((preview, index) => (
-                          <Grid item xs={12} sm={6} md={4} key={index}>
-                            <Box
-                              sx={{
-                                p: 2,
-                                backgroundColor: "#f8f9fa",
-                                borderRadius: 2,
-                                border: "1px solid #e0e0e0",
-                                position: "relative",
-                              }}
-                            >
-                              <IconButton
-                                onClick={() => removeSelectedImage(index)}
-                                sx={{
-                                  position: "absolute",
-                                  top: 8,
-                                  right: 8,
-                                  backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                  color: "white",
-                                  "&:hover": {
-                                    backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                  },
-                                  zIndex: 2,
-                                }}
-                                size="small"
-                              >
-                                <CloseIcon fontSize="small" />
-                              </IconButton>
-                              <img
-                                src={preview.preview}
-                                alt={preview.file.name}
-                                style={{
-                                  width: "100%",
-                                  height: "150px",
-                                  objectFit: "cover",
-                                  borderRadius: "8px",
-                                  marginBottom: "8px",
-                                }}
-                              />
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  color: "#333",
-                                  display: "block",
-                                  textAlign: "center",
-                                  wordBreak: "break-word",
-                                }}
-                              >
-                                {preview.file.name}
-                              </Typography>
-                            </Box>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </Box>
-                  )}
-
-                  {existingImages.length === 0 && imagePreviews.length === 0 && (
-                    <Box
-                      sx={{
-                        border: "2px dashed #ccc",
-                        borderRadius: 2,
-                        p: 3,
-                        textAlign: "center",
-                        bgcolor: "#f9f9f9",
-                      }}
-                    >
-                      <ImageIcon sx={{ fontSize: 48, opacity: 0.3 }} />
-                      <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
-                        No images. Click "Upload Images" to add images.
-                      </Typography>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-
-          </Grid>
+          <Paper
+            elevation={0}
+            sx={{ ...sectionCardSx, mb: 0, position: { md: "sticky" }, bottom: 16, zIndex: 10 }}
+          >
+            <Box sx={{ p: 2.5 }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <Save />}
+                  onClick={handleUpdate}
+                  disabled={!isFormValid() || saving}
+                  sx={{
+                    py: 1.5,
+                    fontWeight: 700,
+                    textTransform: "none",
+                    borderRadius: 2,
+                    bgcolor: brand.green,
+                    boxShadow: `0 6px 20px ${alpha(brand.green, 0.4)}`,
+                    "&:hover": {
+                      bgcolor: brand.greenLight,
+                      boxShadow: `0 8px 24px ${alpha(brand.green, 0.45)}`,
+                    },
+                    "&:disabled": { bgcolor: "#e0e0e0", color: "#9e9e9e", boxShadow: "none" },
+                  }}
+                >
+                  {saving ? "Saving…" : "Save Changes"}
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  fullWidth
+                  onClick={() => navigate(`/mission-categories/${id}`)}
+                  sx={{
+                    py: 1.5,
+                    fontWeight: 600,
+                    textTransform: "none",
+                    borderRadius: 2,
+                    color: brand.navy,
+                    borderColor: brand.sidebarBorder,
+                    "&:hover": {
+                      borderColor: brand.navy,
+                      bgcolor: alpha(brand.navy, 0.04),
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Stack>
+            </Box>
+          </Paper>
         </Box>
-      </Container>
+      </Paper>
     </Box>
   );
 };
 
 export default MissionCategoryEdit;
-

@@ -18,6 +18,7 @@ import {
   Tooltip,
   Chip,
   Avatar,
+  Stack,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -26,7 +27,15 @@ import {
   Visibility as ViewIcon,
   Favorite as MissionIcon,
 } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
+import { brand } from "../../brandColors";
+import {
+  outerPaperSx,
+  pageHeaderSx,
+  getMissionCategoryLabel,
+  getMissionCategoryColor,
+} from "../Projects/projectFormUi";
 
 const MissionCategories = () => {
   const navigate = useNavigate();
@@ -103,18 +112,14 @@ const MissionCategories = () => {
       text: `Do you want to delete "${category.title}"?`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      confirmButtonColor: "#c62828",
+      cancelButtonColor: brand.navy,
       confirmButtonText: "Yes, delete it!",
       cancelButtonText: "Cancel",
-      customClass: {
-        container: "swal-z-index-fix",
-      },
+      customClass: { container: "swal-z-index-fix" },
       didOpen: () => {
         const swalContainer = document.querySelector(".swal-z-index-fix");
-        if (swalContainer) {
-          swalContainer.style.zIndex = "9999";
-        }
+        if (swalContainer) swalContainer.style.zIndex = "9999";
       },
     });
 
@@ -136,30 +141,24 @@ const MissionCategories = () => {
           },
         });
 
-        const result = await response.json();
+        const deleteResult = await response.json();
 
         if (!response.ok) {
-          throw new Error(result.message || "Failed to delete mission category");
+          throw new Error(deleteResult.message || "Failed to delete mission category");
         }
 
-        // Refresh categories list
         fetchCategories();
 
-        // Show success message
         Swal.fire({
           icon: "success",
           title: "Deleted!",
           text: "Mission category has been deleted successfully.",
           timer: 1500,
           showConfirmButton: false,
-          customClass: {
-            container: "swal-z-index-fix",
-          },
+          customClass: { container: "swal-z-index-fix" },
           didOpen: () => {
             const swalContainer = document.querySelector(".swal-z-index-fix");
-            if (swalContainer) {
-              swalContainer.style.zIndex = "9999";
-            }
+            if (swalContainer) swalContainer.style.zIndex = "9999";
           },
         });
       } catch (err) {
@@ -168,14 +167,11 @@ const MissionCategories = () => {
           icon: "error",
           title: "Error",
           text: "Failed to delete mission category. Please try again.",
-          customClass: {
-            container: "swal-z-index-fix",
-          },
+          confirmButtonColor: brand.green,
+          customClass: { container: "swal-z-index-fix" },
           didOpen: () => {
             const swalContainer = document.querySelector(".swal-z-index-fix");
-            if (swalContainer) {
-              swalContainer.style.zIndex = "9999";
-            }
+            if (swalContainer) swalContainer.style.zIndex = "9999";
           },
         });
       } finally {
@@ -195,38 +191,13 @@ const MissionCategories = () => {
   const getFirstImage = (category) => {
     if (category.images && Array.isArray(category.images) && category.images.length > 0) {
       const firstImage = category.images[0];
-      const path = typeof firstImage === 'object' ? firstImage.path : firstImage;
+      const path = typeof firstImage === "object" ? firstImage.path : firstImage;
       return buildImageUrl(path);
     }
-    // Backward compatibility with single image field
     if (category.image) {
       return buildImageUrl(category.image);
     }
     return null;
-  };
-
-  const getCategoryLabel = (category) => {
-    const labels = {
-      educational_support: "Educational Support",
-      mental_health_awareness: "Mental Health Awareness",
-      poverty_alleviation: "Poverty Alleviation",
-      community_empowerment: "Community Empowerment",
-      healthcare_access: "Healthcare Access",
-      youth_development: "Youth Development",
-    };
-    return labels[category] || category;
-  };
-
-  const getCategoryColor = (category) => {
-    const colors = {
-      educational_support: "#2196f3",
-      mental_health_awareness: "#e91e63",
-      poverty_alleviation: "#4caf50",
-      community_empowerment: "#ff9800",
-      healthcare_access: "#9c27b0",
-      youth_development: "#00bcd4",
-    };
-    return colors[category] || "#667eea";
   };
 
   const paginatedCategories = categories.slice(
@@ -236,13 +207,8 @@ const MissionCategories = () => {
 
   if (loading && categories.length === 0) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-      >
-        <CircularProgress size={60} />
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+        <CircularProgress sx={{ color: brand.green }} size={48} />
       </Box>
     );
   }
@@ -256,56 +222,18 @@ const MissionCategories = () => {
   }
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 0,
-          overflow: "hidden",
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(10px)",
-          border: "none",
-          boxShadow: "none",
-          minHeight: "100vh",
-        }}
-      >
-        {/* Header Section */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
+    <Box>
+      <Paper elevation={0} sx={outerPaperSx}>
+        <Box sx={pageHeaderSx}>
           <Box
             sx={{
               position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
+              top: -40,
+              right: -40,
+              width: 160,
+              height: 160,
               borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
+              bgcolor: alpha("#fff", 0.06),
             }}
           />
           <Box
@@ -313,47 +241,59 @@ const MissionCategories = () => {
             flexDirection={{ xs: "column", sm: "row" }}
             justifyContent="space-between"
             alignItems={{ xs: "flex-start", sm: "center" }}
-            gap={{ xs: 2, sm: 0 }}
+            gap={2}
             position="relative"
             zIndex={1}
           >
-            <Box>
-              <Typography
-                variant="h4"
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Box
                 sx={{
-                  fontWeight: 800,
-                  mb: 1,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "1.1rem", sm: "1.3rem", md: "1.5rem" },
-                  whiteSpace: "nowrap",
+                  width: 52,
+                  height: 52,
+                  borderRadius: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: alpha("#fff", 0.12),
+                  border: `1px solid ${alpha(brand.gold, 0.45)}`,
                 }}
               >
-                Mission Categories Management
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                Manage mission categories for the public portal
-              </Typography>
-            </Box>
+                <MissionIcon sx={{ fontSize: 28, color: brand.gold }} />
+              </Box>
+              <Box>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: { xs: "1.25rem", md: "1.5rem" },
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Mission Categories
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.88, mt: 0.5 }}>
+                  Manage mission categories for the public portal
+                </Typography>
+              </Box>
+            </Stack>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => navigate("/mission-categories/create")}
               sx={{
-                background: "linear-gradient(45deg, #FF6B6B, #4ECDC4)",
-                borderRadius: 3,
-                px: { xs: 2, sm: 3 },
-                py: 1.2,
-                fontSize: { xs: "0.75rem", sm: "0.85rem" },
-                fontWeight: 600,
+                bgcolor: brand.green,
+                borderRadius: 2,
+                px: 3,
+                py: 1.25,
+                fontWeight: 700,
                 textTransform: "none",
-                boxShadow: "0 8px 25px rgba(255, 107, 107, 0.3)",
+                boxShadow: `0 6px 20px ${alpha(brand.green, 0.45)}`,
                 width: { xs: "100%", sm: "auto" },
                 "&:hover": {
-                  background: "linear-gradient(45deg, #FF5252, #26A69A)",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 12px 35px rgba(255, 107, 107, 0.4)",
+                  bgcolor: brand.greenLight,
+                  boxShadow: `0 8px 24px ${alpha(brand.green, 0.5)}`,
+                  transform: "translateY(-1px)",
                 },
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
               }}
             >
               Create New Category
@@ -361,36 +301,22 @@ const MissionCategories = () => {
           </Box>
         </Box>
 
-        {/* Content Section */}
-        <Box
-          sx={{ p: { xs: 1, sm: 2, md: 3 }, minHeight: "calc(100vh - 200px)" }}
-        >
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>
               {error}
             </Alert>
           )}
 
-          {/* Categories Table */}
           <TableContainer
             sx={{
-              borderRadius: 3,
+              borderRadius: 2,
               overflowX: "auto",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              border: "1px solid rgba(102, 126, 234, 0.1)",
-              "&::-webkit-scrollbar": {
-                height: 8,
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: "rgba(102, 126, 234, 0.1)",
-                borderRadius: 4,
-              },
+              border: `1px solid ${brand.sidebarBorder}`,
+              "&::-webkit-scrollbar": { height: 6 },
               "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "rgba(102, 126, 234, 0.3)",
-                borderRadius: 4,
-                "&:hover": {
-                  backgroundColor: "rgba(102, 126, 234, 0.5)",
-                },
+                bgcolor: alpha(brand.navy, 0.25),
+                borderRadius: 3,
               },
             }}
           >
@@ -398,15 +324,15 @@ const MissionCategories = () => {
               <TableHead>
                 <TableRow
                   sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    bgcolor: brand.navy,
                     "& .MuiTableCell-head": {
-                      color: "white",
+                      color: "#fff",
                       fontWeight: 700,
-                      fontSize: { xs: "0.8rem", sm: "0.95rem" },
+                      fontSize: { xs: "0.75rem", sm: "0.8rem" },
                       textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      border: "none",
+                      letterSpacing: "0.06em",
+                      borderBottom: `2px solid ${brand.gold}`,
+                      py: 1.75,
                       whiteSpace: "nowrap",
                     },
                   }}
@@ -422,22 +348,23 @@ const MissionCategories = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <CircularProgress sx={{ color: "#667eea" }} />
+                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                      <CircularProgress sx={{ color: brand.green }} size={36} />
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <Typography color="error" variant="h6">
+                      <Typography color="error" variant="body1" fontWeight={600}>
                         {error}
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : paginatedCategories.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <Typography variant="h6" color="text.secondary">
+                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                      <MissionIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2), mb: 1 }} />
+                      <Typography variant="body1" color="text.secondary" fontWeight={500}>
                         No mission categories found.
                       </Typography>
                     </TableCell>
@@ -446,23 +373,18 @@ const MissionCategories = () => {
                   paginatedCategories.map((category, idx) => (
                     <TableRow
                       key={category.id}
+                      hover
                       sx={{
-                        "&:nth-of-type(even)": {
-                          backgroundColor: "rgba(102, 126, 234, 0.02)",
-                        },
-                        "&:hover": {
-                          backgroundColor: "rgba(102, 126, 234, 0.08)",
-                          transform: { xs: "none", sm: "scale(1.01)" },
-                        },
-                        transition: "all 0.2s ease",
-                        cursor: "pointer",
+                        "&:nth-of-type(even)": { bgcolor: brand.sidebarBgAlt },
+                        "&:hover": { bgcolor: alpha(brand.green, 0.06) },
                         "& .MuiTableCell-root": {
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          padding: { xs: "8px 4px", sm: "16px" },
+                          fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                          py: { xs: 1.25, sm: 1.75 },
+                          borderColor: brand.sidebarBorder,
                         },
                       }}
                     >
-                      <TableCell sx={{ fontWeight: 600, color: "#667eea" }}>
+                      <TableCell sx={{ fontWeight: 700, color: brand.navy, width: 48 }}>
                         {page * rowsPerPage + idx + 1}
                       </TableCell>
                       <TableCell>
@@ -470,28 +392,24 @@ const MissionCategories = () => {
                           src={getFirstImage(category)}
                           alt={category.title}
                           sx={{
-                            width: 50,
-                            height: 50,
-                            bgcolor: category.color || "#667eea",
+                            width: 48,
+                            height: 48,
+                            bgcolor: getMissionCategoryColor(category.category),
                           }}
                         >
                           <MissionIcon />
                         </Avatar>
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          sx={{ color: "#2c3e50" }}
-                        >
+                        <Typography variant="body2" fontWeight={600} color={brand.navy}>
                           {category.title}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography
                           variant="body2"
+                          color={brand.sidebarTextMuted}
                           sx={{
-                            color: "#7f8c8d",
                             maxWidth: 300,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
@@ -505,67 +423,56 @@ const MissionCategories = () => {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={getCategoryLabel(category.category)}
+                          label={getMissionCategoryLabel(category.category)}
                           size="small"
                           sx={{
                             fontWeight: 600,
-                            borderRadius: 2,
-                            backgroundColor: getCategoryColor(category.category),
-                            color: "white",
+                            fontSize: "0.75rem",
+                            bgcolor: alpha(getMissionCategoryColor(category.category), 0.12),
+                            color: getMissionCategoryColor(category.category),
+                            border: `1px solid ${alpha(getMissionCategoryColor(category.category), 0.35)}`,
                           }}
                         />
                       </TableCell>
                       <TableCell>
                         <Box display="flex" gap={0.5}>
-                          <Tooltip title="View Category Details" arrow>
+                          <Tooltip title="View details" arrow>
                             <IconButton
                               size="small"
                               onClick={() => handleViewCategory(category)}
                               sx={{
-                                color: "#27ae60",
-                                backgroundColor: "rgba(39, 174, 96, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(39, 174, 96, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
+                                color: brand.green,
+                                bgcolor: alpha(brand.green, 0.1),
+                                borderRadius: 1.5,
+                                "&:hover": { bgcolor: alpha(brand.green, 0.2) },
                               }}
                             >
                               <ViewIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Edit Category" arrow>
+                          <Tooltip title="Edit category" arrow>
                             <IconButton
                               size="small"
                               onClick={() => handleEditCategory(category)}
                               sx={{
-                                color: "#3498db",
-                                backgroundColor: "rgba(52, 152, 219, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(52, 152, 219, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
+                                color: brand.blue,
+                                bgcolor: alpha(brand.blue, 0.1),
+                                borderRadius: 1.5,
+                                "&:hover": { bgcolor: alpha(brand.blue, 0.18) },
                               }}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Delete Category" arrow>
+                          <Tooltip title="Delete category" arrow>
                             <IconButton
                               size="small"
                               onClick={() => handleDeleteCategory(category)}
                               sx={{
-                                color: "#e74c3c",
-                                backgroundColor: "rgba(231, 76, 60, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(231, 76, 60, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
+                                color: "#c62828",
+                                bgcolor: alpha("#c62828", 0.08),
+                                borderRadius: 1.5,
+                                "&:hover": { bgcolor: alpha("#c62828", 0.15) },
                               }}
                             >
                               <DeleteIcon fontSize="small" />
@@ -588,17 +495,16 @@ const MissionCategories = () => {
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
             sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderTop: "1px solid rgba(102, 126, 234, 0.1)",
-              "& .MuiTablePagination-toolbar": {
-                color: "#667eea",
-                fontWeight: 600,
+              borderTop: `1px solid ${brand.sidebarBorder}`,
+              "& .MuiTablePagination-toolbar": { color: brand.navy },
+              "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
+                color: brand.sidebarTextMuted,
+                fontWeight: 500,
               },
-              "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                {
-                  color: "#2c3e50",
-                  fontWeight: 600,
-                },
+              "& .MuiIconButton-root": {
+                color: brand.navy,
+                "&.Mui-disabled": { color: alpha(brand.navy, 0.3) },
+              },
             }}
           />
         </Box>
@@ -608,4 +514,3 @@ const MissionCategories = () => {
 };
 
 export default MissionCategories;
-

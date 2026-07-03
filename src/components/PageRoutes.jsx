@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { Box, CircularProgress, Card } from "@mui/material";
+import { brand } from "../brandColors";
 import Navbar from "./Navbar";
 import Settings from "../Pages/Settings";
 import NotFound from "../Pages/NotFound";
@@ -56,7 +57,7 @@ function PageRoutes() {
   return (
     <Box sx={{ display: "flex" }}>
       <Navbar user={user} setUser={setUser} />
-      <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 9 }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 9, bgcolor: brand.sidebarBgAlt, minHeight: "100vh" }}>
         {loading ? (
           <Box
             sx={{

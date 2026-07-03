@@ -3,47 +3,49 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
-  Grid,
   Button,
   Chip,
   Avatar,
   Stack,
-  Divider,
   CircularProgress,
   Alert,
-  Container,
-  Tooltip,
+  Paper,
+  IconButton,
+  LinearProgress,
 } from "@mui/material";
 import {
-  ArrowBack as ArrowBackIcon,
+  ArrowBack,
   Edit as EditIcon,
-  VolunteerActivism as ProjectIcon,
-  LocationOn as LocationIcon,
-  CalendarToday as CalendarIcon,
-  AccessTime as TimeIcon,
-  Handshake as HandshakeIcon,
+  VolunteerActivism,
+  LocationOn,
+  Event,
   Description as DescriptionIcon,
-  AttachMoney as MoneyIcon,
-  Business as BusinessIcon,
-  AccountBalance as AccountBalanceIcon,
-  Assignment as TaskIcon,
-  CardGiftcard as GiftIcon,
-  Favorite as HeartIcon,
   TrendingUp as ProgressIcon,
-  Warning as IssueIcon,
-  Notes as NotesIcon,
+  Image as ImageIcon,
+  Download as DownloadIcon,
+  People as PeopleIcon,
   Phone as PhoneIcon,
   Email as EmailIcon,
-  Image as ImageIcon,
-  PictureAsPdf as PdfIcon,
-  Description as WordIcon,
-  Download as DownloadIcon,
-  Visibility as PreviewIcon,
-  CloudUpload as UploadIcon,
-  People as PeopleIcon,
 } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
+import { brand } from "../../brandColors";
+import {
+  sectionCardSx,
+  SectionHeader,
+  outerPaperSx,
+  pageHeaderSx,
+  dateGridSx,
+  ImageGridRows,
+} from "./projectFormUi";
+
+const DetailCell = ({ label, children }) => (
+  <Box>
+    <Typography variant="body2" color={brand.sidebarTextMuted} fontWeight={500} mb={0.5}>
+      {label}
+    </Typography>
+    {children}
+  </Box>
+);
 
 const ProjectView = () => {
   const { id } = useParams();
@@ -114,14 +116,6 @@ const ProjectView = () => {
     });
   };
 
-  const formatTime = (timeString) => {
-    if (!timeString) return "N/A";
-    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
@@ -137,14 +131,6 @@ const ProjectView = () => {
     }
   };
 
-  const formatCurrency = (amount, currency = "KES") => {
-    if (!amount) return "N/A";
-    return new Intl.NumberFormat("en-KE", {
-      style: "currency",
-      currency: currency,
-    }).format(amount);
-  };
-
   const getFileType = (fileName) => {
     const extension = fileName.toLowerCase().split(".").pop();
     if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(extension)) {
@@ -157,22 +143,6 @@ const ProjectView = () => {
       return "excel";
     }
     return "document";
-  };
-
-  const getFileIcon = (fileName) => {
-    const type = getFileType(fileName);
-    switch (type) {
-      case "image":
-        return <ImageIcon sx={{ fontSize: 48, color: "white", mb: 1 }} />;
-      case "pdf":
-        return <PdfIcon sx={{ fontSize: 48, color: "#f44336", mb: 1 }} />;
-      case "word":
-        return <WordIcon sx={{ fontSize: 48, color: "#2196f3", mb: 1 }} />;
-      case "excel":
-        return <WordIcon sx={{ fontSize: 48, color: "#4caf50", mb: 1 }} />;
-      default:
-        return <ImageIcon sx={{ fontSize: 48, color: "white", mb: 1 }} />;
-    }
   };
 
   const handleDocumentClick = (fileUrl, fileName) => {
@@ -194,729 +164,519 @@ const ProjectView = () => {
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="50vh"
-      >
-        <CircularProgress />
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+        <CircularProgress sx={{ color: brand.green }} size={48} />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Box>
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
         <Button
           variant="outlined"
-          startIcon={<ArrowBackIcon />}
+          startIcon={<ArrowBack />}
           onClick={() => navigate("/projects")}
+          sx={{ color: brand.navy, borderColor: brand.sidebarBorder }}
         >
           Back to Projects
         </Button>
-      </Container>
+      </Box>
     );
   }
 
   if (!project) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Box>
         <Alert severity="warning" sx={{ mb: 2 }}>
           Project not found
         </Alert>
         <Button
           variant="outlined"
-          startIcon={<ArrowBackIcon />}
+          startIcon={<ArrowBack />}
           onClick={() => navigate("/projects")}
+          sx={{ color: brand.navy, borderColor: brand.sidebarBorder }}
         >
           Back to Projects
         </Button>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-        py: 3,
-      }}
-    >
-      <Container maxWidth="lg" sx={{ px: 0 }}>
-        {/* Header */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
+    <Box>
+      <Paper elevation={0} sx={outerPaperSx}>
+        <Box sx={pageHeaderSx}>
           <Box
             sx={{
               position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
+              top: -40,
+              right: -40,
+              width: 140,
+              height: 140,
               borderRadius: "50%",
-              zIndex: 0,
+              bgcolor: alpha("#fff", 0.06),
             }}
           />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            display="flex"
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            alignItems={{ xs: "flex-start", sm: "center" }}
             justifyContent="space-between"
-            alignItems="center"
-            position="relative"
-            zIndex={1}
+            spacing={2}
+            sx={{ position: "relative", zIndex: 1 }}
           >
-            <Box display="flex" alignItems="center" gap={2}>
-              <Button
-                variant="outlined"
-                startIcon={<ArrowBackIcon />}
+            <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, flex: 1 }}>
+              <IconButton
                 onClick={() => navigate("/projects")}
+                aria-label="Back to projects"
                 sx={{
-                  color: "white",
-                  borderColor: "rgba(255, 255, 255, 0.3)",
-                  "&:hover": {
-                    borderColor: "rgba(255, 255, 255, 0.5)",
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  },
+                  bgcolor: alpha("#fff", 0.12),
+                  color: "#fff",
+                  border: `1px solid ${alpha("#fff", 0.2)}`,
+                  "&:hover": { bgcolor: alpha(brand.gold, 0.25) },
                 }}
               >
-                Back
-              </Button>
-              <Box>
+                <ArrowBack />
+              </IconButton>
+              <Box
+                sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: alpha("#fff", 0.12),
+                  border: `1px solid ${alpha(brand.gold, 0.45)}`,
+                  flexShrink: 0,
+                }}
+              >
+                <VolunteerActivism sx={{ fontSize: 26, color: brand.gold }} />
+              </Box>
+              <Box sx={{ minWidth: 0 }}>
                 <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 800,
-                    mb: 1,
-                    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  }}
+                  variant="h5"
+                  fontWeight={800}
+                  sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" }, lineHeight: 1.2 }}
+                  noWrap
                 >
                   {project.name}
                 </Typography>
-                <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                <Typography variant="body2" sx={{ opacity: 0.88, mt: 0.25 }}>
                   Project Details
                 </Typography>
               </Box>
+            </Stack>
+            <Button
+              variant="contained"
+              startIcon={<EditIcon />}
+              onClick={() => navigate(`/projects/${id}/edit`)}
+              sx={{
+                fontWeight: 600,
+                textTransform: "none",
+                borderRadius: 2,
+                bgcolor: alpha("#fff", 0.15),
+                color: "#fff",
+                border: `1px solid ${alpha("#fff", 0.3)}`,
+                "&:hover": { bgcolor: alpha(brand.gold, 0.3) },
+                flexShrink: 0,
+              }}
+            >
+              Edit Project
+            </Button>
+          </Stack>
+        </Box>
+
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={VolunteerActivism} title="Basic Information" />
+            <Box sx={{ p: 3 }}>
+              <Box sx={dateGridSx}>
+                <DetailCell label="Category">
+                  <Chip
+                    label={project.category?.replace("_", " ").toUpperCase()}
+                    size="small"
+                    sx={{
+                      bgcolor: alpha(brand.navy, 0.1),
+                      color: brand.navy,
+                      fontWeight: 600,
+                    }}
+                  />
+                </DetailCell>
+                <DetailCell label="Status">
+                  <Chip
+                    label={project.status?.replace("_", " ").toUpperCase()}
+                    color={getStatusColor(project.status)}
+                    size="small"
+                  />
+                </DetailCell>
+              </Box>
+              <Box sx={{ ...dateGridSx, mt: 2.5 }}>
+                <DetailCell label="Target Individual">
+                  <Typography variant="body1" color={brand.navy}>
+                    {project.target_individual || "Not specified"}
+                  </Typography>
+                </DetailCell>
+                <DetailCell label="Progress">
+                  <Typography variant="body1" fontWeight={600} color={brand.green}>
+                    {project.progress || 0}%
+                  </Typography>
+                </DetailCell>
+              </Box>
             </Box>
-            <Box display="flex" gap={2}>
-              <Button
-                variant="contained"
-                startIcon={<EditIcon />}
-                onClick={() => navigate(`/projects/${id}/edit`)}
+          </Paper>
+
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={LocationOn} title="Location Information" color={brand.blue} />
+            <Box sx={{ p: 3 }}>
+              <Box sx={dateGridSx}>
+                <DetailCell label="County">
+                  <Typography variant="body1" color={brand.navy}>
+                    {project.county || "N/A"}
+                  </Typography>
+                </DetailCell>
+                <DetailCell label="Subcounty">
+                  <Typography variant="body1" color={brand.navy}>
+                    {project.subcounty || "N/A"}
+                  </Typography>
+                </DetailCell>
+              </Box>
+              {project.latitude && project.longitude && (
+                <Box
+                  sx={{
+                    mt: 2.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 2,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <DetailCell label="Coordinates">
+                    <Typography
+                      variant="body2"
+                      sx={{ color: brand.sidebarTextMuted, fontFamily: "monospace" }}
+                    >
+                      {parseFloat(project.latitude).toFixed(6)},{" "}
+                      {parseFloat(project.longitude).toFixed(6)}
+                    </Typography>
+                  </DetailCell>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<LocationOn />}
+                    onClick={() => {
+                      navigate("/map", {
+                        state: {
+                          centerCoordinates: [
+                            parseFloat(project.longitude),
+                            parseFloat(project.latitude),
+                          ],
+                        },
+                      });
+                    }}
+                    sx={{
+                      color: brand.blue,
+                      borderColor: brand.blue,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      borderRadius: 2,
+                      "&:hover": {
+                        borderColor: brand.blue,
+                        bgcolor: alpha(brand.blue, 0.08),
+                      },
+                    }}
+                  >
+                    View on Map
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </Paper>
+
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={Event} title="Timeline" color={brand.gold} />
+            <Box sx={{ p: 3, width: "100%" }}>
+              <Box sx={dateGridSx}>
+                <DetailCell label="Start Date">
+                  <Typography variant="body1" color={brand.navy}>
+                    {formatDate(project.start_date)}
+                  </Typography>
+                </DetailCell>
+                <DetailCell label="End Date">
+                  <Typography variant="body1" color={brand.navy}>
+                    {formatDate(project.end_date)}
+                  </Typography>
+                </DetailCell>
+              </Box>
+              <Box sx={{ ...dateGridSx, mt: 2.5 }}>
+                <DetailCell label="Created At">
+                  <Typography variant="body1" color={brand.navy}>
+                    {formatDate(project.createdAt)}
+                  </Typography>
+                </DetailCell>
+                <DetailCell label="Last Updated">
+                  <Typography variant="body1" color={brand.navy}>
+                    {formatDate(project.updatedAt)}
+                  </Typography>
+                </DetailCell>
+              </Box>
+            </Box>
+          </Paper>
+
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={ProgressIcon} title="Progress" color={brand.green} />
+            <Box sx={{ p: 3 }}>
+              <LinearProgress
+                variant="determinate"
+                value={project.progress || 0}
                 sx={{
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                  color: "white",
-                  border: "1px solid rgba(255, 255, 255, 0.3)",
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.3)",
+                  height: 10,
+                  borderRadius: 5,
+                  bgcolor: brand.sidebarBgAlt,
+                  "& .MuiLinearProgress-bar": {
+                    borderRadius: 5,
+                    bgcolor: brand.green,
                   },
                 }}
-              >
-                Edit Project
-              </Button>
+              />
+              <Typography variant="body2" color={brand.sidebarTextMuted} sx={{ mt: 1 }}>
+                {project.progress || 0}% complete
+              </Typography>
             </Box>
-          </Box>
-        </Box>
+          </Paper>
 
-        {/* Content */}
-        <Box sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            {/* Basic Information */}
-            <Grid item xs={12} sx={{ width: "100%" }}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                  width: "100%",
-                  maxWidth: "none",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <ProjectIcon sx={{ color: "#667eea" }} />
-                    <Typography variant="h5" sx={{ color: "#333" }}>
-                      Basic Information
-                    </Typography>
-                  </Box>
-                  <Stack spacing={2}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <ProjectIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Category
+          {project.description && (
+            <Paper elevation={0} sx={sectionCardSx}>
+              <SectionHeader icon={DescriptionIcon} title="Description" color={brand.blue} />
+              <Box sx={{ p: 3 }}>
+                <Typography variant="body1" color={brand.navy} sx={{ lineHeight: 1.7 }}>
+                  {project.description}
+                </Typography>
+              </Box>
+            </Paper>
+          )}
+
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={PeopleIcon} title="Project Team" color={brand.navy} />
+            <Box sx={{ p: 3 }}>
+              <Stack spacing={3}>
+                {project.creator && (
+                  <Box display="flex" alignItems="center" gap={2}>
+                    <Avatar sx={{ bgcolor: brand.navy }}>{project.creator.full_name?.charAt(0)}</Avatar>
+                    <Box>
+                      <Typography variant="body2" color={brand.sidebarTextMuted}>
+                        Created By
+                      </Typography>
+                      <Typography variant="body1" fontWeight={600} color={brand.navy}>
+                        {project.creator.full_name}
+                      </Typography>
+                      <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+                        <EmailIcon sx={{ fontSize: 14, color: brand.sidebarTextMuted }} />
+                        <Typography variant="caption" color={brand.sidebarTextMuted}>
+                          {project.creator.email}
                         </Typography>
-                        <Chip
-                          label={project.category?.replace('_', ' ').toUpperCase()}
-                          size="small"
-                          sx={{ 
-                            mt: 0.5,
-                            backgroundColor: "#667eea",
-                            color: "white",
-                            fontWeight: 600
-                          }}
-                        />
                       </Box>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <ProjectIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Project Status
-                        </Typography>
-                        <Chip
-                          label={project.status?.replace('_', ' ').toUpperCase()}
-                          color={getStatusColor(project.status)}
-                          size="small"
-                          sx={{ mt: 0.5 }}
-                        />
-                      </Box>
-                    </Box>
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      gap={1}
-                    >
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <LocationIcon />
-                        <Box>
-                          <Typography variant="body2" sx={{ color: "#666" }}>
-                            Location
+                      {project.creator.phone && (
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <PhoneIcon sx={{ fontSize: 14, color: brand.sidebarTextMuted }} />
+                          <Typography variant="caption" color={brand.sidebarTextMuted}>
+                            {project.creator.phone}
                           </Typography>
-                          <Typography variant="body1" sx={{ color: "#333" }}>
-                            {project.county}{project.subcounty ? `, ${project.subcounty}` : ''}
-                          </Typography>
-                          {project.latitude && project.longitude && (
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: "#999",
-                                fontFamily: "monospace",
-                                display: "block",
-                                mt: 0.5,
-                              }}
-                            >
-                              Coordinates:{" "}
-                              {parseFloat(project.latitude).toFixed(6)},{" "}
-                              {parseFloat(project.longitude).toFixed(6)}
-                            </Typography>
-                          )}
                         </Box>
-                      </Box>
-                      {project.latitude && project.longitude && (
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<LocationIcon />}
-                          onClick={() => {
-                            navigate(`/map`, {
-                              state: {
-                                centerCoordinates: [
-                                  parseFloat(project.longitude),
-                                  parseFloat(project.latitude),
-                                ],
-                              },
-                            });
-                          }}
-                          sx={{
-                            color: "#667eea",
-                            borderColor: "#667eea",
-                            "&:hover": {
-                              borderColor: "#667eea",
-                              backgroundColor: "rgba(102, 126, 234, 0.1)",
-                            },
-                          }}
-                        >
-                          View Location
-                        </Button>
                       )}
                     </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
+                  </Box>
+                )}
+                {project.assigner && (
+                  <Box display="flex" alignItems="center" gap={2}>
+                    <Avatar sx={{ bgcolor: brand.blue }}>{project.assigner.full_name?.charAt(0)}</Avatar>
+                    <Box>
+                      <Typography variant="body2" color={brand.sidebarTextMuted}>
+                        Assigned By
+                      </Typography>
+                      <Typography variant="body1" fontWeight={600} color={brand.navy}>
+                        {project.assigner.full_name}
+                      </Typography>
+                      <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+                        <EmailIcon sx={{ fontSize: 14, color: brand.sidebarTextMuted }} />
+                        <Typography variant="caption" color={brand.sidebarTextMuted}>
+                          {project.assigner.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                )}
+                {project.assignee ? (
+                  <Box display="flex" alignItems="center" gap={2}>
+                    <Avatar sx={{ bgcolor: brand.green }}>{project.assignee.full_name?.charAt(0)}</Avatar>
+                    <Box>
+                      <Typography variant="body2" color={brand.sidebarTextMuted}>
+                        Assigned To
+                      </Typography>
+                      <Typography variant="body1" fontWeight={600} color={brand.navy}>
+                        {project.assignee.full_name}
+                      </Typography>
+                      <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
+                        <EmailIcon sx={{ fontSize: 14, color: brand.sidebarTextMuted }} />
+                        <Typography variant="caption" color={brand.sidebarTextMuted}>
+                          {project.assignee.email}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                ) : (
+                  <Box display="flex" alignItems="center" gap={2}>
+                    <Avatar sx={{ bgcolor: brand.sidebarBorder }}>
                       <PeopleIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Target Individual
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: "#333" }}>
-                          {project.target_individual || "Not specified"}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <CalendarIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Start Date
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: "#333" }}>
-                          {formatDate(project.start_date)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <CalendarIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          End Date
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: "#333" }}>
-                          {formatDate(project.end_date)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Progress */}
-            <Grid item xs={12} sx={{ width: "100%" }}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                  width: "100%",
-                  maxWidth: "none",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <ProgressIcon sx={{ color: "#f093fb" }} />
-                    <Typography variant="h5" sx={{ color: "#333" }}>
-                      Progress
-                    </Typography>
-                  </Box>
-                  <Stack spacing={2}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <ProjectIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Progress
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: "#333" }}>
-                          {project.progress || 0}%
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Description */}
-            {project.description && (
-              <Grid item xs={12}>
-                <Card
-                  sx={{
-                    backgroundColor: "white",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e0e0e0",
-                  }}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={2}>
-                      <DescriptionIcon sx={{ color: "#4facfe" }} />
-                      <Typography variant="h6" sx={{ color: "#333" }}>
-                        Description
+                    </Avatar>
+                    <Box>
+                      <Typography variant="body2" color={brand.sidebarTextMuted}>
+                        Assigned To
+                      </Typography>
+                      <Typography variant="body1" color={brand.sidebarTextMuted} fontStyle="italic">
+                        Not assigned yet
                       </Typography>
                     </Box>
-                    <Typography variant="body1" sx={{ color: "#333" }}>
-                      {project.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Project Team */}
-            <Grid item xs={12} sx={{ width: "100%" }}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                  width: "100%",
-                  maxWidth: "none",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <PeopleIcon sx={{ color: "#4facfe" }} />
-                    <Typography variant="h5" sx={{ color: "#333" }}>
-                      Project Team
-                    </Typography>
                   </Box>
-                  <Stack spacing={3}>
-                    {project.creator && (
+                )}
+              </Stack>
+            </Box>
+          </Paper>
+
+          {project.updated_by && project.updated_by.length > 0 && (
+            <Paper elevation={0} sx={sectionCardSx}>
+              <SectionHeader
+                icon={PeopleIcon}
+                title={`Update History (${project.updated_by.length})`}
+                color={brand.gold}
+              />
+              <Box sx={{ p: 3 }}>
+                <Stack spacing={2}>
+                  {project.updated_by.map((update, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        p: 2,
+                        bgcolor: brand.sidebarBgAlt,
+                        borderRadius: 2,
+                        border: `1px solid ${brand.sidebarBorder}`,
+                      }}
+                    >
                       <Box display="flex" alignItems="center" gap={2}>
-                        <Avatar sx={{ bgcolor: "#667eea" }}>
-                          {project.creator.full_name?.charAt(0)}
-                        </Avatar>
+                        <Avatar sx={{ bgcolor: brand.navy }}>{update.full_name?.charAt(0)}</Avatar>
                         <Box>
-                          <Typography variant="body2" sx={{ color: "#666" }}>
-                            Created By
-                          </Typography>
-                          <Typography variant="body1" sx={{ color: "#333", fontWeight: 600 }}>
-                            {project.creator.full_name}
+                          <Typography variant="body1" fontWeight={600} color={brand.navy}>
+                            {update.full_name}
                           </Typography>
                           <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
-                            <EmailIcon sx={{ fontSize: 14, color: "#666" }} />
-                            <Typography variant="caption" sx={{ color: "#666" }}>
-                              {project.creator.email}
+                            <EmailIcon sx={{ fontSize: 14, color: brand.sidebarTextMuted }} />
+                            <Typography variant="caption" color={brand.sidebarTextMuted}>
+                              {update.email}
                             </Typography>
                           </Box>
-                          {project.creator.phone && (
-                            <Box display="flex" alignItems="center" gap={0.5}>
-                              <PhoneIcon sx={{ fontSize: 14, color: "#666" }} />
-                              <Typography variant="caption" sx={{ color: "#666" }}>
-                                {project.creator.phone}
-                              </Typography>
-                            </Box>
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-                    {project.assigner && (
-                      <Box display="flex" alignItems="center" gap={2}>
-                        <Avatar sx={{ bgcolor: "#764ba2" }}>
-                          {project.assigner.full_name?.charAt(0)}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="body2" sx={{ color: "#666" }}>
-                            Assigned By
-                          </Typography>
-                          <Typography variant="body1" sx={{ color: "#333", fontWeight: 600 }}>
-                            {project.assigner.full_name}
-                          </Typography>
-                          <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
-                            <EmailIcon sx={{ fontSize: 14, color: "#666" }} />
-                            <Typography variant="caption" sx={{ color: "#666" }}>
-                              {project.assigner.email}
-                            </Typography>
-                          </Box>
-                          {project.assigner.phone && (
-                            <Box display="flex" alignItems="center" gap={0.5}>
-                              <PhoneIcon sx={{ fontSize: 14, color: "#666" }} />
-                              <Typography variant="caption" sx={{ color: "#666" }}>
-                                {project.assigner.phone}
-                              </Typography>
-                            </Box>
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-                    {project.assignee && (
-                      <Box display="flex" alignItems="center" gap={2}>
-                        <Avatar sx={{ bgcolor: "#43e97b" }}>
-                          {project.assignee.full_name?.charAt(0)}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="body2" sx={{ color: "#666" }}>
-                            Assigned To
-                          </Typography>
-                          <Typography variant="body1" sx={{ color: "#333", fontWeight: 600 }}>
-                            {project.assignee.full_name}
-                          </Typography>
-                          <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
-                            <EmailIcon sx={{ fontSize: 14, color: "#666" }} />
-                            <Typography variant="caption" sx={{ color: "#666" }}>
-                              {project.assignee.email}
-                            </Typography>
-                          </Box>
-                          {project.assignee.phone && (
-                            <Box display="flex" alignItems="center" gap={0.5}>
-                              <PhoneIcon sx={{ fontSize: 14, color: "#666" }} />
-                              <Typography variant="caption" sx={{ color: "#666" }}>
-                                {project.assignee.phone}
-                              </Typography>
-                            </Box>
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-                    {!project.assignee && (
-                      <Box display="flex" alignItems="center" gap={2}>
-                        <Avatar sx={{ bgcolor: "#e0e0e0" }}>
-                          <PeopleIcon />
-                        </Avatar>
-                        <Box>
-                          <Typography variant="body2" sx={{ color: "#666" }}>
-                            Assigned To
-                          </Typography>
-                          <Typography variant="body1" sx={{ color: "#999", fontStyle: "italic" }}>
-                            Not assigned yet
+                          <Typography variant="caption" color={brand.sidebarTextMuted} display="block" mt={0.5}>
+                            {update.timestamp ? formatDate(update.timestamp) : "Legacy update"}
                           </Typography>
                         </Box>
                       </Box>
-                    )}
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            </Paper>
+          )}
 
-            {/* Updated By */}
-            {project.updated_by && project.updated_by.length > 0 && (
-              <Grid item xs={12} sx={{ width: "100%" }}>
-                <Card
-                  sx={{
-                    backgroundColor: "white",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e0e0e0",
-                    width: "100%",
-                    maxWidth: "none",
-                  }}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={3}>
-                      <PeopleIcon sx={{ color: "#f093fb" }} />
-                      <Typography variant="h5" sx={{ color: "#333" }}>
-                        Update History ({project.updated_by.length})
-                      </Typography>
-                    </Box>
-                    <Stack spacing={3}>
-                      {project.updated_by.map((update, index) => (
-                        <Box 
-                          key={index}
-                          sx={{
-                            p: 2,
-                            backgroundColor: "#f8f9fa",
-                            borderRadius: 2,
-                            border: "1px solid #e0e0e0",
-                          }}
-                        >
-                          <Box display="flex" alignItems="center" gap={2}>
-                            <Avatar sx={{ bgcolor: "#667eea" }}>
-                              {update.full_name?.charAt(0)}
-                            </Avatar>
-                            <Box>
-                              <Typography variant="body1" sx={{ color: "#333", fontWeight: 600 }}>
-                                {update.full_name}
-                              </Typography>
-                              <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
-                                <EmailIcon sx={{ fontSize: 14, color: "#666" }} />
-                                <Typography variant="caption" sx={{ color: "#666" }}>
-                                  {update.email}
-                                </Typography>
-                              </Box>
-                              {update.phone && (
-                                <Box display="flex" alignItems="center" gap={0.5}>
-                                  <PhoneIcon sx={{ fontSize: 14, color: "#666" }} />
-                                  <Typography variant="caption" sx={{ color: "#666" }}>
-                                    {update.phone}
-                                  </Typography>
-                                </Box>
-                              )}
-                              <Box display="flex" alignItems="center" gap={0.5} mt={0.5}>
-                                <CalendarIcon sx={{ fontSize: 14, color: "#666" }} />
-                                <Typography variant="caption" sx={{ color: "#666" }}>
-                                  {update.timestamp ? formatDate(update.timestamp) : "Legacy update"}
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </Box>
-                        </Box>
-                      ))}
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Timeline */}
-            <Grid item xs={12} sx={{ width: "100%" }}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                  width: "100%",
-                  maxWidth: "none",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <TimeIcon sx={{ color: "#4facfe" }} />
-                    <Typography variant="h5" sx={{ color: "#333" }}>
-                      Timeline
-                    </Typography>
-                  </Box>
-                  <Stack spacing={2}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <CalendarIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Created At
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: "#333" }}>
-                          {formatDate(project.createdAt)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <CalendarIcon />
-                      <Box>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Last Updated
-                        </Typography>
-                        <Typography variant="body1" sx={{ color: "#333" }}>
-                          {formatDate(project.updatedAt)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            {/* Update Images */}
-            {project.update_images && project.update_images.length > 0 && (
-              <Grid item xs={12}>
-                <Card
-                  sx={{
-                    backgroundColor: "white",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e0e0e0",
-                  }}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={3}>
-                      <ImageIcon sx={{ color: "#ff6b6b" }} />
-                      <Typography variant="h5" sx={{ color: "#333" }}>
-                        Update Images ({project.update_images.length})
-                      </Typography>
-                    </Box>
-                    <Grid container spacing={2}>
-                      {project.update_images.map((imageObj, index) => {
-                        const fullImageUrl = buildImageUrl(imageObj.path);
-                        return (
-                          <Grid item xs={12} md={4} key={index}>
-                            <Box
-                              sx={{
-                                p: 2,
-                                backgroundColor: "#f8f9fa",
-                                borderRadius: 2,
-                                border: "1px solid #e0e0e0",
-                                cursor: "pointer",
-                                transition: "transform 0.2s ease-in-out",
-                                height: "200px",
-                                display: "flex",
-                                flexDirection: "column",
-                                "&:hover": {
-                                  transform: "scale(1.02)",
-                                },
-                              }}
-                              onClick={() => window.open(fullImageUrl, "_blank")}
-                            >
-                              <img
-                                src={fullImageUrl}
-                                alt={`Update ${index + 1}`}
-                                style={{
-                                  width: "100%",
-                                  height: "140px",
-                                  objectFit: "cover",
-                                  borderRadius: "8px",
-                                  marginBottom: "8px",
-                                  flex: 1,
-                                }}
-                              />
-                              <Typography
-                                variant="caption"
-                                sx={{ 
-                                  color: "#666", 
-                                  display: "block",
-                                  textAlign: "center",
-                                  mt: "auto"
-                                }}
-                              >
-                                {formatDate(imageObj.timestamp)}
-                              </Typography>
-                            </Box>
-                          </Grid>
-                        );
-                      })}
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Progress Descriptions */}
-            {project.progress_descriptions && project.progress_descriptions.length > 0 && (
-              <Grid item xs={12} sx={{ width: "100%" }}>
-                <Card
-                  sx={{
-                    backgroundColor: "white",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #e0e0e0",
-                    width: "100%",
-                    maxWidth: "none",
-                  }}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={1} mb={3}>
-                      <ProgressIcon sx={{ color: "#667eea" }} />
-                      <Typography variant="h5" sx={{ color: "#333" }}>
-                        Progress Updates ({project.progress_descriptions.length})
-                      </Typography>
-                    </Box>
-                    <Stack spacing={2}>
-                      {project.progress_descriptions.map((update, index) => (
+          {project.update_images && project.update_images.length > 0 && (
+            <Paper elevation={0} sx={sectionCardSx}>
+              <SectionHeader
+                icon={ImageIcon}
+                title={`Update Images (${project.update_images.length})`}
+                color={brand.green}
+              />
+              <Box sx={{ p: 3, width: "100%" }}>
+                <ImageGridRows
+                  items={project.update_images}
+                  renderItem={(imageObj, index) => {
+                    const fullImageUrl = buildImageUrl(imageObj.path);
+                    return (
+                      <Box
+                        key={index}
+                        sx={{
+                          p: 1.5,
+                          bgcolor: brand.sidebarBgAlt,
+                          borderRadius: 2,
+                          border: `1px solid ${brand.sidebarBorder}`,
+                          cursor: "pointer",
+                          transition: "transform 0.2s",
+                          "&:hover": { transform: "scale(1.02)" },
+                        }}
+                        onClick={() => handleDocumentClick(imageObj.path, `Update ${index + 1}`)}
+                      >
                         <Box
-                          key={index}
+                          component="img"
+                          src={fullImageUrl}
+                          alt={`Update ${index + 1}`}
                           sx={{
-                            p: 2,
-                            backgroundColor: "#f8f9fa",
-                            borderRadius: 2,
-                            border: "1px solid #e0e0e0",
+                            width: "100%",
+                            height: 140,
+                            objectFit: "cover",
+                            borderRadius: 1.5,
+                            mb: 1,
                           }}
+                        />
+                        <Typography
+                          variant="caption"
+                          color={brand.sidebarTextMuted}
+                          display="block"
+                          textAlign="center"
                         >
-                          <Typography
-                            variant="body2"
-                            sx={{ fontWeight: 600, mb: 1, color: "#333" }}
-                          >
-                            {update.description}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{ color: "#666" }}
-                          >
-                            {formatDate(update.timestamp)}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-          </Grid>
+                          {formatDate(imageObj.timestamp)}
+                        </Typography>
+                      </Box>
+                    );
+                  }}
+                />
+              </Box>
+            </Paper>
+          )}
+
+          {project.progress_descriptions && project.progress_descriptions.length > 0 && (
+            <Paper elevation={0} sx={{ ...sectionCardSx, mb: 0 }}>
+              <SectionHeader
+                icon={ProgressIcon}
+                title={`Progress Updates (${project.progress_descriptions.length})`}
+                color={brand.blue}
+              />
+              <Box sx={{ p: 3 }}>
+                <Stack spacing={2}>
+                  {project.progress_descriptions.map((update, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        p: 2,
+                        bgcolor: brand.sidebarBgAlt,
+                        borderRadius: 2,
+                        border: `1px solid ${brand.sidebarBorder}`,
+                      }}
+                    >
+                      <Typography variant="body2" fontWeight={600} color={brand.navy} mb={1}>
+                        {update.description}
+                      </Typography>
+                      <Typography variant="caption" color={brand.sidebarTextMuted}>
+                        {formatDate(update.timestamp)}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            </Paper>
+          )}
         </Box>
-      </Container>
+      </Paper>
 
       {/* Image Preview Modal (for images only) */}
       {previewModal.open && previewModal.type === "image" && (

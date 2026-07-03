@@ -51,8 +51,31 @@ import {
   Engineering as EngineerIcon,
 } from "@mui/icons-material";
 import { Tabs, Tab } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
+import { brand, appBarGradient } from "../../brandColors";
+
+const getCategoryStyle = (category) => {
+  const styles = {
+    donation: { bg: alpha(brand.gold, 0.15), color: "#b8860b", border: alpha(brand.gold, 0.4) },
+    community: { bg: alpha(brand.green, 0.12), color: brand.greenDark, border: alpha(brand.green, 0.35) },
+    mental_health: { bg: alpha(brand.blue, 0.12), color: brand.blue, border: alpha(brand.blue, 0.35) },
+    education: { bg: alpha(brand.navy, 0.1), color: brand.navy, border: alpha(brand.navy, 0.3) },
+    volunteer: { bg: alpha(brand.greenLight, 0.15), color: brand.greenDark, border: alpha(brand.green, 0.3) },
+  };
+  return styles[category] || { bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted, border: brand.sidebarBorder };
+};
+
+const getStatusStyle = (status) => {
+  const styles = {
+    pending: { bg: alpha(brand.gold, 0.18), color: "#e65100", label: "Pending" },
+    in_progress: { bg: alpha(brand.blue, 0.12), color: brand.blue, label: "In Progress" },
+    completed: { bg: alpha(brand.green, 0.14), color: brand.greenDark, label: "Completed" },
+    on_hold: { bg: alpha("#c62828", 0.1), color: "#c62828", label: "On Hold" },
+  };
+  const s = styles[status] || { bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted, label: status };
+  return s;
+};
 
 const Projects = () => {
   const navigate = useNavigate();
@@ -566,30 +589,25 @@ const Projects = () => {
   }
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-      }}
-    >
+    <Box>
       <Paper
         elevation={0}
         sx={{
-          borderRadius: 0,
+          borderRadius: 3,
           overflow: "hidden",
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(10px)",
-          border: "none",
-          boxShadow: "none",
-          minHeight: "100vh",
+          border: `1px solid ${brand.sidebarBorder}`,
+          boxShadow: "0 4px 24px rgba(14, 59, 94, 0.08)",
+          bgcolor: brand.sidebarBg,
         }}
       >
-        {/* Header Section */}
+        {/* Header */}
         <Box
           sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
+            background: appBarGradient,
+            px: { xs: 2, sm: 3 },
+            py: { xs: 2.5, sm: 3 },
+            color: "#fff",
+            borderBottom: `3px solid ${brand.gold}`,
             position: "relative",
             overflow: "hidden",
           }}
@@ -597,72 +615,76 @@ const Projects = () => {
           <Box
             sx={{
               position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
+              top: -40,
+              right: -40,
+              width: 160,
+              height: 160,
               borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
+              bgcolor: alpha("#fff", 0.06),
             }}
           />
           <Box
             display="flex"
-            flexDirection={{ xs: "column", sm: "row" }} // Stack on mobile
+            flexDirection={{ xs: "column", sm: "row" }}
             justifyContent="space-between"
             alignItems={{ xs: "flex-start", sm: "center" }}
-            gap={{ xs: 2, sm: 0 }} // Add gap on mobile
+            gap={2}
             position="relative"
             zIndex={1}
           >
-            <Box>
-              <Typography
-                variant="h4"
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Box
                 sx={{
-                  fontWeight: 800,
-                  mb: 1,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" }, // Responsive font size
+                  width: 52,
+                  height: 52,
+                  borderRadius: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: alpha("#fff", 0.12),
+                  border: `1px solid ${alpha(brand.gold, 0.45)}`,
                 }}
               >
-                Projects Management
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                Manage foundation projects and programs
-              </Typography>
-            </Box>
+                <ProjectIcon sx={{ fontSize: 28, color: brand.gold }} />
+              </Box>
+              <Box>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: { xs: "1.25rem", md: "1.5rem" },
+                    lineHeight: 1.2,
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  Projects Management
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ opacity: 0.88, mt: 0.5, color: alpha("#fff", 0.9) }}
+                >
+                  Manage foundation projects and programs
+                </Typography>
+              </Box>
+            </Stack>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => navigate("/projects/create")}
               sx={{
-                background: "linear-gradient(45deg, #FF6B6B, #4ECDC4)",
-                borderRadius: 3,
-                px: { xs: 2, sm: 4 }, // Less padding on mobile
-                py: 1.5,
-                fontSize: { xs: "0.875rem", sm: "1rem" }, // Smaller font on mobile
-                fontWeight: 600,
+                bgcolor: brand.green,
+                borderRadius: 2,
+                px: 3,
+                py: 1.25,
+                fontWeight: 700,
                 textTransform: "none",
-                boxShadow: "0 8px 25px rgba(255, 107, 107, 0.3)",
-                width: { xs: "100%", sm: "auto" }, // Full width on mobile
+                boxShadow: `0 6px 20px ${alpha(brand.green, 0.45)}`,
+                width: { xs: "100%", sm: "auto" },
                 "&:hover": {
-                  background: "linear-gradient(45deg, #FF5252, #26A69A)",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 12px 35px rgba(255, 107, 107, 0.4)",
+                  bgcolor: brand.greenLight,
+                  boxShadow: `0 8px 24px ${alpha(brand.green, 0.5)}`,
+                  transform: "translateY(-1px)",
                 },
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
               }}
             >
               Create New Project
@@ -670,11 +692,8 @@ const Projects = () => {
           </Box>
         </Box>
 
-        {/* Content Section */}
-        <Box
-          sx={{ p: { xs: 1, sm: 2, md: 3 }, minHeight: "calc(100vh - 200px)" }}
-        >
-          {/* Status Tabs */}
+        {/* Content */}
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
           <Box mb={3}>
             <Tabs
               value={activeTab}
@@ -682,23 +701,24 @@ const Projects = () => {
               variant="scrollable"
               scrollButtons="auto"
               sx={{
+                minHeight: 44,
                 "& .MuiTabs-indicator": {
-                  backgroundColor: "#667eea",
+                  backgroundColor: brand.green,
                   height: 3,
                   borderRadius: "3px 3px 0 0",
                 },
                 "& .MuiTab-root": {
                   textTransform: "none",
                   fontWeight: 600,
-                  fontSize: "0.95rem",
-                  minHeight: 48,
-                  color: "#666",
+                  fontSize: "0.875rem",
+                  minHeight: 44,
+                  color: brand.sidebarTextMuted,
                   "&.Mui-selected": {
-                    color: "#667eea",
+                    color: brand.navy,
                   },
                   "&:hover": {
-                    color: "#667eea",
-                    backgroundColor: "rgba(102, 126, 234, 0.04)",
+                    color: brand.green,
+                    bgcolor: alpha(brand.green, 0.06),
                   },
                 },
               }}
@@ -713,13 +733,12 @@ const Projects = () => {
                         label={tab.count}
                         size="small"
                         sx={{
-                          backgroundColor:
-                            activeTab === index ? "#667eea" : "#e0e0e0",
-                          color: activeTab === index ? "white" : "#666",
-                          fontWeight: 600,
-                          fontSize: "0.75rem",
-                          height: 20,
-                          minWidth: 20,
+                          height: 22,
+                          minWidth: 22,
+                          fontWeight: 700,
+                          fontSize: "0.7rem",
+                          bgcolor: activeTab === index ? brand.green : alpha(brand.navy, 0.08),
+                          color: activeTab === index ? "#fff" : brand.sidebarTextMuted,
                         }}
                       />
                     </Box>
@@ -728,44 +747,33 @@ const Projects = () => {
               ))}
             </Tabs>
           </Box>
-          {/* Projects Table */}
+
           <TableContainer
             sx={{
-              borderRadius: 3,
-              overflowX: "auto", // Enable horizontal scrolling on mobile
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              border: "1px solid rgba(102, 126, 234, 0.1)",
-              "&::-webkit-scrollbar": {
-                height: 8,
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: "rgba(102, 126, 234, 0.1)",
-                borderRadius: 4,
-              },
+              borderRadius: 2,
+              overflowX: "auto",
+              border: `1px solid ${brand.sidebarBorder}`,
+              "&::-webkit-scrollbar": { height: 6 },
               "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "rgba(102, 126, 234, 0.3)",
-                borderRadius: 4,
-                "&:hover": {
-                  backgroundColor: "rgba(102, 126, 234, 0.5)",
-                },
+                bgcolor: alpha(brand.navy, 0.25),
+                borderRadius: 3,
               },
             }}
           >
             <Table sx={{ minWidth: 800 }}>
-              {/* Set minimum width for table */}
               <TableHead>
                 <TableRow
                   sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    bgcolor: brand.navy,
                     "& .MuiTableCell-head": {
-                      color: "white",
+                      color: "#fff",
                       fontWeight: 700,
-                      fontSize: { xs: "0.8rem", sm: "0.95rem" }, // Smaller font on mobile
+                      fontSize: { xs: "0.75rem", sm: "0.8rem" },
                       textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      border: "none",
-                      whiteSpace: "nowrap", // Prevent text wrapping in headers
+                      letterSpacing: "0.06em",
+                      borderBottom: `2px solid ${brand.gold}`,
+                      py: 1.75,
+                      whiteSpace: "nowrap",
                     },
                   }}
                 >
@@ -781,157 +789,166 @@ const Projects = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <CircularProgress sx={{ color: "#667eea" }} />
+                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                      <CircularProgress sx={{ color: brand.green }} size={36} />
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Typography color="error" variant="h6">
+                      <Typography color="error" variant="body1" fontWeight={600}>
                         {error}
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : projects.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Typography variant="h6" color="text.secondary">
+                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                      <ProjectIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2), mb: 1 }} />
+                      <Typography variant="body1" color="text.secondary" fontWeight={500}>
                         No projects found.
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  projects.map((project, idx) => (
+                  projects.map((project, idx) => {
+                    const catStyle = getCategoryStyle(project.category);
+                    const statusStyle = getStatusStyle(project.status);
+                    const progress = project.progress || 0;
+
+                    return (
                     <TableRow
                       key={project.id}
+                      hover
                       sx={{
-                        "&:nth-of-type(even)": {
-                          backgroundColor: "rgba(102, 126, 234, 0.02)",
-                        },
-                        "&:hover": {
-                          backgroundColor: "rgba(102, 126, 234, 0.08)",
-                          transform: { xs: "none", sm: "scale(1.01)" }, // No transform on mobile
-                        },
-                        transition: "all 0.2s ease",
-                        cursor: "pointer",
+                        "&:nth-of-type(even)": { bgcolor: brand.sidebarBgAlt },
+                        "&:hover": { bgcolor: alpha(brand.green, 0.06) },
                         "& .MuiTableCell-root": {
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" }, // Smaller font on mobile
-                          padding: { xs: "8px 4px", sm: "16px" }, // Less padding on mobile
+                          fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                          py: { xs: 1.25, sm: 1.75 },
+                          borderColor: brand.sidebarBorder,
                         },
                       }}
                     >
-                      <TableCell sx={{ fontWeight: 600, color: "#667eea" }}>
+                      <TableCell sx={{ fontWeight: 700, color: brand.navy, width: 48 }}>
                         {page * rowsPerPage + idx + 1}
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          sx={{ color: "#2c3e50" }}
-                        >
+                        <Typography variant="body2" fontWeight={600} color={brand.navy}>
                           {project.name}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={project.category?.replace('_', ' ')}
+                          label={project.category?.replace(/_/g, " ")}
                           size="small"
                           sx={{
                             textTransform: "capitalize",
                             fontWeight: 600,
-                            borderRadius: 2,
-                            backgroundColor: "#667eea",
-                            color: "white",
+                            fontSize: "0.75rem",
+                            bgcolor: catStyle.bg,
+                            color: catStyle.color,
+                            border: `1px solid ${catStyle.border}`,
                           }}
                         />
                       </TableCell>
                       <TableCell>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <LocationIcon
-                            sx={{ color: "#e74c3c", fontSize: 18 }}
-                          />
-                          <Typography variant="body2" sx={{ color: "#7f8c8d" }}>
-                            {project.county}{project.subcounty ? `, ${project.subcounty}` : ''}
+                        <Box display="flex" alignItems="center" gap={0.75}>
+                          <LocationIcon sx={{ color: brand.green, fontSize: 17 }} />
+                          <Typography variant="body2" color={brand.sidebarTextMuted}>
+                            {project.county}
+                            {project.subcounty ? `, ${project.subcounty}` : ""}
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={project.status?.replace('_', ' ')}
-                          color={getStatusColor(project.status)}
+                          label={statusStyle.label}
                           size="small"
                           sx={{
-                            textTransform: "capitalize",
                             fontWeight: 600,
-                            borderRadius: 2,
+                            fontSize: "0.75rem",
+                            bgcolor: statusStyle.bg,
+                            color: statusStyle.color,
                           }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ minWidth: 120 }}>
                         <Box display="flex" alignItems="center" gap={1}>
-                          <ProjectIcon
-                            sx={{ color: "#9b59b6", fontSize: 18 }}
-                          />
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", fontWeight: 600 }}
+                          <Box
+                            sx={{
+                              flex: 1,
+                              height: 6,
+                              borderRadius: 3,
+                              bgcolor: alpha(brand.navy, 0.1),
+                              overflow: "hidden",
+                              minWidth: 56,
+                            }}
                           >
-                            {project.progress || 0}%
+                            <Box
+                              sx={{
+                                width: `${progress}%`,
+                                height: "100%",
+                                borderRadius: 3,
+                                bgcolor:
+                                  progress >= 100
+                                    ? brand.green
+                                    : progress >= 50
+                                      ? brand.blue
+                                      : brand.gold,
+                                transition: "width 0.3s ease",
+                              }}
+                            />
+                          </Box>
+                          <Typography
+                            variant="caption"
+                            fontWeight={700}
+                            color={brand.navy}
+                            sx={{ minWidth: 32 }}
+                          >
+                            {progress}%
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Box display="flex" gap={0.5}>
-                          <Tooltip title="View Project Details" arrow>
+                          <Tooltip title="View details" arrow>
                             <IconButton
                               size="small"
                               onClick={() => handleViewProject(project)}
                               sx={{
-                                color: "#27ae60",
-                                backgroundColor: "rgba(39, 174, 96, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(39, 174, 96, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
+                                color: brand.green,
+                                bgcolor: alpha(brand.green, 0.1),
+                                borderRadius: 1.5,
+                                "&:hover": { bgcolor: alpha(brand.green, 0.2) },
                               }}
                             >
                               <ViewIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Edit Project" arrow>
+                          <Tooltip title="Edit project" arrow>
                             <IconButton
                               size="small"
                               onClick={() => handleEditProject(project)}
                               sx={{
-                                color: "#3498db",
-                                backgroundColor: "rgba(52, 152, 219, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(52, 152, 219, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
+                                color: brand.blue,
+                                bgcolor: alpha(brand.blue, 0.1),
+                                borderRadius: 1.5,
+                                "&:hover": { bgcolor: alpha(brand.blue, 0.18) },
                               }}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Delete Project" arrow>
+                          <Tooltip title="Delete project" arrow>
                             <IconButton
                               size="small"
                               onClick={() => handleDeleteProject(project)}
                               sx={{
-                                color: "#e74c3c",
-                                backgroundColor: "rgba(231, 76, 60, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(231, 76, 60, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
+                                color: "#c62828",
+                                bgcolor: alpha("#c62828", 0.08),
+                                borderRadius: 1.5,
+                                "&:hover": { bgcolor: alpha("#c62828", 0.15) },
                               }}
                             >
                               <DeleteIcon fontSize="small" />
@@ -940,7 +957,8 @@ const Projects = () => {
                         </Box>
                       </TableCell>
                     </TableRow>
-                  ))
+                  );
+                  })
                 )}
               </TableBody>
             </Table>
@@ -954,22 +972,22 @@ const Projects = () => {
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
             sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderTop: "1px solid rgba(102, 126, 234, 0.1)",
-              "& .MuiTablePagination-toolbar": {
-                color: "#667eea",
-                fontWeight: 600,
+              borderTop: `1px solid ${brand.sidebarBorder}`,
+              "& .MuiTablePagination-toolbar": { color: brand.navy },
+              "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
+                color: brand.sidebarTextMuted,
+                fontWeight: 500,
               },
-              "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                {
-                  color: "#2c3e50",
-                  fontWeight: 600,
-                },
+              "& .MuiIconButton-root": {
+                color: brand.navy,
+                "&.Mui-disabled": { color: alpha(brand.navy, 0.3) },
+              },
             }}
           />
         </Box>
+      </Paper>
 
-        {/* Project Dialog */}
+      {/* Project Dialog */}
         <Dialog
           open={openViewDialog}
           onClose={() => {
@@ -1963,7 +1981,6 @@ const Projects = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Paper>
     </Box>
   );
 };

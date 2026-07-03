@@ -3,8 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   Grid,
   Button,
   TextField,
@@ -13,36 +11,37 @@ import {
   Select,
   MenuItem,
   Stack,
-  Divider,
   CircularProgress,
   Alert,
-  Container,
   Paper,
-  Chip,
   IconButton,
   LinearProgress,
-  Tooltip,
 } from "@mui/material";
 import {
-  ArrowBack as ArrowBackIcon,
-  Save as SaveIcon,
-  CloudUpload as UploadIcon,
+  ArrowBack,
+  Save,
+  CloudUpload,
   Close as CloseIcon,
   Image as ImageIcon,
-  AttachMoney as MoneyIcon,
-  Handshake as HandshakeIcon,
-  VolunteerActivism as ProjectIcon,
-  LocationOn as LocationIcon,
-  CalendarToday as CalendarIcon,
-  Description as DescriptionIcon,
-  Notes as NotesIcon,
-  PictureAsPdf as PdfIcon,
-  Description as WordIcon,
+  VolunteerActivism,
+  LocationOn,
+  Event,
+  People,
+  Edit as EditIcon,
   Download as DownloadIcon,
-  Visibility as PreviewIcon,
-  People as PeopleIcon,
 } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
+import { brand } from "../../brandColors";
+import {
+  fieldSx,
+  sectionCardSx,
+  SectionHeader,
+  categoryOptions,
+  outerPaperSx,
+  pageHeaderSx,
+  dateGridSx,
+} from "./projectFormUi";
 
 const ProjectEdit = () => {
   const { id } = useParams();
@@ -285,7 +284,7 @@ const ProjectEdit = () => {
         title: "Error!",
         text: error.message || "Failed to update project",
         icon: "error",
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: brand.green,
       });
     } finally {
       setSaving(false);
@@ -302,708 +301,549 @@ const ProjectEdit = () => {
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="50vh"
-      >
-        <CircularProgress />
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+        <CircularProgress sx={{ color: brand.green }} size={48} />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Box>
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
         <Button
           variant="outlined"
-          startIcon={<ArrowBackIcon />}
+          startIcon={<ArrowBack />}
           onClick={() => navigate("/projects")}
+          sx={{ color: brand.navy, borderColor: brand.sidebarBorder }}
         >
           Back to Projects
         </Button>
-      </Container>
+      </Box>
     );
   }
 
   if (!project) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Box>
         <Alert severity="warning" sx={{ mb: 2 }}>
           Project not found
         </Alert>
         <Button
           variant="outlined"
-          startIcon={<ArrowBackIcon />}
+          startIcon={<ArrowBack />}
           onClick={() => navigate("/projects")}
+          sx={{ color: brand.navy, borderColor: brand.sidebarBorder }}
         >
           Back to Projects
         </Button>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-        py: 3,
-      }}
-    >
-      <Container maxWidth="lg" sx={{ px: 0 }}>
-        {/* Header */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
+    <Box>
+      <Paper elevation={0} sx={outerPaperSx}>
+        <Box sx={pageHeaderSx}>
           <Box
             sx={{
               position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
+              top: -40,
+              right: -40,
+              width: 140,
+              height: 140,
               borderRadius: "50%",
-              zIndex: 0,
+              bgcolor: alpha("#fff", 0.06),
             }}
           />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            display="flex"
-            justifyContent="space-between"
+          <Stack
+            direction="row"
             alignItems="center"
-            position="relative"
-            zIndex={1}
+            spacing={2}
+            sx={{ position: "relative", zIndex: 1 }}
           >
-            <Box display="flex" alignItems="center" gap={2}>
-              <Button
-                variant="outlined"
-                startIcon={<ArrowBackIcon />}
-                onClick={() => navigate(`/projects/${id}`)}
-                sx={{
-                  color: "white",
-                  borderColor: "rgba(255, 255, 255, 0.3)",
-                  "&:hover": {
-                    borderColor: "rgba(255, 255, 255, 0.5)",
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  },
-                }}
-              >
-                Back
-              </Button>
-              <Box>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 800,
-                    mb: 1,
-                    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  }}
-                >
-                  Edit Project
-                </Typography>
-                <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                  {project.name}
-                </Typography>
-              </Box>
-            </Box>
-            <Button
-              variant="contained"
-              startIcon={<SaveIcon />}
-              onClick={handleSave}
-              disabled={!isFormValid() || saving}
+            <IconButton
+              onClick={() => navigate(`/projects/${id}`)}
+              aria-label="Back to project"
               sx={{
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
-                color: "white",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.3)",
-                },
-                "&:disabled": {
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  color: "rgba(255, 255, 255, 0.5)",
-                },
+                bgcolor: alpha("#fff", 0.12),
+                color: "#fff",
+                border: `1px solid ${alpha("#fff", 0.2)}`,
+                "&:hover": { bgcolor: alpha(brand.gold, 0.25) },
               }}
             >
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-          </Box>
+              <ArrowBack />
+            </IconButton>
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: alpha("#fff", 0.12),
+                border: `1px solid ${alpha(brand.gold, 0.45)}`,
+              }}
+            >
+              <EditIcon sx={{ fontSize: 26, color: brand.gold }} />
+            </Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                variant="h5"
+                fontWeight={800}
+                sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" }, lineHeight: 1.2 }}
+              >
+                Edit Project
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.88, mt: 0.25 }} noWrap>
+                {project.name}
+              </Typography>
+            </Box>
+          </Stack>
         </Box>
 
-        {/* Content */}
-        <Box sx={{ p: 3 }}>
-          <Grid container spacing={3} sx={{ flexDirection: "column" }}>
-            {/* Basic Information */}
-            <Grid item xs={12}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <ProjectIcon sx={{ color: "#667eea" }} />
-                    <Typography variant="h6" sx={{ color: "#333" }}>
-                      Basic Information
-                    </Typography>
-                  </Box>
-                  <Stack spacing={3}>
-                    <TextField
-                      fullWidth
-                      label="Project Name"
-                      value={projectForm.name}
-                      onChange={(e) =>
-                        handleInputChange("name", e.target.value)
-                      }
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <FormControl fullWidth required>
-                      <InputLabel>Category</InputLabel>
-                      <Select
-                        value={projectForm.category}
-                      onChange={(e) =>
-                          handleInputChange("category", e.target.value)
-                        }
-                        label="Category"
-                      >
-                        <MenuItem value="volunteer">Volunteer</MenuItem>
-                        <MenuItem value="donation">Donation</MenuItem>
-                        <MenuItem value="fundraising">Fundraising</MenuItem>
-                        <MenuItem value="education">Education</MenuItem>
-                        <MenuItem value="healthcare">Healthcare</MenuItem>
-                        <MenuItem value="infrastructure">Infrastructure</MenuItem>
-                        <MenuItem value="other">Other</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      label="Description"
-                      value={projectForm.description}
-                      onChange={(e) =>
-                        handleInputChange("description", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <FormControl fullWidth required>
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        value={projectForm.status}
-                        onChange={(e) =>
-                          handleInputChange("status", e.target.value)
-                        }
-                        label="Status"
-                      >
-                        <MenuItem value="pending">Pending</MenuItem>
-                        <MenuItem value="in_progress">In Progress</MenuItem>
-                        <MenuItem value="completed">Completed</MenuItem>
-                        <MenuItem value="on_hold">On Hold</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <TextField
-                      fullWidth
-                      label="Progress (%)"
-                      type="number"
-                      value={projectForm.progress}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "progress",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      inputProps={{ min: 0, max: 100 }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={2}
-                      label="Progress Update Description (Optional)"
-                      value={progressDescription}
-                      onChange={(e) => setProgressDescription(e.target.value)}
-                      placeholder="Describe what progress was made..."
-                      helperText="Add a note about this update (will be saved with timestamp)"
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={VolunteerActivism} title="Basic Information" />
+            <Box sx={{ p: 3 }}>
+              <Stack spacing={2.5}>
+                <TextField
+                  fullWidth
+                  label="Project Name"
+                  value={projectForm.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  required
+                  sx={fieldSx}
+                />
+                <FormControl fullWidth required sx={fieldSx}>
+                  <InputLabel>Project Category</InputLabel>
+                  <Select
+                    value={projectForm.category}
+                    onChange={(e) => handleInputChange("category", e.target.value)}
+                    label="Project Category"
+                  >
+                    {categoryOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        <Box display="flex" alignItems="center" gap={1.5}>
+                          <Box
+                            sx={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: "50%",
+                              bgcolor: option.color,
+                            }}
+                          />
+                          {option.label}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  label="Description"
+                  value={projectForm.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  sx={fieldSx}
+                />
+                <Box sx={dateGridSx}>
+                  <FormControl fullWidth required sx={fieldSx}>
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                      value={projectForm.status}
+                      onChange={(e) => handleInputChange("status", e.target.value)}
+                      label="Status"
+                    >
+                      <MenuItem value="pending">Pending</MenuItem>
+                      <MenuItem value="in_progress">In Progress</MenuItem>
+                      <MenuItem value="completed">Completed</MenuItem>
+                      <MenuItem value="on_hold">On Hold</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    fullWidth
+                    label="Progress (%)"
+                    type="number"
+                    value={projectForm.progress}
+                    onChange={(e) =>
+                      handleInputChange("progress", parseInt(e.target.value, 10) || 0)
+                    }
+                    inputProps={{ min: 0, max: 100 }}
+                    sx={fieldSx}
+                  />
+                </Box>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={2}
+                  label="Progress Update Description (Optional)"
+                  value={progressDescription}
+                  onChange={(e) => setProgressDescription(e.target.value)}
+                  placeholder="Describe what progress was made..."
+                  helperText="Add a note about this update (will be saved with timestamp)"
+                  sx={fieldSx}
+                />
+              </Stack>
+            </Box>
+          </Paper>
 
-            {/* Location & Schedule */}
-            <Grid item xs={12}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <LocationIcon sx={{ color: "#f093fb" }} />
-                    <Typography variant="h6" sx={{ color: "#333" }}>
-                      Location & Schedule
-                    </Typography>
-                  </Box>
-                  <Stack spacing={3}>
-                    <TextField
-                      fullWidth
-                      label="County"
-                      value={projectForm.county}
-                      onChange={(e) =>
-                        handleInputChange("county", e.target.value)
-                      }
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Subcounty"
-                      value={projectForm.subcounty}
-                      onChange={(e) =>
-                        handleInputChange("subcounty", e.target.value)
-                      }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                      fullWidth
-                          label="Latitude"
-                          type="number"
-                          value={projectForm.latitude}
-                          onChange={(e) =>
-                            handleInputChange("latitude", e.target.value)
-                          }
-                          inputProps={{ step: "any" }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                              backgroundColor: "transparent",
-                            },
-                          }}
-                        />
-            </Grid>
-                      <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                          label="Longitude"
-                      type="number"
-                          value={projectForm.longitude}
-                      onChange={(e) =>
-                            handleInputChange("longitude", e.target.value)
-                      }
-                          inputProps={{ step: "any" }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                      </Grid>
-                    </Grid>
-                    <TextField
-                      fullWidth
-                      label="Start Date"
-                      type="date"
-                      value={projectForm.start_date}
-                      onChange={(e) =>
-                        handleInputChange("start_date", e.target.value)
-                      }
-                      required
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="End Date"
-                      type="date"
-                      value={projectForm.end_date}
-                      onChange={(e) =>
-                        handleInputChange("end_date", e.target.value)
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={LocationOn} title="Location Information" color={brand.blue} />
+            <Box sx={{ p: 3 }}>
+              <Stack spacing={2.5}>
+                <Box sx={dateGridSx}>
+                  <TextField
+                    fullWidth
+                    label="County"
+                    value={projectForm.county}
+                    onChange={(e) => handleInputChange("county", e.target.value)}
+                    required
+                    sx={fieldSx}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Subcounty"
+                    value={projectForm.subcounty}
+                    onChange={(e) => handleInputChange("subcounty", e.target.value)}
+                    sx={fieldSx}
+                  />
+                </Box>
+                <Box sx={dateGridSx}>
+                  <TextField
+                    fullWidth
+                    label="Latitude"
+                    type="number"
+                    value={projectForm.latitude}
+                    onChange={(e) => handleInputChange("latitude", e.target.value)}
+                    inputProps={{ step: "any" }}
+                    sx={fieldSx}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Longitude"
+                    type="number"
+                    value={projectForm.longitude}
+                    onChange={(e) => handleInputChange("longitude", e.target.value)}
+                    inputProps={{ step: "any" }}
+                    sx={fieldSx}
+                  />
+                </Box>
+              </Stack>
+            </Box>
+          </Paper>
 
-            {/* Target & Assignment */}
-            <Grid item xs={12}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <PeopleIcon sx={{ color: "#4facfe" }} />
-                    <Typography variant="h6" sx={{ color: "#333" }}>
-                      Target & Assignment
-                    </Typography>
-                  </Box>
-                  <Stack spacing={3}>
-                    <TextField
-                      fullWidth
-                      label="Target Individual/Group"
-                      value={projectForm.target_individual}
-                      onChange={(e) =>
-                        handleInputChange("target_individual", e.target.value)
-                      }
-                      placeholder="e.g., Youth aged 18-25, Women farmers, etc."
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                    <FormControl fullWidth>
-                      <InputLabel>Assign To</InputLabel>
-                      <Select
-                        value={projectForm.assigned_to || ""}
-                      onChange={(e) =>
-                          handleInputChange("assigned_to", e.target.value || null)
-                        }
-                        label="Assign To"
-                      >
-                        <MenuItem value="">
-                          <em>Not assigned</em>
-                        </MenuItem>
-                        {users.map((user) => (
-                          <MenuItem key={user.id} value={user.id}>
-                            {user.full_name} ({user.email})
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={Event} title="Timeline" color={brand.gold} />
+            <Box sx={{ p: 3, width: "100%" }}>
+              <Box sx={dateGridSx}>
+                <TextField
+                  fullWidth
+                  label="Start Date"
+                  type="date"
+                  value={projectForm.start_date}
+                  onChange={(e) => handleInputChange("start_date", e.target.value)}
+                  required
+                  InputLabelProps={{ shrink: true }}
+                  sx={fieldSx}
+                />
+                <TextField
+                  fullWidth
+                  label="End Date"
+                  type="date"
+                  value={projectForm.end_date}
+                  onChange={(e) => handleInputChange("end_date", e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  sx={fieldSx}
+                />
+              </Box>
+            </Box>
+          </Paper>
 
-            {/* Project Images */}
-            <Grid item xs={12}>
-              <Card
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <ImageIcon sx={{ color: "#43e97b" }} />
-                    <Typography variant="h6" sx={{ color: "#333" }}>
-                      Project Images
-                    </Typography>
-                  </Box>
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={People} title="Target & Assignment" color={brand.navy} />
+            <Box sx={{ p: 3 }}>
+              <Stack spacing={2.5}>
+                <TextField
+                  fullWidth
+                  label="Target Individual / Group"
+                  value={projectForm.target_individual}
+                  onChange={(e) => handleInputChange("target_individual", e.target.value)}
+                  placeholder="e.g. Youth aged 18-25, Women farmers, etc."
+                  sx={fieldSx}
+                />
+                <FormControl fullWidth sx={fieldSx}>
+                  <InputLabel>Assign To</InputLabel>
+                  <Select
+                    value={projectForm.assigned_to || ""}
+                    onChange={(e) =>
+                      handleInputChange("assigned_to", e.target.value || null)
+                    }
+                    label="Assign To"
+                  >
+                    <MenuItem value="">
+                      <em>Not assigned</em>
+                    </MenuItem>
+                    {users.map((user) => (
+                      <MenuItem key={user.id} value={user.id}>
+                        {user.full_name} ({user.email})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Stack>
+            </Box>
+          </Paper>
 
-                  {/* Image Upload */}
-                  <Box mb={3}>
-                    <input
-                      type="file"
-                      multiple
-                      onChange={handleFileSelect}
-                      style={{ display: "none" }}
-                      id="file-upload"
-                      accept="image/*"
-                    />
-                    <label htmlFor="file-upload">
-                      <Button
-                        variant="outlined"
-                        component="span"
-                        startIcon={<UploadIcon />}
-                        sx={{
-                          color: "#43e97b",
-                          borderColor: "#43e97b",
-                          "&:hover": {
-                            borderColor: "#43e97b",
-                            backgroundColor: "rgba(67, 233, 123, 0.1)",
-                          },
-                        }}
-                      >
-                        Upload Images
-                      </Button>
-                    </label>
-                  </Box>
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={ImageIcon} title="Project Images" color={brand.green} />
+            <Box sx={{ p: 3 }}>
+              <input
+                type="file"
+                multiple
+                onChange={handleFileSelect}
+                style={{ display: "none" }}
+                id="file-upload"
+                accept="image/*"
+              />
+              <label htmlFor="file-upload">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  startIcon={<CloudUpload />}
+                  sx={{
+                    mb: 2,
+                    color: brand.green,
+                    borderColor: brand.green,
+                    fontWeight: 600,
+                    textTransform: "none",
+                    borderRadius: 2,
+                    "&:hover": {
+                      borderColor: brand.greenDark,
+                      bgcolor: alpha(brand.green, 0.08),
+                    },
+                  }}
+                >
+                  Upload Images
+                </Button>
+              </label>
 
-                  {/* Selected Images */}
-                  {selectedFiles.length > 0 && (
-                    <Box mb={3}>
-                      <Typography variant="subtitle2" mb={2}>
-                        Selected Images:
-                      </Typography>
-                      <Grid container spacing={2}>
-                        {selectedFiles.map((file, index) => {
-                          const preview = filePreviews.find(
-                            (p) => p.file === file
-                          );
-
-                          return (
-                            <Grid item xs={12} sm={6} md={4} key={index}>
-                              <Box
-                                sx={{
-                                  p: 2,
-                                  backgroundColor: "#f8f9fa",
-                                  borderRadius: 2,
-                                  border: "1px solid #e0e0e0",
-                                  position: "relative",
-                                }}
-                              >
-                                <IconButton
-                                  onClick={() => removeSelectedFile(index)}
+              {selectedFiles.length > 0 && (
+                <Box mb={3}>
+                  <Typography variant="subtitle2" fontWeight={600} color={brand.navy} mb={2}>
+                    Selected Images ({selectedFiles.length})
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {selectedFiles.map((file, index) => {
+                      const preview = filePreviews.find((p) => p.file === file);
+                      return (
+                        <Grid item xs={12} sm={6} md={4} key={index}>
+                          <Box
+                            sx={{
+                              p: 1.5,
+                              bgcolor: brand.sidebarBgAlt,
+                              borderRadius: 2,
+                              border: `1px solid ${brand.sidebarBorder}`,
+                              position: "relative",
+                            }}
+                          >
+                            <IconButton
+                              onClick={() => removeSelectedFile(index)}
+                              size="small"
+                              sx={{
+                                position: "absolute",
+                                top: 12,
+                                right: 12,
+                                bgcolor: alpha("#000", 0.55),
+                                color: "#fff",
+                                "&:hover": { bgcolor: "#c62828" },
+                                zIndex: 2,
+                              }}
+                            >
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                            {preview?.preview ? (
+                              <Box>
+                                <Box
+                                  component="img"
+                                  src={preview.preview}
+                                  alt={file.name}
                                   sx={{
-                                    position: "absolute",
-                                    top: 8,
-                                    right: 8,
-                                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                    color: "white",
-                                    "&:hover": {
-                                      backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                    },
-                                    zIndex: 2,
+                                    width: "100%",
+                                    height: 150,
+                                    objectFit: "cover",
+                                    borderRadius: 1.5,
+                                    mb: 1,
                                   }}
-                                  size="small"
+                                />
+                                <Typography
+                                  variant="caption"
+                                  color={brand.sidebarTextMuted}
+                                  display="block"
+                                  textAlign="center"
+                                  sx={{ wordBreak: "break-word" }}
                                 >
-                                  <CloseIcon fontSize="small" />
-                                </IconButton>
-
-                                {preview?.previewType === "image" &&
-                                preview.preview ? (
-                                  <Box>
-                                    <img
-                                      src={preview.preview}
-                                      alt={file.name}
-                                      style={{
-                                        width: "100%",
-                                        height: "150px",
-                                        objectFit: "cover",
-                                        borderRadius: "8px",
-                                        marginBottom: "8px",
-                                      }}
-                                    />
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#333",
-                                        display: "block",
-                                        textAlign: "center",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {file.name}
-                                    </Typography>
-                                  </Box>
-                                ) : (
-                                  <Box textAlign="center">
-                                    <ImageIcon sx={{ fontSize: 48, color: "#666", mb: 1 }} />
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#333",
-                                        display: "block",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {file.name}
-                                    </Typography>
-                                  </Box>
-                                )}
+                                  {file.name}
+                                </Typography>
                               </Box>
-                            </Grid>
-                          );
-                        })}
-                      </Grid>
-                    </Box>
-                  )}
-
-                  {/* Upload Progress */}
-                  {uploadingFiles && (
-                    <Box mb={2}>
-                      <Typography variant="body2" mb={1}>
-                        Uploading files...
-                      </Typography>
-                      <LinearProgress
-                        sx={{
-                          backgroundColor: "rgba(255, 255, 255, 0.2)",
-                          "& .MuiLinearProgress-bar": {
-                            backgroundColor: "white",
-                          },
-                        }}
-                      />
-                    </Box>
-                  )}
-
-                  {/* Existing Images */}
-                  {projectImages.length > 0 && (
-                    <Box>
-                      <Typography variant="subtitle2" mb={2}>
-                        Current Images:
-                      </Typography>
-                      <Grid container spacing={2}>
-                        {projectImages.map((fileUrl, index) => {
-                          const fileName =
-                            fileUrl.split("/").pop() || `Image ${index + 1}`;
-
-                          return (
-                            <Grid item xs={12} sm={6} md={4} key={index}>
-                              <Box
-                                sx={{
-                                  p: 2,
-                                  backgroundColor: "#f8f9fa",
-                                  borderRadius: 2,
-                                  border: "1px solid #e0e0e0",
-                                  position: "relative",
-                                  cursor: "pointer",
-                                  transition: "transform 0.2s ease-in-out",
-                                  "&:hover": {
-                                    transform: "scale(1.02)",
-                                  },
-                                }}
-                                onClick={() =>
-                                  handleImageClick(fileUrl, fileName)
-                                }
-                              >
-                                <IconButton
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    removeProjectImage(index);
-                                  }}
-                                  sx={{
-                                    position: "absolute",
-                                    top: 8,
-                                    right: 8,
-                                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                    color: "white",
-                                    "&:hover": {
-                                      backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                    },
-                                    zIndex: 2,
-                                  }}
-                                  size="small"
-                                >
-                                  <CloseIcon fontSize="small" />
-                                </IconButton>
-
-                                  <Box>
-                                    <img
-                                      src={buildImageUrl(fileUrl)}
-                                      alt={fileName}
-                                      style={{
-                                        width: "100%",
-                                        height: "150px",
-                                        objectFit: "cover",
-                                        borderRadius: "8px",
-                                        marginBottom: "8px",
-                                      }}
-                                      onError={(e) => {
-                                        e.target.style.display = "none";
-                                      e.target.nextSibling.style.display = "flex";
-                                      }}
-                                    />
-                                    <Box
-                                      textAlign="center"
-                                    sx={{ display: "none", flexDirection: "column", alignItems: "center" }}
-                                  >
-                                    <ImageIcon sx={{ fontSize: 48, color: "#666", mb: 1 }} />
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#333",
-                                        display: "block",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {fileName}
-                                    </Typography>
-                                  </Box>
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: "#333",
-                                        display: "block",
-                                        textAlign: "center",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {fileName}
-                                    </Typography>
-                                  </Box>
+                            ) : (
+                              <Box textAlign="center">
+                                <ImageIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.3), mb: 1 }} />
+                                <Typography variant="caption" color={brand.sidebarTextMuted}>
+                                  {file.name}
+                                </Typography>
                               </Box>
-                            </Grid>
-                          );
-                        })}
-                      </Grid>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+                            )}
+                          </Box>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+                </Box>
+              )}
+
+              {uploadingFiles && (
+                <Box mb={2}>
+                  <Typography variant="body2" mb={1}>
+                    Uploading files...
+                  </Typography>
+                  <LinearProgress sx={{ borderRadius: 1 }} />
+                </Box>
+              )}
+
+              {projectImages.length > 0 && (
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={600} color={brand.navy} mb={2}>
+                    Current Images ({projectImages.length})
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {projectImages.map((fileUrl, index) => {
+                      const fileName = fileUrl.split("/").pop() || `Image ${index + 1}`;
+                      return (
+                        <Grid item xs={12} sm={6} md={4} key={index}>
+                          <Box
+                            sx={{
+                              p: 1.5,
+                              bgcolor: brand.sidebarBgAlt,
+                              borderRadius: 2,
+                              border: `1px solid ${brand.sidebarBorder}`,
+                              position: "relative",
+                              cursor: "pointer",
+                              transition: "transform 0.2s",
+                              "&:hover": { transform: "scale(1.02)" },
+                            }}
+                            onClick={() => handleImageClick(fileUrl, fileName)}
+                          >
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeProjectImage(index);
+                              }}
+                              size="small"
+                              sx={{
+                                position: "absolute",
+                                top: 12,
+                                right: 12,
+                                bgcolor: alpha("#000", 0.55),
+                                color: "#fff",
+                                "&:hover": { bgcolor: "#c62828" },
+                                zIndex: 2,
+                              }}
+                            >
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                            <Box
+                              component="img"
+                              src={buildImageUrl(fileUrl)}
+                              alt={fileName}
+                              sx={{
+                                width: "100%",
+                                height: 150,
+                                objectFit: "cover",
+                                borderRadius: 1.5,
+                                mb: 1,
+                              }}
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                              }}
+                            />
+                            <Typography
+                              variant="caption"
+                              color={brand.sidebarTextMuted}
+                              display="block"
+                              textAlign="center"
+                              sx={{ wordBreak: "break-word" }}
+                            >
+                              {fileName}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
+                </Box>
+              )}
+            </Box>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{ ...sectionCardSx, mb: 0, position: { md: "sticky" }, bottom: 16, zIndex: 10 }}
+          >
+            <Box sx={{ p: 2.5 }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <Save />}
+                  onClick={handleSave}
+                  disabled={!isFormValid() || saving}
+                  sx={{
+                    py: 1.5,
+                    fontWeight: 700,
+                    textTransform: "none",
+                    borderRadius: 2,
+                    bgcolor: brand.green,
+                    boxShadow: `0 6px 20px ${alpha(brand.green, 0.4)}`,
+                    "&:hover": {
+                      bgcolor: brand.greenLight,
+                      boxShadow: `0 8px 24px ${alpha(brand.green, 0.45)}`,
+                    },
+                    "&:disabled": { bgcolor: "#e0e0e0", color: "#9e9e9e", boxShadow: "none" },
+                  }}
+                >
+                  {saving ? "Saving…" : "Save Changes"}
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  fullWidth
+                  onClick={() => navigate(`/projects/${id}`)}
+                  sx={{
+                    py: 1.5,
+                    fontWeight: 600,
+                    textTransform: "none",
+                    borderRadius: 2,
+                    color: brand.navy,
+                    borderColor: brand.sidebarBorder,
+                    "&:hover": {
+                      borderColor: brand.navy,
+                      bgcolor: alpha(brand.navy, 0.04),
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Stack>
+            </Box>
+          </Paper>
         </Box>
-      </Container>
+      </Paper>
 
       {/* Image Preview Modal (for images only) */}
       {previewModal.open && previewModal.type === "image" && (

@@ -69,19 +69,32 @@ import {
   Add as AddIcon,
   CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
+import { brand, appBarGradient } from "../../brandColors";
+import {
+  listPaperSx,
+  ListPageHeader,
+  tabsSx,
+  detailCardSx,
+  saveButtonSx,
+  cancelButtonSx,
+  dialogPaperSx,
+  dialogTitleSx,
+  dialogActionsSx,
+} from "../Util/adminListUi";
 
-// Color palette for charts
+// Color palette for charts — Mwalimu brand
 const COLORS = [
-  "#667eea",
-  "#764ba2",
-  "#f093fb",
-  "#f5576c",
-  "#4facfe",
-  "#00f2fe",
-  "#43e97b",
-  "#38f9d7",
-  "#ffecd2",
-  "#fcb69f",
+  brand.navy,
+  brand.green,
+  brand.gold,
+  brand.blue,
+  brand.navyLight,
+  brand.greenLight,
+  brand.goldLight,
+  brand.blueLight,
+  "#5da358",
+  "#0a2d47",
 ];
 
 const Analytics = () => {
@@ -1650,19 +1663,18 @@ const Analytics = () => {
     <Card
       sx={{
         borderRadius: 3,
-        backgroundColor: "rgba(255, 255, 255, 0.8)",
-        border: "1px solid rgba(102, 126, 234, 0.1)",
-        boxShadow: "0 4px 20px rgba(102, 126, 234, 0.08)",
+        backgroundColor: brand.sidebarBg,
+        border: `1px solid ${brand.sidebarBorder}`,
+        boxShadow: `0 4px 20px ${alpha(brand.navy, 0.08)}`,
         transition: "all 0.3s ease",
         "&:hover": {
-          boxShadow: "0 8px 30px rgba(102, 126, 234, 0.15)",
+          boxShadow: `0 8px 30px ${alpha(brand.navy, 0.12)}`,
           transform: "translateY(-2px)",
-          borderColor: "rgba(102, 126, 234, 0.2)",
+          borderColor: alpha(brand.green, 0.35),
         },
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        backdropFilter: "blur(10px)",
       }}
     >
       <CardContent
@@ -1681,23 +1693,23 @@ const Analytics = () => {
               {icon && (
                 <Avatar
                   sx={{
-                    backgroundColor: "rgba(102, 126, 234, 0.1)",
-                    color: "#667eea",
+                    backgroundColor: alpha(brand.green, 0.12),
+                    color: brand.green,
                     mr: 2,
                     width: 40,
                     height: 40,
-                    border: "1px solid rgba(102, 126, 234, 0.2)",
+                    border: `1px solid ${alpha(brand.green, 0.25)}`,
                   }}
                 >
                   {icon}
                 </Avatar>
               )}
-              <Typography variant="h6" fontWeight="600" color="#2c3e50">
+              <Typography variant="h6" fontWeight="600" color={brand.navy}>
                 {title}
               </Typography>
             </Box>
             {subtitle && (
-              <Typography variant="body2" color="#7f8c8d">
+              <Typography variant="body2" color={brand.sidebarTextMuted}>
                 {subtitle}
               </Typography>
             )}
@@ -1720,80 +1732,24 @@ const Analytics = () => {
   // CardItem component with improved UI and appropriate icons
   const CardItem = (props) => {
     const getCardStyle = (title) => {
-      switch (title) {
-        case "Total Inquiries":
-          return {
-            icon: <InfoIcon sx={{ fontSize: 40, color: "#1976d2" }} />,
-            bgColor: "linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)",
-            borderColor: "#1976d2",
-            textColor: "#1976d2",
-            iconBg: "rgba(25, 118, 210, 0.1)",
-          };
-        case "Total Projects":
-          return {
-            icon: <MapIcon sx={{ fontSize: 40, color: "#7b1fa2" }} />,
-            bgColor: "linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%)",
-            borderColor: "#7b1fa2",
-            textColor: "#7b1fa2",
-            iconBg: "rgba(123, 31, 162, 0.1)",
-          };
-        case "Total Documents":
-          return {
-            icon: <AssessmentIcon sx={{ fontSize: 40, color: "#388e3c" }} />,
-            bgColor: "linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%)",
-            borderColor: "#388e3c",
-            textColor: "#388e3c",
-            iconBg: "rgba(56, 142, 60, 0.1)",
-          };
-        case "Total Users":
-          return {
-            icon: <PeopleIcon sx={{ fontSize: 40, color: "#f57c00" }} />,
-            bgColor: "linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%)",
-            borderColor: "#f57c00",
-            textColor: "#f57c00",
-            iconBg: "rgba(245, 124, 0, 0.1)",
-          };
-        case "Active Users":
-          return {
-            icon: <PeopleIcon sx={{ fontSize: 40, color: "#2e7d32" }} />,
-            bgColor: "linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%)",
-            borderColor: "#2e7d32",
-            textColor: "#2e7d32",
-            iconBg: "rgba(46, 125, 50, 0.1)",
-          };
-        case "Recent Inquiries (30d)":
-          return {
-            icon: <TrendingUp sx={{ fontSize: 40, color: "#0288d1" }} />,
-            bgColor: "linear-gradient(135deg, #E1F5FE 0%, #B3E5FC 100%)",
-            borderColor: "#0288d1",
-            textColor: "#0288d1",
-            iconBg: "rgba(2, 136, 209, 0.1)",
-          };
-        case "Recent Projects (30d)":
-          return {
-            icon: <TrendingUp sx={{ fontSize: 40, color: "#7b1fa2" }} />,
-            bgColor: "linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%)",
-            borderColor: "#7b1fa2",
-            textColor: "#7b1fa2",
-            iconBg: "rgba(123, 31, 162, 0.1)",
-          };
-        case "Completed Projects (30d)":
-          return {
-            icon: <InsightsIcon sx={{ fontSize: 40, color: "#2e7d32" }} />,
-            bgColor: "linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%)",
-            borderColor: "#2e7d32",
-            textColor: "#2e7d32",
-            iconBg: "rgba(46, 125, 50, 0.1)",
-          };
-        default:
-          return {
-            icon: <AnalyticsIcon sx={{ fontSize: 40, color: "#666" }} />,
-            bgColor: "linear-gradient(135deg, #F5F5F5 0%, #EEEEEE 100%)",
-            borderColor: "#666",
-            textColor: "#666",
-            iconBg: "rgba(102, 102, 102, 0.1)",
-          };
-      }
+      const styles = {
+        "Total Inquiries": { icon: <InfoIcon sx={{ fontSize: 40, color: brand.blue }} />, accent: brand.blue },
+        "Total Projects": { icon: <MapIcon sx={{ fontSize: 40, color: brand.navy }} />, accent: brand.navy },
+        "Total Documents": { icon: <AssessmentIcon sx={{ fontSize: 40, color: brand.green }} />, accent: brand.green },
+        "Total Users": { icon: <PeopleIcon sx={{ fontSize: 40, color: brand.gold }} />, accent: brand.gold },
+        "Active Users": { icon: <PeopleIcon sx={{ fontSize: 40, color: brand.greenDark }} />, accent: brand.greenDark },
+        "Recent Inquiries (30d)": { icon: <TrendingUp sx={{ fontSize: 40, color: brand.blue }} />, accent: brand.blue },
+        "Recent Projects (30d)": { icon: <TrendingUp sx={{ fontSize: 40, color: brand.navyLight }} />, accent: brand.navyLight },
+        "Completed Projects (30d)": { icon: <InsightsIcon sx={{ fontSize: 40, color: brand.green }} />, accent: brand.green },
+      };
+      const s = styles[title] || { icon: <AnalyticsIcon sx={{ fontSize: 40, color: brand.sidebarTextMuted }} />, accent: brand.sidebarTextMuted };
+      return {
+        icon: s.icon,
+        bgColor: brand.sidebarBgAlt,
+        borderColor: s.accent,
+        textColor: s.accent,
+        iconBg: alpha(s.accent, 0.12),
+      };
     };
 
     const { title, value } = props;
@@ -1803,14 +1759,15 @@ const Analytics = () => {
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <Card
           sx={{
-            borderRadius: "16px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+            borderRadius: 2,
+            boxShadow: `0 4px 20px ${alpha(brand.navy, 0.08)}`,
             background: style.bgColor,
-            border: `1px solid ${style.borderColor}20`,
+            border: `1px solid ${alpha(style.borderColor, 0.25)}`,
+            borderTop: `3px solid ${style.borderColor}`,
             transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             "&:hover": {
-              transform: "translateY(-8px)",
-              boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
+              transform: "translateY(-4px)",
+              boxShadow: `0 8px 30px ${alpha(brand.navy, 0.12)}`,
               borderColor: style.borderColor,
             },
             height: "100%",
@@ -1818,15 +1775,6 @@ const Analytics = () => {
             flexDirection: "column",
             position: "relative",
             overflow: "hidden",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "4px",
-              background: `linear-gradient(90deg, ${style.borderColor}, ${style.borderColor}80)`,
-            },
           }}
         >
           <CardContent
@@ -1866,15 +1814,7 @@ const Analytics = () => {
             <Typography
               variant="h3"
               fontWeight="800"
-              sx={{
-                color: style.textColor,
-                mb: 1,
-                background: `linear-gradient(135deg, ${style.textColor}, ${style.textColor}80)`,
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                textShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              }}
+              sx={{ color: style.textColor, mb: 1 }}
             >
               {value?.toLocaleString() || 0}
             </Typography>
@@ -1905,17 +1845,15 @@ const Analytics = () => {
         alignItems="center"
         sx={{ mb: 3 }}
       >
-        <Typography variant="h5" fontWeight="bold" color="text.primary">
+        <Typography variant="h5" fontWeight="bold" color={brand.navy}>
           System Overview
         </Typography>
         <IconButton
           onClick={() => setOverviewHelpOpen(true)}
-          color="primary"
           sx={{
-            backgroundColor: "rgba(25, 118, 210, 0.1)",
-            "&:hover": {
-              backgroundColor: "rgba(25, 118, 210, 0.2)",
-            },
+            backgroundColor: alpha(brand.green, 0.1),
+            color: brand.green,
+            "&:hover": { backgroundColor: alpha(brand.green, 0.18) },
           }}
           title="Click to understand the data shown here"
         >
@@ -2630,82 +2568,33 @@ const Analytics = () => {
         <>
           {/* Project Summary Cards */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            {[
+              { label: "Total Projects", value: analyticsData.projects?.total || 0, bg: brand.navy },
+              { label: "Average Progress", value: `${analyticsData.projects?.progress?.average || 0}%`, bg: brand.green },
+              { label: "Completion Rate", value: analyticsData.projects?.completionRate || "0%", bg: brand.blue },
+              { label: "Active Projects", value: analyticsData.projects?.active || 0, bg: brand.gold },
+            ].map(({ label, value, bg }) => (
+            <Grid key={label} size={{ xs: 12, sm: 6, md: 3 }}>
               <Card
                 sx={{
                   p: 3,
                   textAlign: "center",
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  borderRadius: 3,
-                  boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
+                  background: bg,
+                  color: "#fff",
+                  borderRadius: 2,
+                  borderBottom: `3px solid ${brand.gold}`,
+                  boxShadow: `0 4px 20px ${alpha(bg, 0.35)}`,
                 }}
               >
                 <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
-                  {analyticsData.projects?.total || 0}
+                  {value}
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Total Projects
-                </Typography>
-              </Card>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card
-                sx={{
-                  p: 3,
-                  textAlign: "center",
-                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                  color: 'white',
-                  borderRadius: 3,
-                  boxShadow: '0 4px 20px rgba(240, 147, 251, 0.3)',
-                }}
-              >
-                <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
-                  {analyticsData.projects?.progress?.average || 0}%
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Average Progress
+                <Typography variant="body2" sx={{ opacity: 0.92 }}>
+                  {label}
                 </Typography>
               </Card>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card
-                sx={{
-                  p: 3,
-                  textAlign: "center",
-                  background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                  color: 'white',
-                  borderRadius: 3,
-                  boxShadow: '0 4px 20px rgba(79, 172, 254, 0.3)',
-                }}
-              >
-                <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
-                  {analyticsData.projects?.completionRate || "0%"}
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Completion Rate
-                </Typography>
-              </Card>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card
-                sx={{
-                  p: 3,
-                  textAlign: "center",
-                  background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-                  color: 'white',
-                  borderRadius: 3,
-                  boxShadow: '0 4px 20px rgba(67, 233, 123, 0.3)',
-                }}
-              >
-                <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
-                  {analyticsData.projects?.completedProjects || 0}
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Completed Projects
-                </Typography>
-              </Card>
-            </Grid>
+            ))}
           </Grid>
 
           {/* Progress Details */}
@@ -2911,7 +2800,7 @@ const Analytics = () => {
                       <Legend />
                       <Bar
                         dataKey="count"
-                        fill="#667eea"
+                        fill={brand.navy}
                         name="Total Projects"
                         radius={[4, 4, 0, 0]}
                       />
@@ -2992,7 +2881,7 @@ const Analytics = () => {
               <Legend wrapperStyle={{ paddingTop: "20px" }} />
               <Bar
                 dataKey="voterRegistrationRate"
-                fill="#667eea"
+                fill={brand.navy}
                 name="Registration Rate (%)"
                 radius={[4, 4, 0, 0]}
               />
@@ -3092,7 +2981,7 @@ const Analytics = () => {
                 <Legend />
                 <Bar
                   dataKey="count"
-                  fill="#667eea"
+                  fill={brand.navy}
                   name="Tasks"
                   radius={[4, 4, 0, 0]}
                 />
@@ -4345,7 +4234,7 @@ const Analytics = () => {
                     <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
                     <YAxis />
                     <Tooltip formatter={(value) => [value, "Inquiries"]} />
-                    <Bar dataKey="count" fill="#667eea" />
+                    <Bar dataKey="count" fill={brand.navy} />
                   </BarChart>
                 </ResponsiveContainer>
               </Card>
@@ -4437,7 +4326,7 @@ const Analytics = () => {
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
-        <Button variant="contained" onClick={fetchAnalyticsData} sx={{ mt: 2 }}>
+        <Button variant="contained" onClick={fetchAnalyticsData} sx={{ mt: 2, ...saveButtonSx }}>
           Retry
         </Button>
       </Box>
@@ -4445,65 +4334,20 @@ const Analytics = () => {
   }
 
   return (
-    <Box sx={{ p: 1.5 }}>
-      <Typography
-        variant="h4"
-        gutterBottom
-        sx={{
-          fontWeight: "bold",
-          mb: 1.5,
-          color: "#2c3e50",
-          textAlign: "center",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          backgroundClip: "text",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-        }}
-      >
-        Mwalimu Hope Foundation Dashboard
-      </Typography>
+    <Box>
+      <Paper elevation={0} sx={listPaperSx}>
+        <ListPageHeader
+          icon={AnalyticsIcon}
+          title="Mwalimu Hope Foundation Dashboard"
+          subtitle="Overview of projects, inquiries, and foundation activity"
+        />
 
-      <Card
-        sx={{
-          borderRadius: 3,
-          backgroundColor: "rgba(255, 255, 255, 0.8)",
-          border: "1px solid rgba(102, 126, 234, 0.1)",
-          boxShadow: "0 8px 32px rgba(102, 126, 234, 0.1)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <Box
-          sx={{
-            borderBottom: 1,
-            borderColor: "rgba(102, 126, 234, 0.1)",
-            backgroundColor: "rgba(102, 126, 234, 0.02)",
-          }}
-        >
+        <Box sx={{ borderBottom: `1px solid ${brand.sidebarBorder}` }}>
           <Tabs
             value={activeTab}
             onChange={(e, newValue) => setActiveTab(newValue)}
             variant="fullWidth"
-            sx={{
-              "& .MuiTab-root": {
-                color: "#667eea",
-                fontWeight: 600,
-                minHeight: 60,
-                fontSize: "0.875rem",
-                padding: "8px 12px",
-                "&.Mui-selected": {
-                  color: "#667eea",
-                  backgroundColor: "rgba(102, 126, 234, 0.08)",
-                },
-                "&:hover": {
-                  backgroundColor: "rgba(102, 126, 234, 0.05)",
-                },
-              },
-              "& .MuiTabs-indicator": {
-                backgroundColor: "#667eea",
-                height: 3,
-                borderRadius: "3px 3px 0 0",
-              },
-            }}
+            sx={{ ...tabsSx, px: { xs: 1, sm: 2 } }}
           >
             {tabs.map((tab) => (
               <Tab
@@ -4511,14 +4355,14 @@ const Analytics = () => {
                 label={tab.label}
                 icon={tab.icon}
                 iconPosition="start"
-                sx={{ minHeight: 60 }}
+                sx={{ minHeight: 52 }}
               />
             ))}
           </Tabs>
         </Box>
 
-        <Box sx={{ p: 1.5 }}>{renderTabContent()}</Box>
-      </Card>
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>{renderTabContent()}</Box>
+      </Paper>
 
       {/* Help Dialogs */}
       <OverviewHelpDialog />

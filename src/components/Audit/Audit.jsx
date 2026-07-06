@@ -34,8 +34,28 @@ import {
 import {
   Visibility as ViewIcon,
   History as HistoryIcon,
+  Person as PersonIcon,
+  Schedule as ScheduleIcon,
 } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
+import { brand } from "../../brandColors";
+import { fieldSx, dateGridSx } from "../Projects/projectFormUi";
+import {
+  listPaperSx,
+  ListPageHeader,
+  tabsSx,
+  tableContainerSx,
+  tableHeadRowSx,
+  tableRowSx,
+  paginationSx,
+  actionButtonSx,
+  dialogPaperSx,
+  BrandedDialogTitle,
+  DetailRow,
+  dialogActionsSx,
+  cancelButtonSx,
+  detailCardSx,
+} from "../Util/adminListUi";
 
 const Audit = () => {
   const theme = useTheme();
@@ -105,6 +125,22 @@ const Audit = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getActionStyle = (action) => {
+    if (action.includes("delete")) return { bg: alpha("#c62828", 0.1), color: "#c62828" };
+    if (action.includes("create")) return { bg: alpha(brand.green, 0.14), color: brand.greenDark };
+    if (action.includes("update") || action.includes("login")) return { bg: alpha(brand.blue, 0.12), color: brand.blue };
+    return { bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted };
+  };
+
+  const getStatusStyle = (status) => {
+    const styles = {
+      success: { bg: alpha(brand.green, 0.14), color: brand.greenDark, label: "Success" },
+      failed: { bg: alpha("#c62828", 0.1), color: "#c62828", label: "Failed" },
+      pending: { bg: alpha(brand.gold, 0.18), color: "#e65100", label: "Pending" },
+    };
+    return styles[status] || { bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted, label: status };
   };
 
   const getStatusColor = (status) => {
@@ -179,177 +215,27 @@ const Audit = () => {
   }
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 0,
-          overflow: "hidden",
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(10px)",
-          border: "none",
-          boxShadow: "none",
-          minHeight: "100vh",
-        }}
-      >
-        {/* Header Section */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            display="flex"
-            flexDirection={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            gap={{ xs: 2, sm: 0 }}
-            position="relative"
-            zIndex={1}
-          >
-            <Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 800,
-                  mb: 1,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
-                }}
-              >
-                Audit Trail Management
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                View and track all system activities and changes
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+    <Box>
+      <Paper elevation={0} sx={listPaperSx}>
+        <ListPageHeader
+          icon={HistoryIcon}
+          title="Audit Trail Management"
+          subtitle="View and track all system activities and changes"
+        />
 
-        {/* Content Section */}
-        <Box
-          sx={{ p: { xs: 1, sm: 2, md: 3 }, minHeight: "calc(100vh - 200px)" }}
-        >
-          {/* Resource Type Tabs */}
-          <Paper
-            elevation={0}
-            sx={{
-              mb: 2,
-              borderRadius: 3,
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              border: "1px solid rgba(102, 126, 234, 0.1)",
-              overflow: "hidden",
-            }}
-          >
-            <Tabs
-              value={selectedTab}
-              onChange={handleTabChange}
-              variant="scrollable"
-              scrollButtons="auto"
-              sx={{
-                "& .MuiTab-root": {
-                  textTransform: "none",
-                  fontWeight: 600,
-                  minHeight: 48,
-                  color: "#667eea",
-                  "&.Mui-selected": {
-                    color: "#667eea",
-                    backgroundColor: "rgba(102, 126, 234, 0.1)",
-                  },
-                },
-                "& .MuiTabs-indicator": {
-                  backgroundColor: "#667eea",
-                  height: 3,
-                },
-              }}
-            >
-              {resourceTypes.map((type, index) => (
-                <Tab
-                  key={type.value}
-                  label={type.label}
-                  sx={{
-                    px: 3,
-                    py: 1.5,
-                    fontSize: { xs: "0.875rem", sm: "1rem" },
-                  }}
-                />
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <Box mb={3}>
+            <Tabs value={selectedTab} onChange={handleTabChange} variant="scrollable" scrollButtons="auto" sx={tabsSx}>
+              {resourceTypes.map((type) => (
+                <Tab key={type.value || "all"} label={type.label} />
               ))}
             </Tabs>
-          </Paper>
+          </Box>
 
-          {/* Audit Logs Table */}
-          <TableContainer
-            sx={{
-              borderRadius: 3,
-              overflowX: "auto",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              border: "1px solid rgba(102, 126, 234, 0.1)",
-              "&::-webkit-scrollbar": {
-                height: 8,
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: "rgba(102, 126, 234, 0.1)",
-                borderRadius: 4,
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "rgba(102, 126, 234, 0.3)",
-                borderRadius: 4,
-                "&:hover": {
-                  backgroundColor: "rgba(102, 126, 234, 0.5)",
-                },
-              },
-            }}
-          >
+          <TableContainer sx={tableContainerSx}>
             <Table sx={{ minWidth: 800 }}>
               <TableHead>
-                <TableRow
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    "& .MuiTableCell-head": {
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: { xs: "0.8rem", sm: "0.95rem" },
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      border: "none",
-                      whiteSpace: "nowrap",
-                    },
-                  }}
-                >
+                <TableRow sx={tableHeadRowSx}>
                   <TableCell>No</TableCell>
                   <TableCell>User</TableCell>
                   <TableCell>Action</TableCell>
@@ -362,472 +248,112 @@ const Audit = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <CircularProgress sx={{ color: "#667eea" }} />
+                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                      <CircularProgress sx={{ color: brand.green }} size={36} />
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
-                      </Alert>
-                      <Button
-                        variant="contained"
-                        onClick={fetchAuditLogs}
-                        sx={{
-                          background:
-                            "linear-gradient(45deg, #667eea, #764ba2)",
-                        }}
-                      >
+                      <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
+                      <Button variant="contained" onClick={fetchAuditLogs} sx={{ bgcolor: brand.green, "&:hover": { bgcolor: brand.greenLight } }}>
                         Retry
                       </Button>
                     </TableCell>
                   </TableRow>
                 ) : auditLogs.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Typography variant="h6" color="text.secondary">
-                        No audit logs found.
-                      </Typography>
+                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                      <HistoryIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2), mb: 1 }} />
+                      <Typography variant="body1" color="text.secondary" fontWeight={500}>No audit logs found.</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  auditLogs.map((log, idx) => (
-                    <TableRow
-                      key={log.id}
-                      sx={{
-                        "&:nth-of-type(even)": {
-                          backgroundColor: "rgba(102, 126, 234, 0.02)",
-                        },
-                        "&:hover": {
-                          backgroundColor: "rgba(102, 126, 234, 0.08)",
-                          transform: { xs: "none", sm: "scale(1.01)" },
-                        },
-                        transition: "all 0.2s ease",
-                        cursor: "pointer",
-                        "& .MuiTableCell-root": {
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          padding: { xs: "8px 4px", sm: "16px" },
-                        },
-                      }}
-                    >
-                      <TableCell sx={{ fontWeight: 600, color: "#667eea" }}>
-                        {page * rowsPerPage + idx + 1}
+                  auditLogs.map((log, idx) => {
+                    const actionStyle = getActionStyle(log.action);
+                    const statusStyle = getStatusStyle(log.status);
+                    return (
+                    <TableRow key={log.id} hover sx={tableRowSx}>
+                      <TableCell sx={{ fontWeight: 700, color: brand.navy, width: 48 }}>{page * rowsPerPage + idx + 1}</TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={600} color={brand.navy}>{log.user?.full_name || "System"}</Typography>
+                        <Typography variant="caption" color={brand.sidebarTextMuted}>{log.user?.email || "N/A"}</Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          sx={{ color: "#2c3e50" }}
-                        >
-                          {log.user?.full_name || "System"}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
-                          {log.user?.email || "N/A"}
-                        </Typography>
+                        <Chip label={formatActionText(log.action)} size="small" sx={{ fontWeight: 600, fontSize: "0.75rem", bgcolor: actionStyle.bg, color: actionStyle.color }} />
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={formatActionText(log.action)}
-                          color={getActionColor(log.action)}
-                          size="small"
-                          sx={{
-                            textTransform: "capitalize",
-                            fontWeight: 600,
-                            borderRadius: 2,
-                          }}
-                        />
+                        <Typography variant="body2" color={brand.sidebarTextMuted} fontWeight={500}>{formatResourceType(log.resource_type)}</Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#7f8c8d", fontWeight: 600 }}
-                        >
-                          {formatResourceType(log.resource_type)}
-                        </Typography>
+                        <Chip label={statusStyle.label} size="small" sx={{ fontWeight: 600, fontSize: "0.75rem", bgcolor: statusStyle.bg, color: statusStyle.color }} />
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={log.status}
-                          color={getStatusColor(log.status)}
-                          size="small"
-                          sx={{
-                            textTransform: "capitalize",
-                            fontWeight: 600,
-                            borderRadius: 2,
-                          }}
-                        />
+                        <Typography variant="body2" color={brand.sidebarTextMuted} fontWeight={500}>{formatDate(log.createdAt)}</Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#7f8c8d", fontWeight: 600 }}
-                        >
-                          {formatDate(log.createdAt)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Tooltip title="View Audit Log Details" arrow>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleViewLog(log)}
-                            sx={{
-                              color: "#27ae60",
-                              backgroundColor: "rgba(39, 174, 96, 0.1)",
-                              "&:hover": {
-                                backgroundColor: "rgba(39, 174, 96, 0.2)",
-                                transform: "scale(1.1)",
-                              },
-                              transition: "all 0.2s ease",
-                              borderRadius: 2,
-                            }}
-                          >
+                        <Tooltip title="View details" arrow>
+                          <IconButton size="small" onClick={() => handleViewLog(log)} sx={actionButtonSx.view}>
                             <ViewIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       </TableCell>
                     </TableRow>
-                  ))
+                  );
+                  })
                 )}
               </TableBody>
             </Table>
           </TableContainer>
-          <TablePagination
-            component="div"
-            count={totalLogs}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderTop: "1px solid rgba(102, 126, 234, 0.1)",
-              "& .MuiTablePagination-toolbar": {
-                color: "#667eea",
-                fontWeight: 600,
-              },
-              "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                {
-                  color: "#2c3e50",
-                  fontWeight: 600,
-                },
-            }}
-          />
+          <TablePagination component="div" count={totalLogs} page={page} onPageChange={handleChangePage} rowsPerPage={rowsPerPage} onRowsPerPageChange={handleChangeRowsPerPage} rowsPerPageOptions={[5, 10, 25, 50]} sx={paginationSx} />
         </Box>
 
-        {/* Audit Log Details Dialog */}
-        <Dialog
-          open={openViewDialog}
-          onClose={() => {
-            setOpenViewDialog(false);
-            setSelectedLog(null);
-          }}
-          maxWidth="sm"
-          fullWidth
-          sx={{
-            "& .MuiDialog-paper": {
-              borderRadius: 4,
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
-              maxHeight: "85vh",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(102, 126, 234, 0.2)",
-              overflow: "hidden",
-            },
-            "& .MuiBackdrop-root": {
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-            },
-          }}
-        >
-          <DialogTitle
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              p: 3,
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                top: -20,
-                right: -20,
-                width: 100,
-                height: 100,
-                background: "rgba(255, 255, 255, 0.1)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: -15,
-                left: -15,
-                width: 80,
-                height: 80,
-                background: "rgba(255, 255, 255, 0.05)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <HistoryIcon
-              sx={{ position: "relative", zIndex: 1, fontSize: 28 }}
-            />
-            <Box sx={{ position: "relative", zIndex: 1 }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 800,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                }}
-              >
-                Audit Log Details
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                View complete audit trail information
-              </Typography>
-            </Box>
-          </DialogTitle>
-          <DialogContent
-            sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto" }}
-          >
+        <Dialog open={openViewDialog} onClose={() => { setOpenViewDialog(false); setSelectedLog(null); }} maxWidth="sm" fullWidth PaperProps={{ sx: dialogPaperSx }}>
+          <BrandedDialogTitle icon={HistoryIcon} title="Audit Log Details" subtitle="View complete audit trail information" />
+          <DialogContent sx={{ p: 3, bgcolor: brand.sidebarBg, maxHeight: "70vh", overflowY: "auto" }}>
             {selectedLog && (
               <Stack spacing={2}>
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    User
-                  </Typography>
-                  <Typography variant="body1" fontWeight="600">
-                    {selectedLog.user?.full_name || "System"}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {selectedLog.user?.email || "N/A"}
-                  </Typography>
-                </Box>
-
-                <Divider />
-
-                <Box
-                  display="flex"
-                  flexDirection={{ xs: "column", sm: "row" }}
-                  gap={2}
-                >
-                  <Box flex={1}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Action
-                    </Typography>
-                    <Chip
-                      label={formatActionText(selectedLog.action)}
-                      color={getActionColor(selectedLog.action)}
-                      size="small"
-                      sx={{ mt: 0.5 }}
-                    />
+                <DetailRow icon={PersonIcon} label="USER" value={selectedLog.user?.full_name || "System"} />
+                <Typography variant="caption" color={brand.sidebarTextMuted} sx={{ mt: -1, ml: 5 }}>{selectedLog.user?.email || "N/A"}</Typography>
+                <Box sx={dateGridSx}>
+                  <Box>
+                    <Typography variant="caption" color={brand.sidebarTextMuted} fontWeight={600}>ACTION</Typography>
+                    <Chip label={formatActionText(selectedLog.action)} size="small" sx={{ mt: 0.5, fontWeight: 600, ...getActionStyle(selectedLog.action), bgcolor: getActionStyle(selectedLog.action).bg }} />
                   </Box>
-                  <Box flex={1}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Status
-                    </Typography>
-                    <Chip
-                      label={selectedLog.status}
-                      color={getStatusColor(selectedLog.status)}
-                      size="small"
-                      sx={{ mt: 0.5 }}
-                    />
+                  <Box>
+                    <Typography variant="caption" color={brand.sidebarTextMuted} fontWeight={600}>STATUS</Typography>
+                    <Chip label={getStatusStyle(selectedLog.status).label} size="small" sx={{ mt: 0.5, fontWeight: 600, bgcolor: getStatusStyle(selectedLog.status).bg, color: getStatusStyle(selectedLog.status).color }} />
                   </Box>
                 </Box>
-
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Resource Type
-                  </Typography>
-                  <Typography variant="body1">
-                    {formatResourceType(selectedLog.resource_type)}
-                  </Typography>
+                <DetailRow label="RESOURCE TYPE" value={formatResourceType(selectedLog.resource_type)} />
+                <Box sx={detailCardSx}>
+                  <Typography variant="caption" color={brand.sidebarTextMuted} fontWeight={600}>RESOURCE ID</Typography>
+                  <Typography variant="body2" sx={{ fontFamily: "monospace", wordBreak: "break-all", mt: 0.5 }}>{selectedLog.resource_id || "N/A"}</Typography>
                 </Box>
-
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Resource ID
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontFamily: "monospace",
-                      backgroundColor: "rgba(102, 126, 234, 0.05)",
-                      p: 1,
-                      borderRadius: 1,
-                      wordBreak: "break-all",
-                    }}
-                  >
-                    {selectedLog.resource_id || "N/A"}
-                  </Typography>
+                <Box sx={detailCardSx}>
+                  <Typography variant="caption" color={brand.sidebarTextMuted} fontWeight={600}>DESCRIPTION</Typography>
+                  <Typography variant="body2" color={brand.navy} sx={{ mt: 0.5, whiteSpace: "pre-wrap" }}>{selectedLog.description}</Typography>
                 </Box>
-
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Description
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mt: 1,
-                      p: 2,
-                      backgroundColor: "rgba(102, 126, 234, 0.05)",
-                      borderRadius: 2,
-                      border: "1px solid rgba(102, 126, 234, 0.1)",
-                    }}
-                  >
-                    {selectedLog.description}
-                  </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    IP Address
-                  </Typography>
-                  <Typography variant="body2" fontFamily="monospace">
-                    {selectedLog.ip_address || "N/A"}
-                  </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Date & Time
-                  </Typography>
-                  <Typography variant="body2">
-                    {formatDate(selectedLog.createdAt)}
-                  </Typography>
-                </Box>
-
+                <DetailRow label="IP ADDRESS" value={selectedLog.ip_address || "N/A"} />
+                <DetailRow icon={ScheduleIcon} label="DATE & TIME" value={formatDate(selectedLog.createdAt)} />
                 {selectedLog.old_values && (
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Old Values
-                    </Typography>
-                    <Paper
-                      sx={{
-                        mt: 1,
-                        p: 2,
-                        backgroundColor: "rgba(231, 76, 60, 0.05)",
-                        borderRadius: 2,
-                        border: "1px solid rgba(231, 76, 60, 0.2)",
-                      }}
-                    >
-                      <pre
-                        style={{
-                          margin: 0,
-                          fontSize: "0.875rem",
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {JSON.stringify(selectedLog.old_values, null, 2)}
-                      </pre>
-                    </Paper>
+                  <Box sx={{ ...detailCardSx, bgcolor: alpha("#c62828", 0.04), borderColor: alpha("#c62828", 0.2) }}>
+                    <Typography variant="caption" color={brand.sidebarTextMuted} fontWeight={600}>OLD VALUES</Typography>
+                    <pre style={{ margin: "8px 0 0", fontSize: "0.8rem", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{JSON.stringify(selectedLog.old_values, null, 2)}</pre>
                   </Box>
                 )}
-
                 {selectedLog.new_values && (
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      New Values
-                    </Typography>
-                    <Paper
-                      sx={{
-                        mt: 1,
-                        p: 2,
-                        backgroundColor: "rgba(39, 174, 96, 0.05)",
-                        borderRadius: 2,
-                        border: "1px solid rgba(39, 174, 96, 0.2)",
-                      }}
-                    >
-                      <pre
-                        style={{
-                          margin: 0,
-                          fontSize: "0.875rem",
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {JSON.stringify(selectedLog.new_values, null, 2)}
-                      </pre>
-                    </Paper>
+                  <Box sx={{ ...detailCardSx, bgcolor: alpha(brand.green, 0.04), borderColor: alpha(brand.green, 0.2) }}>
+                    <Typography variant="caption" color={brand.sidebarTextMuted} fontWeight={600}>NEW VALUES</Typography>
+                    <pre style={{ margin: "8px 0 0", fontSize: "0.8rem", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{JSON.stringify(selectedLog.new_values, null, 2)}</pre>
                   </Box>
                 )}
-
-                {selectedLog.metadata && (
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Metadata
-                    </Typography>
-                    <Paper
-                      sx={{
-                        mt: 1,
-                        p: 2,
-                        backgroundColor: "rgba(102, 126, 234, 0.05)",
-                        borderRadius: 2,
-                        border: "1px solid rgba(102, 126, 234, 0.1)",
-                      }}
-                    >
-                      <pre
-                        style={{
-                          margin: 0,
-                          fontSize: "0.875rem",
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {JSON.stringify(selectedLog.metadata, null, 2)}
-                      </pre>
-                    </Paper>
-                  </Box>
-                )}
-
-                {selectedLog.error_message && (
-                  <Box>
-                    <Typography variant="subtitle2" color="error">
-                      Error Message
-                    </Typography>
-                    <Alert severity="error" sx={{ mt: 1 }}>
-                      {selectedLog.error_message}
-                    </Alert>
-                  </Box>
-                )}
+                {selectedLog.error_message && <Alert severity="error">{selectedLog.error_message}</Alert>}
               </Stack>
             )}
           </DialogContent>
-          <DialogActions
-            sx={{ p: 3, gap: 2, backgroundColor: "rgba(102, 126, 234, 0.05)" }}
-          >
-            <Button
-              onClick={() => {
-                setOpenViewDialog(false);
-                setSelectedLog(null);
-              }}
-              variant="outlined"
-              sx={{
-                borderColor: "#667eea",
-                color: "#667eea",
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                "&:hover": {
-                  borderColor: "#5a6fd8",
-                  backgroundColor: "rgba(102, 126, 234, 0.1)",
-                },
-              }}
-            >
-              Close
-            </Button>
+          <DialogActions sx={dialogActionsSx}>
+            <Button onClick={() => { setOpenViewDialog(false); setSelectedLog(null); }} variant="outlined" sx={cancelButtonSx}>Close</Button>
           </DialogActions>
         </Dialog>
       </Paper>

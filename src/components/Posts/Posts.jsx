@@ -32,7 +32,42 @@ import {
   Article as NewsIcon,
   Event as EventIcon,
 } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
+import { brand } from "../../brandColors";
+import { fieldSx } from "../Projects/projectFormUi";
+import {
+  listPaperSx,
+  ListPageHeader,
+  createButtonSx,
+  tableContainerSx,
+  tableHeadRowSx,
+  tableRowSx,
+  paginationSx,
+  actionButtonSx,
+  filterBarSx,
+} from "../Util/adminListUi";
+
+const getTypeStyle = (type) =>
+  type === "news"
+    ? { bg: alpha(brand.blue, 0.12), color: brand.blue, border: alpha(brand.blue, 0.35), label: "News" }
+    : { bg: alpha(brand.gold, 0.15), color: "#b8860b", border: alpha(brand.gold, 0.4), label: "Event" };
+
+const getStatusStyle = (status, type) => {
+  const newsStyles = {
+    draft: { bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted, label: "Draft" },
+    published: { bg: alpha(brand.green, 0.14), color: brand.greenDark, label: "Published" },
+    archived: { bg: alpha("#757575", 0.12), color: "#616161", label: "Archived" },
+  };
+  const eventStyles = {
+    upcoming: { bg: alpha(brand.blue, 0.12), color: brand.blue, label: "Upcoming" },
+    ongoing: { bg: alpha(brand.gold, 0.18), color: "#e65100", label: "Ongoing" },
+    completed: { bg: alpha(brand.green, 0.14), color: brand.greenDark, label: "Completed" },
+    cancelled: { bg: alpha("#c62828", 0.1), color: "#c62828", label: "Cancelled" },
+  };
+  const styles = type === "news" ? newsStyles : eventStyles;
+  return styles[status] || { bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted, label: status };
+};
 
 const Posts = () => {
   const navigate = useNavigate();
@@ -66,15 +101,9 @@ const Posts = () => {
         limit: rowsPerPage.toString(),
       });
 
-      if (typeFilter !== "all") {
-        queryParams.append("type", typeFilter);
-      }
-      if (statusFilter !== "all") {
-        queryParams.append("status", statusFilter);
-      }
-      if (searchQuery) {
-        queryParams.append("search", searchQuery);
-      }
+      if (typeFilter !== "all") queryParams.append("type", typeFilter);
+      if (statusFilter !== "all") queryParams.append("status", statusFilter);
+      if (searchQuery) queryParams.append("search", searchQuery);
 
       const response = await fetch(`/api/posts?${queryParams}`, {
         method: "GET",
@@ -99,21 +128,11 @@ const Posts = () => {
     }
   };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
+  const handleChangePage = (event, newPage) => setPage(newPage);
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-  };
-
-  const handleViewPost = (post) => {
-    navigate(`/posts/${post.id}`);
-  };
-
-  const handleEditPost = (post) => {
-    navigate(`/posts/${post.id}/edit`);
   };
 
   const handleDeletePost = async (post) => {
@@ -122,82 +141,51 @@ const Posts = () => {
       text: `Do you want to delete "${post.title}"?`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      confirmButtonColor: "#c62828",
+      cancelButtonColor: brand.navy,
       confirmButtonText: "Yes, delete it!",
       cancelButtonText: "Cancel",
-      customClass: {
-        container: "swal-z-index-fix",
-      },
-      didOpen: () => {
-        const swalContainer = document.querySelector(".swal-z-index-fix");
-        if (swalContainer) {
-          swalContainer.style.zIndex = "9999";
-        }
-      },
     });
 
-    if (result.isConfirmed) {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
+    if (!result.isConfirmed) return;
 
-        if (!token) {
-          setError("No authentication token found. Please login again.");
-          return;
-        }
-
-        const response = await fetch(`/api/posts/${post.id}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.message || "Failed to delete post");
-        }
-
-        fetchPosts();
-
-        Swal.fire({
-          icon: "success",
-          title: "Deleted!",
-          text: "Post has been deleted successfully.",
-          timer: 1500,
-          showConfirmButton: false,
-          customClass: {
-            container: "swal-z-index-fix",
-          },
-          didOpen: () => {
-            const swalContainer = document.querySelector(".swal-z-index-fix");
-            if (swalContainer) {
-              swalContainer.style.zIndex = "9999";
-            }
-          },
-        });
-      } catch (err) {
-        console.error("Error deleting post:", err);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Failed to delete post. Please try again.",
-          customClass: {
-            container: "swal-z-index-fix",
-          },
-          didOpen: () => {
-            const swalContainer = document.querySelector(".swal-z-index-fix");
-            if (swalContainer) {
-              swalContainer.style.zIndex = "9999";
-            }
-          },
-        });
-      } finally {
-        setLoading(false);
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No authentication token found. Please login again.");
+        return;
       }
+
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const deleteResult = await response.json();
+      if (!response.ok) throw new Error(deleteResult.message || "Failed to delete post");
+
+      fetchPosts();
+      Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: "Post has been deleted successfully.",
+        timer: 1500,
+        showConfirmButton: false,
+        confirmButtonColor: brand.green,
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to delete post. Please try again.",
+        confirmButtonColor: brand.green,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -210,190 +198,35 @@ const Posts = () => {
   };
 
   const getPostImage = (post) => {
-    if (post.type === "news" && post.images && Array.isArray(post.images) && post.images.length > 0) {
+    if (post.type === "news" && post.images?.length > 0) {
       const firstImage = post.images[0];
-      const path = typeof firstImage === 'object' ? firstImage.path : firstImage;
+      const path = typeof firstImage === "object" ? firstImage.path : firstImage;
       return buildImageUrl(path);
     }
-    if (post.type === "event" && post.banner) {
-      return buildImageUrl(post.banner);
-    }
+    if (post.type === "event" && post.banner) return buildImageUrl(post.banner);
     return null;
   };
 
-  const getStatusLabel = (status, type) => {
-    if (type === "news") {
-      const labels = {
-        draft: "Draft",
-        published: "Published",
-        archived: "Archived",
-      };
-      return labels[status] || status;
-    } else {
-      const labels = {
-        upcoming: "Upcoming",
-        ongoing: "Ongoing",
-        completed: "Completed",
-        cancelled: "Cancelled",
-      };
-      return labels[status] || status;
-    }
-  };
-
-  const getStatusColor = (status, type) => {
-    if (type === "news") {
-      const colors = {
-        draft: "#9e9e9e",
-        published: "#4caf50",
-        archived: "#757575",
-      };
-      return colors[status] || "#667eea";
-    } else {
-      const colors = {
-        upcoming: "#2196f3",
-        ongoing: "#ff9800",
-        completed: "#4caf50",
-        cancelled: "#f44336",
-      };
-      return colors[status] || "#667eea";
-    }
-  };
-
-  if (loading && posts.length === 0) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-      >
-        <CircularProgress size={60} />
-      </Box>
-    );
-  }
-
-  if (error && posts.length === 0) {
-    return (
-      <Box p={3}>
-        <Alert severity="error">{error}</Alert>
-      </Box>
-    );
-  }
-
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 0,
-          overflow: "hidden",
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(10px)",
-          border: "none",
-          boxShadow: "none",
-          minHeight: "100vh",
-        }}
-      >
-        {/* Header Section */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            display="flex"
-            flexDirection={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            gap={{ xs: 2, sm: 0 }}
-            position="relative"
-            zIndex={1}
-          >
-            <Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 800,
-                  mb: 1,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "1.1rem", sm: "1.3rem", md: "1.5rem" },
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Posts Management
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                Manage news and events for the public portal
-              </Typography>
-            </Box>
+    <Box>
+      <Paper elevation={0} sx={listPaperSx}>
+        <ListPageHeader
+          icon={NewsIcon}
+          title="Posts Management"
+          subtitle="Manage news and events for the public portal"
+          action={
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => navigate("/posts/create")}
-              sx={{
-                background: "linear-gradient(45deg, #FF6B6B, #4ECDC4)",
-                borderRadius: 3,
-                px: { xs: 2, sm: 3 },
-                py: 1.2,
-                fontSize: { xs: "0.75rem", sm: "0.85rem" },
-                fontWeight: 600,
-                textTransform: "none",
-                boxShadow: "0 8px 25px rgba(255, 107, 107, 0.3)",
-                width: { xs: "100%", sm: "auto" },
-                "&:hover": {
-                  background: "linear-gradient(45deg, #FF5252, #26A69A)",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 12px 35px rgba(255, 107, 107, 0.4)",
-                },
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-              }}
+              sx={createButtonSx}
             >
               Create New Post
             </Button>
-          </Box>
-        </Box>
+          }
+        />
 
-        {/* Filters Section */}
-        <Box
-          sx={{
-            p: 2,
-            backgroundColor: "rgba(255, 255, 255, 0.8)",
-            borderBottom: "1px solid rgba(102, 126, 234, 0.1)",
-          }}
-        >
+        <Box sx={filterBarSx}>
           <Box
             display="flex"
             flexDirection={{ xs: "column", sm: "row" }}
@@ -408,9 +241,9 @@ const Posts = () => {
                 setPage(0);
               }}
               size="small"
-              sx={{ flex: 1, minWidth: 200 }}
+              sx={{ flex: 1, minWidth: 200, ...fieldSx }}
             />
-            <FormControl size="small" sx={{ minWidth: 150 }}>
+            <FormControl size="small" sx={{ minWidth: 150, ...fieldSx }}>
               <InputLabel>Type</InputLabel>
               <Select
                 value={typeFilter}
@@ -425,7 +258,7 @@ const Posts = () => {
                 <MenuItem value="event">Events</MenuItem>
               </Select>
             </FormControl>
-            <FormControl size="small" sx={{ minWidth: 150 }}>
+            <FormControl size="small" sx={{ minWidth: 150, ...fieldSx }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={statusFilter}
@@ -448,41 +281,17 @@ const Posts = () => {
           </Box>
         </Box>
 
-        {/* Content Section */}
-        <Box
-          sx={{ p: { xs: 1, sm: 2, md: 3 }, minHeight: "calc(100vh - 300px)" }}
-        >
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
 
-          {/* Posts Table */}
-          <TableContainer
-            sx={{
-              borderRadius: 3,
-              overflowX: "auto",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              border: "1px solid rgba(102, 126, 234, 0.1)",
-            }}
-          >
+          <TableContainer sx={tableContainerSx}>
             <Table sx={{ minWidth: 800 }}>
               <TableHead>
-                <TableRow
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    "& .MuiTableCell-head": {
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: { xs: "0.8rem", sm: "0.95rem" },
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      border: "none",
-                    },
-                  }}
-                >
+                <TableRow sx={tableHeadRowSx}>
                   <TableCell>No</TableCell>
                   <TableCell>Image</TableCell>
                   <TableCell>Type</TableCell>
@@ -495,174 +304,130 @@ const Posts = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <CircularProgress sx={{ color: "#667eea" }} />
-                    </TableCell>
-                  </TableRow>
-                ) : error ? (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Typography color="error" variant="h6">
-                        {error}
-                      </Typography>
+                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                      <CircularProgress sx={{ color: brand.green }} size={36} />
                     </TableCell>
                   </TableRow>
                 ) : posts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Typography variant="h6" color="text.secondary">
+                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                      <NewsIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2), mb: 1 }} />
+                      <Typography variant="body1" color="text.secondary" fontWeight={500}>
                         No posts found.
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  posts.map((post, idx) => (
-                    <TableRow
-                      key={post.id}
-                      sx={{
-                        "&:nth-of-type(even)": {
-                          backgroundColor: "rgba(102, 126, 234, 0.02)",
-                        },
-                        "&:hover": {
-                          backgroundColor: "rgba(102, 126, 234, 0.08)",
-                        },
-                        transition: "all 0.2s ease",
-                        "& .MuiTableCell-root": {
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          padding: { xs: "8px 4px", sm: "16px" },
-                        },
-                      }}
-                    >
-                      <TableCell sx={{ fontWeight: 600, color: "#667eea" }}>
-                        {page * rowsPerPage + idx + 1}
-                      </TableCell>
-                      <TableCell>
-                        <Avatar
-                          src={getPostImage(post)}
-                          alt={post.title}
-                          sx={{
-                            width: 50,
-                            height: 50,
-                            bgcolor: post.type === "news" ? "#2196f3" : "#ff9800",
-                          }}
-                        >
-                          {post.type === "news" ? <NewsIcon /> : <EventIcon />}
-                        </Avatar>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={post.type === "news" ? "News" : "Event"}
-                          size="small"
-                          sx={{
-                            fontWeight: 600,
-                            borderRadius: 2,
-                            backgroundColor:
-                              post.type === "news" ? "#2196f3" : "#ff9800",
-                            color: "white",
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          sx={{ color: "#2c3e50" }}
-                        >
-                          {post.title}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: "#7f8c8d",
-                            maxWidth: 300,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                          }}
-                        >
-                          {post.content}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={getStatusLabel(post.status, post.type)}
-                          size="small"
-                          sx={{
-                            fontWeight: 600,
-                            borderRadius: 2,
-                            backgroundColor: getStatusColor(post.status, post.type),
-                            color: "white",
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box display="flex" gap={0.5}>
-                          <Tooltip title="View Post Details" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleViewPost(post)}
-                              sx={{
-                                color: "#27ae60",
-                                backgroundColor: "rgba(39, 174, 96, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(39, 174, 96, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
-                              <ViewIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Edit Post" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleEditPost(post)}
-                              sx={{
-                                color: "#3498db",
-                                backgroundColor: "rgba(52, 152, 219, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(52, 152, 219, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete Post" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDeletePost(post)}
-                              sx={{
-                                color: "#e74c3c",
-                                backgroundColor: "rgba(231, 76, 60, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(231, 76, 60, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  posts.map((post, idx) => {
+                    const typeStyle = getTypeStyle(post.type);
+                    const statusStyle = getStatusStyle(post.status, post.type);
+
+                    return (
+                      <TableRow key={post.id} hover sx={tableRowSx}>
+                        <TableCell sx={{ fontWeight: 700, color: brand.navy, width: 48 }}>
+                          {page * rowsPerPage + idx + 1}
+                        </TableCell>
+                        <TableCell>
+                          <Avatar
+                            src={getPostImage(post)}
+                            alt={post.title}
+                            sx={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: 1.5,
+                              bgcolor: typeStyle.bg,
+                              color: typeStyle.color,
+                              border: `1px solid ${typeStyle.border}`,
+                            }}
+                          >
+                            {post.type === "news" ? <NewsIcon /> : <EventIcon />}
+                          </Avatar>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={typeStyle.label}
+                            size="small"
+                            sx={{
+                              fontWeight: 600,
+                              fontSize: "0.75rem",
+                              bgcolor: typeStyle.bg,
+                              color: typeStyle.color,
+                              border: `1px solid ${typeStyle.border}`,
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600} color={brand.navy}>
+                            {post.title}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            color={brand.sidebarTextMuted}
+                            sx={{
+                              maxWidth: 280,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                            }}
+                          >
+                            {post.content}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={statusStyle.label}
+                            size="small"
+                            sx={{
+                              fontWeight: 600,
+                              fontSize: "0.75rem",
+                              bgcolor: statusStyle.bg,
+                              color: statusStyle.color,
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" gap={0.5}>
+                            <Tooltip title="View details" arrow>
+                              <IconButton
+                                size="small"
+                                onClick={() => navigate(`/posts/${post.id}`)}
+                                sx={actionButtonSx.view}
+                              >
+                                <ViewIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Edit post" arrow>
+                              <IconButton
+                                size="small"
+                                onClick={() => navigate(`/posts/${post.id}/edit`)}
+                                sx={actionButtonSx.edit}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete post" arrow>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDeletePost(post)}
+                                sx={actionButtonSx.delete}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
           </TableContainer>
+
           <TablePagination
             component="div"
             count={totalPosts}
@@ -671,10 +436,7 @@ const Posts = () => {
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
-            sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderTop: "1px solid rgba(102, 126, 234, 0.1)",
-            }}
+            sx={paginationSx}
           />
         </Box>
       </Paper>
@@ -683,4 +445,3 @@ const Posts = () => {
 };
 
 export default Posts;
-

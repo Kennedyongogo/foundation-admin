@@ -32,11 +32,12 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import { Box, Typography, Tooltip } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import Header from "./Header/Header";
 import { brand, appBarGradient } from "../brandColors";
 
 const drawerWidth = 280;
+const drawerWidthMini = 96;
 
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -53,10 +54,7 @@ const closedMixin = (theme) => ({
     duration: theme.transitions.duration.leavingScreen,
   }),
   overflowX: "hidden",
-  width: `calc(${theme.spacing(7)} + 1px)`,
-  [theme.breakpoints.up("sm")]: {
-    width: `calc(${theme.spacing(8)} + 1px)`,
-  },
+  width: drawerWidthMini,
 });
 
 const DrawerHeader = styled("div")(({ theme }) => ({
@@ -76,13 +74,13 @@ const AppBar = styled(MuiAppBar, {
   background: appBarGradient,
   boxShadow: `0 2px 16px ${alpha(brand.navyDark, 0.35)}`,
   borderBottom: `2px solid ${brand.gold}`,
+  marginLeft: open ? drawerWidth : drawerWidthMini,
+  width: `calc(100% - ${open ? drawerWidth : drawerWidthMini}px)`,
   transition: theme.transitions.create(["width", "margin"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
   ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
     transition: theme.transitions.create(["width", "margin"], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -106,6 +104,12 @@ const Drawer = styled(MuiDrawer, {
     boxSizing: "border-box",
     boxShadow: "2px 0 12px rgba(14, 59, 94, 0.06)",
     ...(open ? openedMixin(theme) : closedMixin(theme)),
+    ...(!open && {
+      whiteSpace: "normal",
+      "& .MuiListItemButton-root": {
+        whiteSpace: "normal",
+      },
+    }),
     "& .MuiListItemButton-root": {
       color: brand.sidebarText,
     },
@@ -134,6 +138,46 @@ const Drawer = styled(MuiDrawer, {
 
 const isPathActive = (pathname, path) =>
   pathname === path || pathname.startsWith(`${path}/`);
+
+const collapsedNavItemSx = (active) => ({
+  mx: 0.5,
+  mb: 0.5,
+  borderRadius: 2,
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  py: 1,
+  px: 0.5,
+  minHeight: 72,
+  whiteSpace: "normal",
+  textAlign: "center",
+  color: brand.sidebarText,
+  bgcolor: active ? alpha(brand.green, 0.14) : "transparent",
+  borderLeft: "none",
+  borderTop: active ? `3px solid ${brand.green}` : "3px solid transparent",
+  transition: "all 0.2s ease",
+  "&:hover": {
+    bgcolor: active ? alpha(brand.green, 0.18) : alpha(brand.navy, 0.06),
+  },
+  "& .MuiListItemIcon-root": {
+    color: active ? `${brand.green} !important` : `${brand.sidebarIcon} !important`,
+    minWidth: "auto",
+    mb: 0.25,
+    justifyContent: "center",
+  },
+  "& .MuiListItemText-root": {
+    margin: 0,
+    textAlign: "center",
+  },
+  "& .MuiListItemText-primary": {
+    color: `${active ? brand.navy : brand.sidebarText} !important`,
+    fontWeight: active ? 700 : 500,
+    fontSize: "0.625rem",
+    lineHeight: 1.2,
+    whiteSpace: "normal",
+    textAlign: "center",
+  },
+});
 
 const navItemSx = (active) => ({
   mx: 1,
@@ -250,31 +294,22 @@ const Navbar = (props) => {
 
   const renderNavButton = (item, isSub = false) => {
     const active = isPathActive(location.pathname, item.path);
-    const sx = isSub ? subNavItemSx(active) : navItemSx(active);
-    const button = (
-      <ListItemButton
-        onClick={() => navigate(item.path)}
-        selected={active}
-        sx={sx}
-      >
-        <ListItemIcon>{item.icon}</ListItemIcon>
-        <ListItemText primary={item.text} />
-      </ListItemButton>
-    );
-
-    if (!open) {
-      return (
-        <Tooltip title={item.text} placement="right" arrow>
-          <ListItem disablePadding sx={{ display: "block" }}>
-            {button}
-          </ListItem>
-        </Tooltip>
-      );
-    }
+    const sx = !open
+      ? collapsedNavItemSx(active)
+      : isSub
+        ? subNavItemSx(active)
+        : navItemSx(active);
 
     return (
       <ListItem disablePadding sx={{ display: "block" }}>
-        {button}
+        <ListItemButton
+          onClick={() => navigate(item.path)}
+          selected={active}
+          sx={sx}
+        >
+          <ListItemIcon>{item.icon}</ListItemIcon>
+          <ListItemText primary={item.text} />
+        </ListItemButton>
       </ListItem>
     );
   };
@@ -370,16 +405,13 @@ const Navbar = (props) => {
           {menuItems.map((item) => (
             <Fragment key={item.text}>
               {item.subItems ? (
-                <>
-                  {!open ? (
-                    <Tooltip title={`${item.text} — expand menu`} placement="right" arrow>
-                      <ListItem disablePadding sx={{ display: "block" }}>
-                        <ListItemButton onClick={handleDrawerOpen} sx={navItemSx(false)}>
-                          <ListItemIcon>{item.icon}</ListItemIcon>
-                        </ListItemButton>
-                      </ListItem>
-                    </Tooltip>
-                  ) : (
+                !open ? (
+                  item.subItems.map((subItem) => (
+                    <Fragment key={subItem.text}>
+                      {renderNavButton(subItem, true)}
+                    </Fragment>
+                  ))
+                ) : (
                     <>
                       <ListItem disablePadding sx={{ display: "block" }}>
                         <ListItemButton
@@ -407,8 +439,7 @@ const Navbar = (props) => {
                         </List>
                       )}
                     </>
-                  )}
-                </>
+                  )
               ) : (
                 renderNavButton(item)
               )}
@@ -420,33 +451,39 @@ const Navbar = (props) => {
 
         <List sx={{ pb: 1.5 }}>
           <ListItem disablePadding sx={{ display: "block" }}>
-            <Tooltip title="Logout" placement="right" arrow disableHoverListener={open}>
-              <ListItemButton
-                onClick={logout}
-                sx={{
+            <ListItemButton
+              onClick={logout}
+              sx={{
+                ...(!open ? collapsedNavItemSx(false) : {
                   mx: 1,
                   mt: 0.5,
                   borderRadius: 2,
-                  color: "#c62828",
-                  "&:hover": {
-                    bgcolor: alpha("#c62828", 0.08),
-                  },
-                  "& .MuiListItemIcon-root": {
-                    color: "#c62828 !important",
-                    minWidth: 40,
-                  },
-                  "& .MuiListItemText-primary": {
-                    color: "#c62828 !important",
-                    fontWeight: 600,
-                  },
-                }}
-              >
-                <ListItemIcon>
-                  <Logout />
-                </ListItemIcon>
-                {open && <ListItemText primary="Logout" />}
-              </ListItemButton>
-            </Tooltip>
+                }),
+                color: "#c62828",
+                "&:hover": {
+                  bgcolor: alpha("#c62828", 0.08),
+                },
+                "& .MuiListItemIcon-root": {
+                  color: "#c62828 !important",
+                  ...(!open ? { minWidth: "auto" } : { minWidth: 40 }),
+                },
+                "& .MuiListItemText-primary": {
+                  color: "#c62828 !important",
+                  fontWeight: 600,
+                  ...(!open && {
+                    fontSize: "0.625rem",
+                    lineHeight: 1.2,
+                    whiteSpace: "normal",
+                    textAlign: "center",
+                  }),
+                },
+              }}
+            >
+              <ListItemIcon>
+                <Logout />
+              </ListItemIcon>
+              <ListItemText primary="Logout" />
+            </ListItemButton>
           </ListItem>
         </List>
       </Drawer>

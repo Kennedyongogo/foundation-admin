@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import {
   Box,
   Stack,
@@ -39,6 +39,16 @@ import {
   Work as WorkIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { alpha } from "@mui/material/styles";
+import { brand } from "../brandColors";
+import {
+  fieldSx,
+  sectionCardSx,
+  SectionHeader,
+  outerPaperSx,
+  pageHeaderSx,
+} from "../components/Projects/projectFormUi";
+import { saveButtonSx, cancelButtonSx } from "../components/Util/adminListUi";
 
 export default function Settings({ user }) {
   const navigate = useNavigate();
@@ -271,692 +281,128 @@ export default function Settings({ user }) {
   };
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 0,
-          overflow: "hidden",
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(10px)",
-          border: "none",
-          boxShadow: "none",
-          minHeight: "100vh",
-        }}
-      >
-        {/* Header Section */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            display="flex"
-            flexDirection={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            gap={{ xs: 2, sm: 0 }}
-            position="relative"
-            zIndex={1}
-          >
+    <Box>
+      <Paper elevation={0} sx={outerPaperSx}>
+        <Box sx={pageHeaderSx}>
+          <Box sx={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", bgcolor: alpha("#fff", 0.06) }} />
+          <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} gap={2} sx={{ position: "relative", zIndex: 1 }}>
             <Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 800,
-                  mb: 1,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
-                }}
-              >
-                Account Settings
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                Manage your profile and security settings
-              </Typography>
+              <Typography variant="h5" fontWeight={800} sx={{ fontSize: { xs: "1.25rem", md: "1.5rem" } }}>Account Settings</Typography>
+              <Typography variant="body2" sx={{ opacity: 0.88, mt: 0.5 }}>Manage your profile and security settings</Typography>
             </Box>
-            <Box display="flex" alignItems="center" gap={2}>
-              <Chip
-                icon={<PersonIcon />}
-                label={user?.role || "Admin"}
-                sx={{
-                  background: "rgba(255, 255, 255, 0.2)",
-                  color: "white",
-                  fontWeight: 600,
-                  borderRadius: 3,
-                  px: 2,
-                }}
-              />
-            </Box>
+            <Chip icon={<PersonIcon />} label={user?.role || "Admin"} sx={{ bgcolor: alpha("#fff", 0.15), color: "#fff", fontWeight: 600, border: `1px solid ${alpha("#fff", 0.25)}` }} />
           </Box>
         </Box>
 
-        {/* Content Section */}
-        <Box
-          sx={{ p: { xs: 1, sm: 2, md: 3 }, minHeight: "calc(100vh - 200px)" }}
-        >
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
           <Stack spacing={3}>
-            {/* User Details Card */}
-            <Card
-              sx={{
-                borderRadius: 3,
-                boxShadow: "0 8px 25px rgba(102, 126, 234, 0.15)",
-                background: "rgba(255, 255, 255, 0.9)",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(102, 126, 234, 0.1)",
-                overflow: "hidden",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 12px 35px rgba(102, 126, 234, 0.2)",
-                },
-              }}
-            >
-              <CardHeader
-                sx={{
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  color: "white",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
-              >
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: -20,
-                    right: -20,
-                    width: 100,
-                    height: 100,
-                    background: "rgba(255, 255, 255, 0.1)",
-                    borderRadius: "50%",
-                    zIndex: 0,
-                  }}
-                />
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  gap={2}
-                  sx={{ position: "relative", zIndex: 1 }}
-                >
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: "50%",
-                      backgroundColor: "rgba(255, 255, 255, 0.2)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <PersonIcon sx={{ fontSize: 28 }} />
-                  </Box>
-                  <Box>
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontWeight: 800,
-                        textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                      }}
-                    >
-                      Profile Information
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Update your personal details
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardHeader>
-              <CardContent sx={{ p: 3 }}>
-                <Stack spacing={3}>
+            <Paper elevation={0} sx={sectionCardSx}>
+              <SectionHeader icon={PersonIcon} title="Profile Information" />
+              <Box sx={{ p: 3 }}>
+                <Stack spacing={2.5}>
                   {[
-                    { field: "Name", label: "Full Name", icon: <PersonIcon />, disabled: false },
-                    { field: "Email", label: "Email", icon: <EmailIcon />, disabled: true },
-                    {
-                      field: "PhoneNumber",
-                      label: "Phone Number",
-                      icon: <PhoneIcon />,
-                      disabled: false,
-                    },
-                    {
-                      field: "Position",
-                      label: "Position",
-                      icon: <WorkIcon />,
-                      disabled: false,
-                    },
-                    {
-                      field: "Role",
-                      label: "Role",
-                      icon: <WorkIcon />,
-                      disabled: true,
-                    },
+                    { field: "Name", label: "Full Name", icon: <PersonIcon fontSize="small" />, disabled: false },
+                    { field: "Email", label: "Email", icon: <EmailIcon fontSize="small" />, disabled: true },
+                    { field: "PhoneNumber", label: "Phone Number", icon: <PhoneIcon fontSize="small" />, disabled: false },
+                    { field: "Position", label: "Position", icon: <WorkIcon fontSize="small" />, disabled: false },
+                    { field: "Role", label: "Role", icon: <WorkIcon fontSize="small" />, disabled: true },
                   ].map(({ field, label, icon, disabled }) => (
-                    <FormControl key={field} fullWidth>
-                      <InputLabel
-                        sx={{
-                          color: "#667eea",
-                          fontWeight: 600,
-                          "&.Mui-focused": {
-                            color: "#667eea",
-                          },
-                        }}
-                      >
-                        {label}
-                      </InputLabel>
+                    <FormControl key={field} fullWidth sx={fieldSx}>
+                      <InputLabel>{label}</InputLabel>
                       <OutlinedInput
                         label={label}
                         value={userData[field] || ""}
                         disabled={disabled}
-                        onChange={(e) =>
-                          setUserData({
-                            ...userData,
-                            [field]: e.target.value,
-                          })
-                        }
-                        startAdornment={
-                          <Box sx={{ mr: 1, color: "#667eea" }}>{icon}</Box>
-                        }
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: 2,
-                            backgroundColor: disabled
-                              ? "rgba(102, 126, 234, 0.05)"
-                              : "rgba(255, 255, 255, 0.8)",
-                            "&:hover": {
-                              backgroundColor: disabled
-                                ? "rgba(102, 126, 234, 0.05)"
-                                : "rgba(102, 126, 234, 0.08)",
-                            },
-                            "&.Mui-focused": {
-                              backgroundColor: "white",
-                              boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.2)",
-                            },
-                          },
-                        }}
+                        onChange={(e) => setUserData({ ...userData, [field]: e.target.value })}
+                        startAdornment={<Box sx={{ mr: 1, color: brand.green, display: "flex" }}>{icon}</Box>}
                       />
                     </FormControl>
                   ))}
-
-                  {usr && message && (
-                    <Alert
-                      severity={severity}
-                      sx={{
-                        borderRadius: 2,
-                        fontWeight: 500,
-                      }}
-                    >
-                      {message}
-                    </Alert>
-                  )}
+                  {usr && message && <Alert severity={severity}>{message}</Alert>}
                 </Stack>
-              </CardContent>
-              <Divider />
-              <CardActions sx={{ p: 3, justifyContent: "flex-end" }}>
-                <Button
-                  variant="contained"
-                  onClick={handleUserUpdate}
-                  disabled={dloading}
-                  startIcon={
-                    dloading ? <CircularProgress size={20} /> : <SaveIcon />
-                  }
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    borderRadius: 2,
-                    px: 4,
-                    py: 1.5,
-                    fontWeight: 600,
-                    textTransform: "none",
-                    boxShadow: "0 4px 15px rgba(102, 126, 234, 0.3)",
-                    "&:hover": {
-                      background:
-                        "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
-                      transform: "translateY(-1px)",
-                      boxShadow: "0 6px 20px rgba(102, 126, 234, 0.4)",
-                    },
-                    "&:disabled": {
-                      background: "rgba(102, 126, 234, 0.3)",
-                      color: "rgba(255, 255, 255, 0.6)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                >
+              </Box>
+              <Box sx={{ p: 2.5, borderTop: `1px solid ${brand.sidebarBorder}`, display: "flex", justifyContent: "flex-end" }}>
+                <Button variant="contained" onClick={handleUserUpdate} disabled={dloading} startIcon={dloading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />} sx={saveButtonSx}>
                   {dloading ? "Updating..." : "Update Profile"}
                 </Button>
-              </CardActions>
-            </Card>
+              </Box>
+            </Paper>
 
-            {/* Password Update Card */}
             <form onSubmit={handlePasswordUpdate}>
-              <Card
-                sx={{
-                  borderRadius: 3,
-                  boxShadow: "0 8px 25px rgba(102, 126, 234, 0.15)",
-                  background: "rgba(255, 255, 255, 0.9)",
-                  backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(102, 126, 234, 0.1)",
-                  overflow: "hidden",
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 12px 35px rgba(102, 126, 234, 0.2)",
-                  },
-                }}
-              >
-                <CardHeader
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)",
-                    color: "white",
-                    position: "relative",
-                    overflow: "hidden",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: -20,
-                      right: -20,
-                      width: 100,
-                      height: 100,
-                      background: "rgba(255, 255, 255, 0.1)",
-                      borderRadius: "50%",
-                      zIndex: 0,
-                    }}
-                  />
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    gap={2}
-                    sx={{ position: "relative", zIndex: 1 }}
-                  >
-                    <Box
-                      sx={{
-                        p: 1.5,
-                        borderRadius: "50%",
-                        backgroundColor: "rgba(255, 255, 255, 0.2)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <SecurityIcon sx={{ fontSize: 28 }} />
-                    </Box>
-                    <Box>
-                      <Typography
-                        variant="h5"
-                        sx={{
-                          fontWeight: 800,
-                          textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                        }}
-                      >
-                        Security Settings
-                      </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                        Update your password for better security
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardHeader>
-                <CardContent sx={{ p: 3 }}>
-                  <Stack spacing={3}>
-                    {/* Password Criteria */}
-                    <Box
-                      sx={{
-                        background: "rgba(102, 126, 234, 0.05)",
-                        borderRadius: 2,
-                        p: 2,
-                        border: "1px solid rgba(102, 126, 234, 0.1)",
-                      }}
-                    >
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontWeight: 700,
-                          color: "#667eea",
-                          mb: 1,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                        }}
-                      >
-                        <LockIcon fontSize="small" />
-                        Password Requirements
+              <Paper elevation={0} sx={{ ...sectionCardSx, mb: 0 }}>
+                <SectionHeader icon={SecurityIcon} title="Security Settings" color={brand.navy} />
+                <Box sx={{ p: 3 }}>
+                  <Stack spacing={2.5}>
+                    <Box sx={{ p: 2, borderRadius: 2, bgcolor: brand.sidebarBgAlt, border: `1px solid ${brand.sidebarBorder}` }}>
+                      <Typography variant="subtitle2" fontWeight={700} color={brand.navy} mb={1} display="flex" alignItems="center" gap={1}>
+                        <LockIcon fontSize="small" /> Password Requirements
                       </Typography>
                       <List dense>
                         {[
-                          {
-                            key: "length",
-                            text: "At least 8 characters long",
-                          },
-                          {
-                            key: "uppercase",
-                            text: "At least one uppercase letter",
-                          },
-                          {
-                            key: "lowercase",
-                            text: "At least one lowercase letter",
-                          },
+                          { key: "length", text: "At least 8 characters long" },
+                          { key: "uppercase", text: "At least one uppercase letter" },
+                          { key: "lowercase", text: "At least one lowercase letter" },
                           { key: "digit", text: "At least one digit" },
-                          {
-                            key: "special",
-                            text: "At least one special character",
-                          },
+                          { key: "special", text: "At least one special character" },
                         ].map(({ key, text }) => (
-                          <ListItem key={key} sx={{ py: 0.5, px: 0 }}>
+                          <ListItem key={key} sx={{ py: 0.25, px: 0 }}>
                             <ListItemIcon sx={{ minWidth: 32 }}>
-                              {passwordCriteria[key] ? (
-                                <Check
-                                  sx={{ color: "#27ae60" }}
-                                  fontSize="small"
-                                />
-                              ) : (
-                                <Close
-                                  sx={{ color: "#e74c3c" }}
-                                  fontSize="small"
-                                />
-                              )}
+                              {passwordCriteria[key] ? <Check sx={{ color: brand.green }} fontSize="small" /> : <Close sx={{ color: "#c62828" }} fontSize="small" />}
                             </ListItemIcon>
-                            <ListItemText
-                              primary={text}
-                              primaryTypographyProps={{
-                                fontSize: "0.875rem",
-                                color: passwordCriteria[key]
-                                  ? "#27ae60"
-                                  : "#7f8c8d",
-                                fontWeight: passwordCriteria[key] ? 600 : 400,
-                              }}
-                            />
+                            <ListItemText primary={text} primaryTypographyProps={{ fontSize: "0.875rem", color: passwordCriteria[key] ? brand.greenDark : brand.sidebarTextMuted, fontWeight: passwordCriteria[key] ? 600 : 400 }} />
                           </ListItem>
                         ))}
                       </List>
                     </Box>
 
-                    {/* Password Fields */}
-                    <FormControl fullWidth>
-                      <InputLabel
-                        sx={{
-                          color: "#667eea",
-                          fontWeight: 600,
-                          "&.Mui-focused": {
-                            color: "#667eea",
-                          },
-                        }}
-                      >
-                        Current Password
-                      </InputLabel>
+                    <FormControl fullWidth sx={fieldSx}>
+                      <InputLabel>Current Password</InputLabel>
                       <OutlinedInput
                         label="Current Password"
                         type={showPasswords.oldPassword ? "text" : "password"}
                         value={oldPassword}
                         onChange={(e) => setOldPassword(e.target.value)}
-                        startAdornment={
-                          <Box sx={{ mr: 1, color: "#667eea" }}>
-                            <LockIcon />
-                          </Box>
-                        }
+                        startAdornment={<Box sx={{ mr: 1, color: brand.green, display: "flex" }}><LockIcon fontSize="small" /></Box>}
                         endAdornment={
-                          <Tooltip
-                            title={
-                              showPasswords.oldPassword
-                                ? "Hide password"
-                                : "Show password"
-                            }
-                          >
-                            <IconButton
-                              onClick={() =>
-                                togglePasswordVisibility("oldPassword")
-                              }
-                              sx={{ color: "#667eea" }}
-                            >
-                              {showPasswords.oldPassword ? (
-                                <VisibilityOff />
-                              ) : (
-                                <Visibility />
-                              )}
-                            </IconButton>
+                          <Tooltip title={showPasswords.oldPassword ? "Hide" : "Show"}>
+                            <IconButton onClick={() => togglePasswordVisibility("oldPassword")} edge="end" size="small"><Visibility fontSize="small" /></IconButton>
                           </Tooltip>
                         }
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: 2,
-                            backgroundColor: "rgba(255, 255, 255, 0.8)",
-                            "&:hover": {
-                              backgroundColor: "rgba(102, 126, 234, 0.08)",
-                            },
-                            "&.Mui-focused": {
-                              backgroundColor: "white",
-                              boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.2)",
-                            },
-                          },
-                        }}
                       />
                     </FormControl>
 
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={6}>
-                        <FormControl fullWidth>
-                          <InputLabel
-                            sx={{
-                              color: "#667eea",
-                              fontWeight: 600,
-                              "&.Mui-focused": {
-                                color: "#667eea",
-                              },
-                            }}
-                          >
-                            New Password
-                          </InputLabel>
-                          <OutlinedInput
-                            label="New Password"
-                            type={
-                              showPasswords.newPassword ? "text" : "password"
-                            }
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            startAdornment={
-                              <Box sx={{ mr: 1, color: "#667eea" }}>
-                                <LockIcon />
-                              </Box>
-                            }
-                            endAdornment={
-                              <Tooltip
-                                title={
-                                  showPasswords.newPassword
-                                    ? "Hide password"
-                                    : "Show password"
-                                }
-                              >
-                                <IconButton
-                                  onClick={() =>
-                                    togglePasswordVisibility("newPassword")
-                                  }
-                                  sx={{ color: "#667eea" }}
-                                >
-                                  {showPasswords.newPassword ? (
-                                    <VisibilityOff />
-                                  ) : (
-                                    <Visibility />
-                                  )}
-                                </IconButton>
-                              </Tooltip>
-                            }
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                borderRadius: 2,
-                                backgroundColor: "rgba(255, 255, 255, 0.8)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(102, 126, 234, 0.08)",
-                                },
-                                "&.Mui-focused": {
-                                  backgroundColor: "white",
-                                  boxShadow:
-                                    "0 0 0 2px rgba(102, 126, 234, 0.2)",
-                                },
-                              },
-                            }}
-                          />
+                        <FormControl fullWidth sx={fieldSx}>
+                          <InputLabel>New Password</InputLabel>
+                          <OutlinedInput label="New Password" type={showPasswords.newPassword ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
                         </FormControl>
                       </Grid>
                       <Grid item xs={12} sm={6}>
-                        <FormControl fullWidth>
-                          <InputLabel
-                            sx={{
-                              color: "#667eea",
-                              fontWeight: 600,
-                              "&.Mui-focused": {
-                                color: "#667eea",
-                              },
-                            }}
-                          >
-                            Confirm Password
-                          </InputLabel>
+                        <FormControl fullWidth sx={fieldSx}>
+                          <InputLabel>Confirm Password</InputLabel>
                           <OutlinedInput
                             label="Confirm Password"
-                            type={
-                              showPasswords.confirmPassword
-                                ? "text"
-                                : "password"
-                            }
+                            type={showPasswords.confirmPassword ? "text" : "password"}
                             value={confirmPassword}
                             onChange={(e) => {
                               setConfirmPassword(e.target.value);
-                              if (e.target.value !== newPassword) {
-                                setMessage("Passwords do not match");
-                                setSeverity("error");
-                              } else setMessage("");
-                            }}
-                            startAdornment={
-                              <Box sx={{ mr: 1, color: "#667eea" }}>
-                                <LockIcon />
-                              </Box>
-                            }
-                            endAdornment={
-                              <Tooltip
-                                title={
-                                  showPasswords.confirmPassword
-                                    ? "Hide password"
-                                    : "Show password"
-                                }
-                              >
-                                <IconButton
-                                  onClick={() =>
-                                    togglePasswordVisibility("confirmPassword")
-                                  }
-                                  sx={{ color: "#667eea" }}
-                                >
-                                  {showPasswords.confirmPassword ? (
-                                    <VisibilityOff />
-                                  ) : (
-                                    <Visibility />
-                                  )}
-                                </IconButton>
-                              </Tooltip>
-                            }
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                borderRadius: 2,
-                                backgroundColor: "rgba(255, 255, 255, 0.8)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(102, 126, 234, 0.08)",
-                                },
-                                "&.Mui-focused": {
-                                  backgroundColor: "white",
-                                  boxShadow:
-                                    "0 0 0 2px rgba(102, 126, 234, 0.2)",
-                                },
-                              },
+                              setMessage(e.target.value !== newPassword ? "Passwords do not match" : "");
                             }}
                           />
                         </FormControl>
                       </Grid>
                     </Grid>
 
-                    {!usr && message && (
-                      <Alert
-                        severity={severity}
-                        sx={{
-                          borderRadius: 2,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {message}
-                      </Alert>
-                    )}
+                    {!usr && message && <Alert severity={severity}>{message}</Alert>}
                   </Stack>
-                </CardContent>
-                <Divider />
-                <CardActions sx={{ p: 3, justifyContent: "flex-end" }}>
-                  <Button
-                    variant="contained"
-                    type="submit"
-                    disabled={ploading}
-                    startIcon={
-                      ploading ? (
-                        <CircularProgress size={20} />
-                      ) : (
-                        <SecurityIcon />
-                      )
-                    }
-                    sx={{
-                      background:
-                        "linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)",
-                      borderRadius: 2,
-                      px: 4,
-                      py: 1.5,
-                      fontWeight: 600,
-                      textTransform: "none",
-                      boxShadow: "0 4px 15px rgba(255, 107, 107, 0.3)",
-                      "&:hover": {
-                        background:
-                          "linear-gradient(135deg, #ff5252 0%, #e53935 100%)",
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 6px 20px rgba(255, 107, 107, 0.4)",
-                      },
-                      "&:disabled": {
-                        background: "rgba(255, 107, 107, 0.3)",
-                        color: "rgba(255, 255, 255, 0.6)",
-                      },
-                      transition: "all 0.3s ease",
-                    }}
-                  >
+                </Box>
+                <Box sx={{ p: 2.5, borderTop: `1px solid ${brand.sidebarBorder}`, display: "flex", justifyContent: "flex-end" }}>
+                  <Button variant="contained" type="submit" disabled={ploading} startIcon={ploading ? <CircularProgress size={20} color="inherit" /> : <SecurityIcon />} sx={saveButtonSx}>
                     {ploading ? "Updating..." : "Update Password"}
                   </Button>
-                </CardActions>
-              </Card>
+                </Box>
+              </Paper>
             </form>
           </Stack>
         </Box>

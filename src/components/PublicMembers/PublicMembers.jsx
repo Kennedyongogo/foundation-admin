@@ -38,8 +38,28 @@ import {
   Phone as PhoneIcon,
 } from "@mui/icons-material";
 import { Tabs, Tab } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
+import { brand } from "../../brandColors";
+import { fieldSx } from "../Projects/projectFormUi";
+import {
+  listPaperSx,
+  ListPageHeader,
+  tabsSx,
+  tabCountChipSx,
+  tableContainerSx,
+  tableHeadRowSx,
+  tableRowSx,
+  paginationSx,
+  actionButtonSx,
+  dialogPaperSx,
+  BrandedDialogTitle,
+  DetailRow,
+  dialogActionsSx,
+  saveButtonSx,
+  cancelButtonSx,
+  detailCardSx,
+} from "../Util/adminListUi";
 
 const PublicMembers = () => {
   const theme = useTheme();
@@ -211,6 +231,21 @@ const PublicMembers = () => {
         return "secondary";
       default:
         return "default";
+    }
+  };
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "Pending":
+        return { label: "Pending", bg: alpha("#e65100", 0.12), color: "#e65100" };
+      case "Active":
+        return { label: "Active", bg: alpha(brand.green, 0.12), color: brand.greenDark };
+      case "Inactive":
+        return { label: "Inactive", bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted };
+      case "Rejected":
+        return { label: "Rejected", bg: alpha("#c62828", 0.1), color: "#c62828" };
+      default:
+        return { label: status, bg: alpha(brand.navy, 0.06), color: brand.navy };
     }
   };
 
@@ -590,138 +625,24 @@ const PublicMembers = () => {
   }
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 0,
-          overflow: "hidden",
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(10px)",
-          border: "none",
-          boxShadow: "none",
-          minHeight: "100vh",
-        }}
-      >
-        {/* Header Section */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            display="flex"
-            flexDirection={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            gap={{ xs: 2, sm: 0 }}
-            position="relative"
-            zIndex={1}
-          >
-            <Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 800,
-                  mb: 1,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
-                }}
-              >
-                Public Members Management
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                Manage members registered from the public portal
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+    <Box>
+      <Paper elevation={0} sx={listPaperSx}>
+        <ListPageHeader
+          icon={PersonIcon}
+          title="Public Members Management"
+          subtitle="Manage members registered from the public portal"
+        />
 
-        {/* Content Section */}
-        <Box
-          sx={{ p: { xs: 1, sm: 2, md: 3 }, minHeight: "calc(100vh - 200px)" }}
-        >
-          {/* Status Tabs */}
-          <Box mb={3}>
-            <Tabs
-              value={activeTab}
-              onChange={handleTabChange}
-              variant="scrollable"
-              scrollButtons="auto"
-              sx={{
-                "& .MuiTabs-indicator": {
-                  backgroundColor: "#667eea",
-                  height: 3,
-                  borderRadius: "3px 3px 0 0",
-                },
-                "& .MuiTab-root": {
-                  textTransform: "none",
-                  fontWeight: 600,
-                  fontSize: "0.95rem",
-                  minHeight: 48,
-                  color: "#666",
-                  "&.Mui-selected": {
-                    color: "#667eea",
-                  },
-                  "&:hover": {
-                    color: "#667eea",
-                    backgroundColor: "rgba(102, 126, 234, 0.04)",
-                  },
-                },
-              }}
-            >
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <Box mb={2.5}>
+            <Tabs value={activeTab} onChange={handleTabChange} variant="scrollable" scrollButtons="auto" sx={tabsSx}>
               {statusTabs.map((tab, index) => (
                 <Tab
                   key={tab.value}
                   label={
                     <Box display="flex" alignItems="center" gap={1}>
                       <span>{tab.label}</span>
-                      <Chip
-                        label={tab.count}
-                        size="small"
-                        sx={{
-                          backgroundColor:
-                            activeTab === index ? "#667eea" : "#e0e0e0",
-                          color: activeTab === index ? "white" : "#666",
-                          fontWeight: 600,
-                          fontSize: "0.75rem",
-                          height: 20,
-                          minWidth: 20,
-                        }}
-                      />
+                      <Chip label={tab.count} size="small" sx={tabCountChipSx(activeTab === index)} />
                     </Box>
                   }
                 />
@@ -729,48 +650,12 @@ const PublicMembers = () => {
             </Tabs>
           </Box>
 
-          {/* Members Table */}
-          <TableContainer
-            sx={{
-              borderRadius: 3,
-              overflowX: "auto",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              border: "1px solid rgba(102, 126, 234, 0.1)",
-              "&::-webkit-scrollbar": {
-                height: 8,
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: "rgba(102, 126, 234, 0.1)",
-                borderRadius: 4,
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "rgba(102, 126, 234, 0.3)",
-                borderRadius: 4,
-                "&:hover": {
-                  backgroundColor: "rgba(102, 126, 234, 0.5)",
-                },
-              },
-            }}
-          >
+          <TableContainer sx={tableContainerSx}>
             <Table sx={{ minWidth: 700 }}>
               <TableHead>
-                <TableRow
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    "& .MuiTableCell-head": {
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: { xs: "0.8rem", sm: "0.95rem" },
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      border: "none",
-                      whiteSpace: "nowrap",
-                    },
-                  }}
-                >
+                <TableRow sx={tableHeadRowSx}>
                   <TableCell>No</TableCell>
-                  <TableCell>Member Name</TableCell>
+                  <TableCell>Full Name</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
@@ -779,149 +664,59 @@ const PublicMembers = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                      <CircularProgress sx={{ color: "#667eea" }} />
-                    </TableCell>
-                  </TableRow>
-                ) : error ? (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                      <Typography color="error" variant="h6">
-                        {error}
-                      </Typography>
+                    <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                      <CircularProgress sx={{ color: brand.green }} size={36} />
                     </TableCell>
                   </TableRow>
                 ) : members.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                      <Typography variant="h6" color="text.secondary">
-                        No members found.
-                      </Typography>
+                    <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                      <PersonIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2), mb: 1 }} />
+                      <Typography variant="body1" color="text.secondary" fontWeight={500}>No members found.</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  members.map((member, idx) => (
-                    <TableRow
-                      key={member.id}
-                      sx={{
-                        "&:nth-of-type(even)": {
-                          backgroundColor: "rgba(102, 126, 234, 0.02)",
-                        },
-                        "&:hover": {
-                          backgroundColor: "rgba(102, 126, 234, 0.08)",
-                          transform: { xs: "none", sm: "scale(1.01)" },
-                        },
-                        transition: "all 0.2s ease",
-                        cursor: "pointer",
-                        "& .MuiTableCell-root": {
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          padding: { xs: "8px 4px", sm: "16px" },
-                        },
-                      }}
-                    >
-                      <TableCell sx={{ fontWeight: 600, color: "#667eea" }}>
+                  members.map((member, idx) => {
+                    const statusStyle = getStatusStyle(member.status);
+                    return (
+                    <TableRow key={member.id} hover sx={tableRowSx}>
+                      <TableCell sx={{ fontWeight: 700, color: brand.navy, width: 48 }}>
                         {page * rowsPerPage + idx + 1}
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          sx={{ color: "#2c3e50" }}
-                        >
-                          {member.full_name}
-                        </Typography>
+                        <Typography variant="body2" fontWeight={600} color={brand.navy}>{member.full_name}</Typography>
                       </TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={1}>
-                          <EmailIcon
-                            sx={{ color: "#3498db", fontSize: 18 }}
-                          />
-                          <Typography variant="body2" sx={{ color: "#7f8c8d" }}>
-                            {member.email}
-                          </Typography>
+                          <EmailIcon sx={{ color: brand.blue, fontSize: 18 }} />
+                          <Typography variant="body2" color={brand.sidebarTextMuted}>{member.email}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={member.status}
-                          color={getStatusColor(member.status)}
-                          size="small"
-                          sx={{
-                            textTransform: "capitalize",
-                            fontWeight: 600,
-                            borderRadius: 2,
-                          }}
-                        />
+                        <Chip label={statusStyle.label} size="small" sx={{ fontWeight: 600, fontSize: "0.75rem", bgcolor: statusStyle.bg, color: statusStyle.color }} />
                       </TableCell>
                       <TableCell>
                         <Box display="flex" gap={0.5}>
-                          <Tooltip title="View Member Details" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewMember(member);
-                              }}
-                              sx={{
-                                color: "#27ae60",
-                                backgroundColor: "rgba(39, 174, 96, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(39, 174, 96, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
+                          <Tooltip title="View details" arrow>
+                            <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleViewMember(member); }} sx={actionButtonSx.view}>
                               <ViewIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Edit Member" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditMember(member);
-                              }}
-                              sx={{
-                                color: "#3498db",
-                                backgroundColor: "rgba(52, 152, 219, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(52, 152, 219, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
+                          <Tooltip title="Edit member" arrow>
+                            <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleEditMember(member); }} sx={actionButtonSx.edit}>
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Delete Member" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteMember(member);
-                              }}
-                              sx={{
-                                color: "#e74c3c",
-                                backgroundColor: "rgba(231, 76, 60, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(231, 76, 60, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
+                          <Tooltip title="Delete member" arrow>
+                            <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleDeleteMember(member); }} sx={actionButtonSx.delete}>
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
-                  ))
+                  );
+                  })
                 )}
               </TableBody>
             </Table>
@@ -934,19 +729,7 @@ const PublicMembers = () => {
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
-            sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderTop: "1px solid rgba(102, 126, 234, 0.1)",
-              "& .MuiTablePagination-toolbar": {
-                color: "#667eea",
-                fontWeight: 600,
-              },
-              "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                {
-                  color: "#2c3e50",
-                  fontWeight: 600,
-                },
-            }}
+            sx={paginationSx}
           />
         </Box>
 
@@ -958,63 +741,14 @@ const PublicMembers = () => {
             setSelectedMember(null);
           }}
           maxWidth={false}
-          sx={{
-            "& .MuiDialog-paper": {
-              borderRadius: 4,
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
-              maxHeight: "90vh",
-              maxWidth: "50%",
-              width: "50%",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(102, 126, 234, 0.2)",
-              overflow: "hidden",
-            },
-            "& .MuiBackdrop-root": {
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-            },
-          }}
+          PaperProps={{ sx: { ...dialogPaperSx, maxWidth: "50%", width: { xs: "95%", sm: "50%" } } }}
         >
-          <DialogTitle
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              p: 3,
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <PersonIcon sx={{ fontSize: 28 }} />
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                Member Details
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                View complete member information
-              </Typography>
-            </Box>
-          </DialogTitle>
+          <BrandedDialogTitle icon={PersonIcon} title="Member Details" subtitle="View complete member information" />
           <DialogContent sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto" }}>
             {selectedMember ? (
               <Box>
                 {/* Member Header Section */}
-                <Box
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    borderRadius: 3,
-                    p: 3,
-                    mb: 4,
-                    mt: 2,
-                    position: "relative",
-                    overflow: "hidden",
-                    color: "white",
-                  }}
-                >
+                <Box sx={{ bgcolor: brand.navy, borderRadius: 2, p: 3, mb: 3, mt: 1, color: "#fff", borderBottom: `3px solid ${brand.gold}` }}>
                   <Typography
                     variant="h4"
                     sx={{
@@ -1247,70 +981,17 @@ const PublicMembers = () => {
               </Box>
             )}
           </DialogContent>
-          <DialogActions
-            sx={{ p: 3, gap: 2, backgroundColor: "rgba(102, 126, 234, 0.05)" }}
-          >
-            <Button
-              onClick={() => {
-                setOpenViewDialog(false);
-                setSelectedMember(null);
-              }}
-              variant="outlined"
-              sx={{
-                borderColor: "#667eea",
-                color: "#667eea",
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                "&:hover": {
-                  borderColor: "#5a6fd8",
-                  backgroundColor: "rgba(102, 126, 234, 0.1)",
-                },
-              }}
-            >
+          <DialogActions sx={dialogActionsSx}>
+            <Button onClick={() => { setOpenViewDialog(false); setSelectedMember(null); }} variant="outlined" sx={cancelButtonSx}>
               Close
             </Button>
             {selectedMember && (
               <>
-                <Button
-                  onClick={() => {
-                    setOpenViewDialog(false);
-                    handleEditMember(selectedMember);
-                  }}
-                  variant="contained"
-                  sx={{
-                    backgroundColor: "#3498db",
-                    fontWeight: 600,
-                    borderRadius: 2,
-                    px: 3,
-                    py: 1,
-                    "&:hover": {
-                      backgroundColor: "#2980b9",
-                    },
-                  }}
-                >
+                <Button onClick={() => { setOpenViewDialog(false); handleEditMember(selectedMember); }} variant="contained" sx={{ ...saveButtonSx, bgcolor: brand.blue, "&:hover": { bgcolor: alpha(brand.blue, 0.85) } }}>
                   Edit Member
                 </Button>
                 {selectedMember.status === "Pending" && (
-                  <Button
-                    onClick={() => {
-                      handleUpdateStatus(selectedMember.id, "Active");
-                      setOpenViewDialog(false);
-                      setSelectedMember(null);
-                    }}
-                    variant="contained"
-                    sx={{
-                      backgroundColor: "#27ae60",
-                      fontWeight: 600,
-                      borderRadius: 2,
-                      px: 3,
-                      py: 1,
-                      "&:hover": {
-                        backgroundColor: "#229954",
-                      },
-                    }}
-                  >
+                  <Button onClick={() => { handleUpdateStatus(selectedMember.id, "Active"); setOpenViewDialog(false); setSelectedMember(null); }} variant="contained" sx={saveButtonSx}>
                     Approve
                   </Button>
                 )}
@@ -1345,44 +1026,9 @@ const PublicMembers = () => {
             });
           }}
           maxWidth={false}
-          sx={{
-            "& .MuiDialog-paper": {
-              borderRadius: 4,
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
-              maxHeight: "90vh",
-              maxWidth: "50%",
-              width: "50%",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(102, 126, 234, 0.2)",
-              overflow: "hidden",
-            },
-            "& .MuiBackdrop-root": {
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-            },
-          }}
+          PaperProps={{ sx: { ...dialogPaperSx, maxWidth: "50%", width: { xs: "95%", sm: "50%" } } }}
         >
-          <DialogTitle
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              p: 3,
-            }}
-          >
-            <EditIcon sx={{ fontSize: 28 }} />
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                Edit Member
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                Update member information
-              </Typography>
-            </Box>
-          </DialogTitle>
+          <BrandedDialogTitle icon={EditIcon} title="Edit Member" subtitle="Update member information" />
           <DialogContent sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto" }}>
             <Box component="form" noValidate>
               <Stack spacing={2} sx={{ mt: 1 }}>
@@ -1652,9 +1298,7 @@ const PublicMembers = () => {
               </Stack>
             </Box>
           </DialogContent>
-          <DialogActions
-            sx={{ p: 3, gap: 2, backgroundColor: "rgba(102, 126, 234, 0.05)" }}
-          >
+          <DialogActions sx={dialogActionsSx}>
             <Button
               onClick={() => {
                 setOpenEditDialog(false);
@@ -1679,37 +1323,12 @@ const PublicMembers = () => {
                 });
               }}
               variant="outlined"
-              sx={{
-                borderColor: "#667eea",
-                color: "#667eea",
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                "&:hover": {
-                  borderColor: "#5a6fd8",
-                  backgroundColor: "rgba(102, 126, 234, 0.1)",
-                },
-              }}
+              sx={cancelButtonSx}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleUpdateMember}
-              variant="contained"
-              disabled={loading}
-              sx={{
-                backgroundColor: "#667eea",
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                "&:hover": {
-                  backgroundColor: "#5a6fd8",
-                },
-              }}
-            >
-              {loading ? <CircularProgress size={20} /> : "Update Member"}
+            <Button onClick={handleUpdateMember} variant="contained" disabled={loading} sx={saveButtonSx}>
+              {loading ? <CircularProgress size={20} color="inherit" /> : "Update Member"}
             </Button>
           </DialogActions>
         </Dialog>

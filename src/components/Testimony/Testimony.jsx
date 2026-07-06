@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -48,8 +48,27 @@ import {
   Schedule as ScheduleIcon,
   Update as UpdateIcon,
 } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
+import { brand } from "../../brandColors";
+import { fieldSx } from "../Projects/projectFormUi";
+import {
+  listPaperSx,
+  ListPageHeader,
+  tableContainerSx,
+  tableHeadRowSx,
+  tableRowSx,
+  paginationSx,
+  actionButtonSx,
+  dialogPaperSx,
+  BrandedDialogTitle,
+  DetailRow,
+  dialogActionsSx,
+  saveButtonSx,
+  cancelButtonSx,
+  detailCardSx,
+} from "../Util/adminListUi";
+import { RateReview as TestimonyIcon } from "@mui/icons-material";
 
 const Testimony = () => {
   const navigate = useNavigate();
@@ -112,6 +131,15 @@ const Testimony = () => {
     }
   };
 
+  const getStatusStyle = (status) => {
+    const styles = {
+      pending: { bg: alpha(brand.gold, 0.18), color: "#e65100", label: "Pending" },
+      approved: { bg: alpha(brand.green, 0.14), color: brand.greenDark, label: "Approved" },
+      rejected: { bg: alpha("#c62828", 0.1), color: "#c62828", label: "Rejected" },
+    };
+    return styles[status] || { bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted, label: status };
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "pending":
@@ -139,7 +167,7 @@ const Testimony = () => {
   };
 
   const getRatingStars = (rating) => {
-    return '⭐'.repeat(rating);
+    return 'â­'.repeat(rating);
   };
 
   const formatDate = (dateString) => {
@@ -334,130 +362,15 @@ const Testimony = () => {
   }
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 0,
-          overflow: "hidden",
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(10px)",
-          border: "none",
-          boxShadow: "none",
-          minHeight: "100vh",
-        }}
-      >
-        {/* Header Section */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            display="flex"
-            flexDirection={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            gap={{ xs: 2, sm: 0 }}
-            position="relative"
-            zIndex={1}
-          >
-            <Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 800,
-                  mb: 1,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
-                }}
-              >
-                Testimonies Management
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                Manage and moderate user testimonies
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+    <Box>
+      <Paper elevation={0} sx={listPaperSx}>
+        <ListPageHeader icon={TestimonyIcon} title="Testimonies Management" subtitle="Manage and moderate user testimonies" />
 
-        {/* Content Section */}
-        <Box
-          sx={{ p: { xs: 1, sm: 2, md: 3 }, minHeight: "calc(100vh - 200px)" }}
-        >
-          {/* Testimonies Table */}
-          <TableContainer
-            sx={{
-              borderRadius: 3,
-              overflowX: "auto",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              border: "1px solid rgba(102, 126, 234, 0.1)",
-              "&::-webkit-scrollbar": {
-                height: 8,
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: "rgba(102, 126, 234, 0.1)",
-                borderRadius: 4,
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "rgba(102, 126, 234, 0.3)",
-                borderRadius: 4,
-                "&:hover": {
-                  backgroundColor: "rgba(102, 126, 234, 0.5)",
-                },
-              },
-            }}
-          >
-            <Table sx={{ minWidth: 800 }}>
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <TableContainer sx={tableContainerSx}>
+            <Table sx={{ minWidth: 700 }}>
               <TableHead>
-                <TableRow
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    "& .MuiTableCell-head": {
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: { xs: "0.8rem", sm: "0.95rem" },
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      border: "none",
-                      whiteSpace: "nowrap",
-                    },
-                  }}
-                >
+                <TableRow sx={tableHeadRowSx}>
                   <TableCell>No</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Rating</TableCell>
@@ -467,502 +380,82 @@ const Testimony = () => {
               </TableHead>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <CircularProgress sx={{ color: "#667eea" }} />
-                    </TableCell>
-                  </TableRow>
+                  <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6 }}><CircularProgress sx={{ color: brand.green }} size={36} /></TableCell></TableRow>
                 ) : error ? (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
-                      </Alert>
-                      <Button
-                        variant="contained"
-                        onClick={fetchTestimonies}
-                        sx={{
-                          background:
-                            "linear-gradient(45deg, #667eea, #764ba2)",
-                        }}
-                      >
-                        Retry
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                  <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4 }}><Alert severity="error" sx={{ mb: 2 }}>{error}</Alert><Button variant="contained" onClick={fetchTestimonies} sx={{ bgcolor: brand.green }}>Retry</Button></TableCell></TableRow>
                 ) : testimonies.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                      <Typography variant="h6" color="text.secondary">
-                        No testimonies found.
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
+                  <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6 }}><TestimonyIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2), mb: 1 }} /><Typography variant="body1" color="text.secondary">No testimonies found.</Typography></TableCell></TableRow>
                 ) : (
-                  testimonies.map((testimony, idx) => (
-                    <TableRow
-                      key={testimony.id}
-                      sx={{
-                        "&:nth-of-type(even)": {
-                          backgroundColor: "rgba(102, 126, 234, 0.02)",
-                        },
-                        "&:hover": {
-                          backgroundColor: "rgba(102, 126, 234, 0.08)",
-                          transform: { xs: "none", sm: "scale(1.01)" },
-                        },
-                        transition: "all 0.2s ease",
-                        cursor: "pointer",
-                        "& .MuiTableCell-root": {
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          padding: { xs: "8px 4px", sm: "16px" },
-                        },
-                      }}
-                    >
-                      <TableCell sx={{ fontWeight: 600, color: "#667eea" }}>
-                        {page * rowsPerPage + idx + 1}
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          sx={{ color: "#2c3e50" }}
-                        >
-                          {testimony.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          sx={{ color: "#2c3e50", fontSize: "1.2rem" }}
-                        >
-                          {getRatingStars(testimony.rating)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={getStatusText(testimony.status)}
-                          color={getStatusColor(testimony.status)}
-                          size="small"
-                          sx={{
-                            textTransform: "capitalize",
-                            fontWeight: 600,
-                            borderRadius: 2,
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box display="flex" gap={0.5}>
-                          <Tooltip title="View Testimony Details" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleViewTestimony(testimony)}
-                              sx={{
-                                color: "#27ae60",
-                                backgroundColor: "rgba(39, 174, 96, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(39, 174, 96, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
-                              <ViewIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Edit Testimony" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleEditTestimony(testimony)}
-                              sx={{
-                                color: "#3498db",
-                                backgroundColor: "rgba(52, 152, 219, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(52, 152, 219, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete Testimony" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDeleteTestimony(testimony)}
-                              sx={{
-                                color: "#e74c3c",
-                                backgroundColor: "rgba(231, 76, 60, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(231, 76, 60, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  testimonies.map((testimony, idx) => {
+                    const statusStyle = getStatusStyle(testimony.status);
+                    return (
+                      <TableRow key={testimony.id} hover sx={tableRowSx}>
+                        <TableCell sx={{ fontWeight: 700, color: brand.navy }}>{page * rowsPerPage + idx + 1}</TableCell>
+                        <TableCell><Typography variant="body2" fontWeight={600} color={brand.navy}>{testimony.name}</Typography></TableCell>
+                        <TableCell><Typography variant="body2" fontWeight={600} color={brand.gold}>{getRatingStars(testimony.rating)}</Typography></TableCell>
+                        <TableCell><Chip label={statusStyle.label} size="small" sx={{ fontWeight: 600, bgcolor: statusStyle.bg, color: statusStyle.color }} /></TableCell>
+                        <TableCell>
+                          <Box display="flex" gap={0.5}>
+                            <Tooltip title="View details" arrow><IconButton size="small" onClick={() => handleViewTestimony(testimony)} sx={actionButtonSx.view}><ViewIcon fontSize="small" /></IconButton></Tooltip>
+                            <Tooltip title="Edit status" arrow><IconButton size="small" onClick={() => handleEditTestimony(testimony)} sx={actionButtonSx.edit}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                            <Tooltip title="Delete" arrow><IconButton size="small" onClick={() => handleDeleteTestimony(testimony)} sx={actionButtonSx.delete}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
           </TableContainer>
-          <TablePagination
-            component="div"
-            count={totalTestimonies}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderTop: "1px solid rgba(102, 126, 234, 0.1)",
-              "& .MuiTablePagination-toolbar": {
-                color: "#667eea",
-                fontWeight: 600,
-              },
-              "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                {
-                  color: "#2c3e50",
-                  fontWeight: 600,
-                },
-            }}
-          />
+          <TablePagination component="div" count={totalTestimonies} page={page} onPageChange={handleChangePage} rowsPerPage={rowsPerPage} onRowsPerPageChange={handleChangeRowsPerPage} rowsPerPageOptions={[5, 10, 25, 50]} sx={paginationSx} />
         </Box>
 
-        {/* Testimony Dialog */}
-        <Dialog
-          open={openViewDialog}
-          onClose={() => {
-            setOpenViewDialog(false);
-            setSelectedTestimony(null);
-          }}
-          maxWidth="sm"
-          fullWidth
-          sx={{
-            "& .MuiDialog-paper": {
-              borderRadius: 4,
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
-              maxHeight: "85vh",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(102, 126, 234, 0.2)",
-              overflow: "hidden",
-            },
-            "& .MuiBackdrop-root": {
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-            },
-          }}
-        >
-          <DialogTitle
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              p: 3,
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                top: -20,
-                right: -20,
-                width: 100,
-                height: 100,
-                background: "rgba(255, 255, 255, 0.1)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: -15,
-                left: -15,
-                width: 80,
-                height: 80,
-                background: "rgba(255, 255, 255, 0.05)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <WarningIcon
-              sx={{ position: "relative", zIndex: 1, fontSize: 28 }}
-            />
-            <Box sx={{ position: "relative", zIndex: 1 }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 800,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                }}
-              >
-                Testimony Details
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                View testimony information
-              </Typography>
-            </Box>
-          </DialogTitle>
-          <DialogContent
-            sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto" }}
-          >
+        <Dialog open={openViewDialog} onClose={() => { setOpenViewDialog(false); setSelectedTestimony(null); }} maxWidth="sm" fullWidth PaperProps={{ sx: dialogPaperSx }}>
+          <BrandedDialogTitle icon={TestimonyIcon} title="Testimony Details" subtitle="View testimony information" />
+          <DialogContent sx={{ p: 3, bgcolor: brand.sidebarBg }}>
             {selectedTestimony && (
-              <Box>
-                <Typography variant="h6" gutterBottom>
-                  {selectedTestimony.name}
-                </Typography>
-
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                  <Typography variant="h6" sx={{ fontSize: "1.5rem" }}>
-                    {getRatingStars(selectedTestimony.rating)}
-                  </Typography>
-                  <Typography variant="h6">
-                    Rating: {selectedTestimony.rating}/5
-                  </Typography>
+              <Stack spacing={2}>
+                <Box sx={{ ...detailCardSx, bgcolor: alpha(brand.navy, 0.04) }}>
+                  <Typography variant="h6" fontWeight={800} color={brand.navy}>{selectedTestimony.name}</Typography>
+                  <Typography variant="body1" color={brand.gold} mt={1}>{getRatingStars(selectedTestimony.rating)} ({selectedTestimony.rating}/5)</Typography>
                 </Box>
-
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    <strong>Status:</strong>{" "}
-                    {getStatusText(selectedTestimony.status)}
-                  </Typography>
-                  <Typography variant="subtitle2" gutterBottom>
-                    <strong>Created:</strong>{" "}
-                    {formatDate(selectedTestimony.createdAt)}
-                  </Typography>
-                  <Typography variant="subtitle2" gutterBottom>
-                    <strong>Description:</strong>
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mt: 1,
-                      p: 2,
-                      backgroundColor: "rgba(102, 126, 234, 0.05)",
-                      borderRadius: 2,
-                      border: "1px solid rgba(102, 126, 234, 0.1)",
-                    }}
-                  >
-                    {selectedTestimony.description}
-                  </Typography>
+                <DetailRow icon={CheckCircleIcon} label="STATUS" value={getStatusText(selectedTestimony.status)} color={brand.green} />
+                <DetailRow icon={ScheduleIcon} label="CREATED" value={formatDate(selectedTestimony.createdAt)} />
+                <Box sx={detailCardSx}>
+                  <Typography variant="caption" color={brand.sidebarTextMuted} fontWeight={600}>DESCRIPTION</Typography>
+                  <Typography variant="body2" color={brand.navy} sx={{ mt: 0.5, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{selectedTestimony.description}</Typography>
                 </Box>
-              </Box>
+              </Stack>
             )}
           </DialogContent>
-          <DialogActions
-            sx={{ p: 3, gap: 2, backgroundColor: "rgba(102, 126, 234, 0.05)" }}
-          >
-            <Button
-              onClick={() => {
-                setOpenViewDialog(false);
-                setSelectedTestimony(null);
-              }}
-              variant="outlined"
-              sx={{
-                borderColor: "#667eea",
-                color: "#667eea",
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                "&:hover": {
-                  borderColor: "#5a6fd8",
-                  backgroundColor: "rgba(102, 126, 234, 0.1)",
-                },
-              }}
-            >
-              Close
-            </Button>
-          </DialogActions>
+          <DialogActions sx={dialogActionsSx}><Button onClick={() => { setOpenViewDialog(false); setSelectedTestimony(null); }} variant="outlined" sx={cancelButtonSx}>Close</Button></DialogActions>
         </Dialog>
 
-        {/* Edit Testimony Dialog */}
-        <Dialog
-          open={openEditDialog}
-          onClose={() => {
-            setOpenEditDialog(false);
-            setSelectedTestimony(null);
-            setEditForm({
-              status: "",
-            });
-          }}
-          maxWidth="sm"
-          fullWidth
-          sx={{
-            "& .MuiDialog-paper": {
-              borderRadius: 4,
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
-              maxHeight: "85vh",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(102, 126, 234, 0.2)",
-              overflow: "hidden",
-            },
-            "& .MuiBackdrop-root": {
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-            },
-          }}
-        >
-          <DialogTitle
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              p: 3,
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                top: -20,
-                right: -20,
-                width: 100,
-                height: 100,
-                background: "rgba(255, 255, 255, 0.1)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: -15,
-                left: -15,
-                width: 80,
-                height: 80,
-                background: "rgba(255, 255, 255, 0.05)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <UpdateIcon
-              sx={{ position: "relative", zIndex: 1, fontSize: 28 }}
-            />
-            <Box sx={{ position: "relative", zIndex: 1 }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 800,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                }}
-              >
-                Manage Testimony Status
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                Approve or reject testimonial for public display
-              </Typography>
-            </Box>
-          </DialogTitle>
-          <DialogContent
-            sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto" }}
-          >
-            <Stack spacing={3} sx={{ mt: 1 }}>
-              {/* Display Testimony Details (Read-only) */}
-              <Box sx={{ p: 2, backgroundColor: "rgba(102, 126, 234, 0.05)", borderRadius: 2, border: "1px solid rgba(102, 126, 234, 0.1)" }}>
-                <Typography variant="h6" gutterBottom>
-                  {selectedTestimony?.name}
-                </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                  <Typography variant="h6" sx={{ fontSize: "1.5rem" }}>
-                    {selectedTestimony && getRatingStars(selectedTestimony.rating)}
-                  </Typography>
-                  <Typography variant="h6">
-                    Rating: {selectedTestimony?.rating}/5
-                  </Typography>
+        <Dialog open={openEditDialog} onClose={() => { setOpenEditDialog(false); setSelectedTestimony(null); setEditForm({ status: "" }); }} maxWidth="sm" fullWidth PaperProps={{ sx: dialogPaperSx }}>
+          <BrandedDialogTitle icon={UpdateIcon} title="Manage Testimony Status" subtitle="Approve or reject for public display" />
+          <DialogContent sx={{ p: 3, bgcolor: brand.sidebarBg }}>
+            <Stack spacing={2.5} sx={{ mt: 1 }}>
+              {selectedTestimony && (
+                <Box sx={{ ...detailCardSx, bgcolor: brand.sidebarBgAlt }}>
+                  <Typography variant="subtitle1" fontWeight={700} color={brand.navy}>{selectedTestimony.name}</Typography>
+                  <Typography variant="body2" color={brand.gold} mt={0.5}>{getRatingStars(selectedTestimony.rating)}</Typography>
+                  <Typography variant="body2" color={brand.sidebarTextMuted} sx={{ mt: 1, fontStyle: "italic" }}>"{selectedTestimony.description}"</Typography>
                 </Box>
-                <Typography variant="body2" sx={{ color: "#666", fontStyle: "italic" }}>
-                  "{selectedTestimony?.description}"
-                </Typography>
-              </Box>
-
-              {/* Status Field (Only Editable Field) */}
-              <FormControl fullWidth variant="outlined" size="small">
+              )}
+              <FormControl fullWidth size="small" sx={fieldSx}>
                 <InputLabel>Status</InputLabel>
-                <Select
-                  value={editForm.status}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, status: e.target.value })
-                  }
-                  label="Status"
-                  required
-                >
+                <Select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })} label="Status" required>
                   <MenuItem value="pending">Pending</MenuItem>
                   <MenuItem value="approved">Approved</MenuItem>
                   <MenuItem value="rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
-
-              <Typography variant="body2" sx={{ color: "#666", fontStyle: "italic", textAlign: "center" }}>
-                Note: Only the status can be modified. The testimonial content is preserved as submitted by the user.
-              </Typography>
             </Stack>
           </DialogContent>
-          <DialogActions
-            sx={{ p: 3, gap: 2, backgroundColor: "rgba(102, 126, 234, 0.05)" }}
-          >
-            <Button
-              onClick={() => {
-                setOpenEditDialog(false);
-                setSelectedTestimony(null);
-                setEditForm({
-                  rating: "",
-                  description: "",
-                  status: "",
-                });
-              }}
-              variant="outlined"
-              sx={{
-                borderColor: "#667eea",
-                color: "#667eea",
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                "&:hover": {
-                  borderColor: "#5a6fd8",
-                  backgroundColor: "rgba(102, 126, 234, 0.1)",
-                },
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleUpdateTestimony}
-              variant="contained"
-              disabled={loading}
-              sx={{
-                background: "linear-gradient(45deg, #667eea, #764ba2)",
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                fontWeight: 600,
-                "&:hover": {
-                  background: "linear-gradient(45deg, #5a6fd8, #6a4c93)",
-                },
-              }}
-            >
-              {loading ? "Updating..." : "Update Status"}
-            </Button>
+          <DialogActions sx={dialogActionsSx}>
+            <Button onClick={() => { setOpenEditDialog(false); setSelectedTestimony(null); setEditForm({ status: "" }); }} variant="outlined" sx={cancelButtonSx}>Cancel</Button>
+            <Button onClick={handleUpdateTestimony} variant="contained" disabled={loading} sx={saveButtonSx}>{loading ? "Updating..." : "Update Status"}</Button>
           </DialogActions>
         </Dialog>
       </Paper>

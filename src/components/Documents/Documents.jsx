@@ -53,8 +53,28 @@ import {
   Person as PersonIcon,
   Description as DescriptionIcon,
 } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
+import { brand } from "../../brandColors";
+import { fieldSx } from "../Projects/projectFormUi";
+import {
+  listPaperSx,
+  ListPageHeader,
+  createButtonSx,
+  tabsSx,
+  tableContainerSx,
+  tableHeadRowSx,
+  tableRowSx,
+  paginationSx,
+  actionButtonSx,
+  dialogPaperSx,
+  BrandedDialogTitle,
+  DetailRow,
+  dialogActionsSx,
+  saveButtonSx,
+  cancelButtonSx,
+  detailCardSx,
+} from "../Util/adminListUi";
 
 const Documents = () => {
   const navigate = useNavigate();
@@ -163,6 +183,18 @@ const Documents = () => {
       default:
         return "📁";
     }
+  };
+
+  const getFileTypeStyle = (type) => {
+    const map = {
+      pdf: { bg: alpha("#c62828", 0.1), color: "#c62828", border: alpha("#c62828", 0.25) },
+      word: { bg: alpha(brand.blue, 0.1), color: brand.blue, border: alpha(brand.blue, 0.25) },
+      excel: { bg: alpha(brand.green, 0.12), color: brand.greenDark, border: alpha(brand.green, 0.3) },
+      powerpoint: { bg: alpha("#e65100", 0.1), color: "#e65100", border: alpha("#e65100", 0.25) },
+      image: { bg: alpha(brand.navy, 0.08), color: brand.navy, border: alpha(brand.navy, 0.2) },
+      text: { bg: alpha(brand.navy, 0.06), color: brand.sidebarTextMuted, border: brand.sidebarBorder },
+    };
+    return map[type] || map.text;
   };
 
   const formatDate = (dateString) => {
@@ -427,154 +459,36 @@ const Documents = () => {
   }
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 0,
-          overflow: "hidden",
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(10px)",
-          border: "none",
-          boxShadow: "none",
-          minHeight: "100vh",
-        }}
-      >
-        {/* Header Section */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            display="flex"
-            flexDirection={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            gap={{ xs: 2, sm: 0 }}
-            position="relative"
-            zIndex={1}
-          >
-            <Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 800,
-                  mb: 1,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
-                }}
-              >
-                Document Management
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                Manage company documents and files
-              </Typography>
-            </Box>
+    <Box>
+      <Paper elevation={0} sx={listPaperSx}>
+        <ListPageHeader
+          icon={Folder}
+          title="Document Management"
+          subtitle="Manage company documents and files"
+          action={
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => {
                 setSelectedDocument(null);
-                setDocumentForm({
-                  title: "",
-                  description: "",
-                  file_type: "pdf",
-                });
+                setDocumentForm({ title: "", description: "", file_type: "pdf" });
                 setOpenCreateDialog(true);
               }}
-              sx={{
-                background: "linear-gradient(45deg, #FF6B6B, #4ECDC4)",
-                borderRadius: 3,
-                px: { xs: 2, sm: 4 },
-                py: 1.5,
-                fontSize: { xs: "0.875rem", sm: "1rem" },
-                fontWeight: 600,
-                textTransform: "none",
-                boxShadow: "0 8px 25px rgba(255, 107, 107, 0.3)",
-                width: { xs: "100%", sm: "auto" },
-                "&:hover": {
-                  background: "linear-gradient(45deg, #FF5252, #26A69A)",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 12px 35px rgba(255, 107, 107, 0.4)",
-                },
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-              }}
+              sx={createButtonSx}
             >
               Add New Document
             </Button>
-          </Box>
-        </Box>
+          }
+        />
 
-        {/* Content Section */}
-        <Box
-          sx={{ p: { xs: 1, sm: 2, md: 3 }, minHeight: "calc(100vh - 200px)" }}
-        >
-          {/* File Type Filter Tabs */}
-          <Box mb={3}>
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <Box mb={2.5}>
             <Tabs
               value={documentTypeFilter}
               onChange={(e, newValue) => setDocumentTypeFilter(newValue)}
               variant="scrollable"
               scrollButtons="auto"
-              sx={{
-                backgroundColor: "rgba(255, 255, 255, 0.8)",
-                borderRadius: 2,
-                border: "1px solid rgba(102, 126, 234, 0.1)",
-                "& .MuiTabs-indicator": {
-                  backgroundColor: "#667eea",
-                  height: 3,
-                  borderRadius: "3px 3px 0 0",
-                },
-                "& .MuiTab-root": {
-                  textTransform: "capitalize",
-                  fontWeight: 600,
-                  fontSize: "0.875rem",
-                  minHeight: 48,
-                  color: "#666",
-                  "&.Mui-selected": {
-                    color: "#667eea",
-                    fontWeight: 700,
-                  },
-                  "&:hover": {
-                    color: "#667eea",
-                    backgroundColor: "rgba(102, 126, 234, 0.05)",
-                  },
-                },
-              }}
+              sx={tabsSx}
             >
               <Tab label="All Documents" value="all" />
               <Tab label="PDF" value="pdf" />
@@ -586,46 +500,10 @@ const Documents = () => {
             </Tabs>
           </Box>
 
-          {/* Documents Table */}
-          <TableContainer
-            sx={{
-              borderRadius: 3,
-              overflowX: "auto",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              border: "1px solid rgba(102, 126, 234, 0.1)",
-              "&::-webkit-scrollbar": {
-                height: 8,
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: "rgba(102, 126, 234, 0.1)",
-                borderRadius: 4,
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "rgba(102, 126, 234, 0.3)",
-                borderRadius: 4,
-                "&:hover": {
-                  backgroundColor: "rgba(102, 126, 234, 0.5)",
-                },
-              },
-            }}
-          >
+          <TableContainer sx={tableContainerSx}>
             <Table sx={{ minWidth: 800 }}>
               <TableHead>
-                <TableRow
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    "& .MuiTableCell-head": {
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: { xs: "0.8rem", sm: "0.95rem" },
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      border: "none",
-                      whiteSpace: "nowrap",
-                    },
-                  }}
-                >
+                <TableRow sx={tableHeadRowSx}>
                   <TableCell>No</TableCell>
                   <TableCell>Title</TableCell>
                   <TableCell>File Type</TableCell>
@@ -637,162 +515,79 @@ const Documents = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <CircularProgress sx={{ color: "#667eea" }} />
+                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                      <CircularProgress sx={{ color: brand.green }} size={36} />
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
-                      </Alert>
-                      <Button
-                        variant="contained"
-                        onClick={fetchDocuments}
-                        sx={{
-                          background:
-                            "linear-gradient(45deg, #667eea, #764ba2)",
-                        }}
-                      >
+                      <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
+                      <Button variant="contained" onClick={fetchDocuments} sx={{ bgcolor: brand.green, "&:hover": { bgcolor: brand.greenLight } }}>
                         Retry
                       </Button>
                     </TableCell>
                   </TableRow>
                 ) : documents.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <Typography variant="h6" color="text.secondary">
-                        No documents found.
-                      </Typography>
+                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                      <Folder sx={{ fontSize: 48, color: alpha(brand.navy, 0.2), mb: 1 }} />
+                      <Typography variant="body1" color="text.secondary" fontWeight={500}>No documents found.</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  documents.map((document, idx) => (
-                    <TableRow
-                      key={document.id}
-                      sx={{
-                        "&:nth-of-type(even)": {
-                          backgroundColor: "rgba(102, 126, 234, 0.02)",
-                        },
-                        "&:hover": {
-                          backgroundColor: "rgba(102, 126, 234, 0.08)",
-                          transform: { xs: "none", sm: "scale(1.01)" },
-                        },
-                        transition: "all 0.2s ease",
-                        cursor: "pointer",
-                        "& .MuiTableCell-root": {
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          padding: { xs: "8px 4px", sm: "16px" },
-                        },
-                      }}
-                    >
-                      <TableCell sx={{ fontWeight: 600, color: "#667eea" }}>
+                  documents.map((document, idx) => {
+                    const typeStyle = getFileTypeStyle(document.file_type);
+                    return (
+                    <TableRow key={document.id} hover sx={tableRowSx}>
+                      <TableCell sx={{ fontWeight: 700, color: brand.navy, width: 48 }}>
                         {page * rowsPerPage + idx + 1}
                       </TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={1}>
-                          <Typography sx={{ fontSize: "1.2rem" }}>
-                            {getFileTypeIcon(document.file_type)}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            fontWeight="600"
-                            sx={{ color: "#2c3e50" }}
-                          >
-                            {document.title}
-                          </Typography>
+                          <Typography sx={{ fontSize: "1.2rem" }}>{getFileTypeIcon(document.file_type)}</Typography>
+                          <Typography variant="body2" fontWeight={600} color={brand.navy}>{document.title}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Chip
                           label={document.file_type}
-                          color={getFileTypeColor(document.file_type)}
                           size="small"
-                          variant="outlined"
-                          sx={{
-                            textTransform: "capitalize",
-                            fontWeight: 600,
-                            borderRadius: 2,
-                          }}
+                          sx={{ fontWeight: 600, fontSize: "0.75rem", textTransform: "capitalize", bgcolor: typeStyle.bg, color: typeStyle.color, border: `1px solid ${typeStyle.border}` }}
                         />
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#2c3e50", fontWeight: 600 }}
-                        >
+                        <Typography variant="body2" fontWeight={600} color={brand.navy}>
                           {document.uploader?.full_name || "Unknown"}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#7f8c8d", fontWeight: 600 }}
-                        >
+                        <Typography variant="body2" color={brand.sidebarTextMuted} fontWeight={500}>
                           {formatDate(document.createdAt)}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Box display="flex" gap={0.5}>
-                          <Tooltip title="Download Document" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDownloadDocument(document.id)}
-                              sx={{
-                                color: "#27ae60",
-                                backgroundColor: "rgba(39, 174, 96, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(39, 174, 96, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
+                          <Tooltip title="Download" arrow>
+                            <IconButton size="small" onClick={() => handleDownloadDocument(document.id)} sx={actionButtonSx.view}>
                               <UploadIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="View Document Details" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleViewDocument(document)}
-                              sx={{
-                                color: "#3498db",
-                                backgroundColor: "rgba(52, 152, 219, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(52, 152, 219, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
+                          <Tooltip title="View details" arrow>
+                            <IconButton size="small" onClick={() => handleViewDocument(document)} sx={actionButtonSx.edit}>
                               <ViewIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Delete Document" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDeleteDocument(document)}
-                              sx={{
-                                color: "#e74c3c",
-                                backgroundColor: "rgba(231, 76, 60, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(231, 76, 60, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
+                          <Tooltip title="Delete" arrow>
+                            <IconButton size="small" onClick={() => handleDeleteDocument(document)} sx={actionButtonSx.delete}>
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
-                  ))
+                  );
+                  })
                 )}
               </TableBody>
             </Table>
@@ -805,107 +600,27 @@ const Documents = () => {
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
-            sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderTop: "1px solid rgba(102, 126, 234, 0.1)",
-              "& .MuiTablePagination-toolbar": {
-                color: "#667eea",
-                fontWeight: 600,
-              },
-              "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                {
-                  color: "#2c3e50",
-                  fontWeight: 600,
-                },
-            }}
+            sx={paginationSx}
           />
         </Box>
 
-        {/* Document Dialog */}
         <Dialog
           open={openViewDialog || openCreateDialog}
           onClose={() => {
             setOpenViewDialog(false);
             setOpenCreateDialog(false);
             setSelectedDocument(null);
-            setDocumentForm({
-              title: "",
-              description: "",
-              file_type: "pdf",
-            });
+            setDocumentForm({ title: "", description: "", file_type: "pdf" });
           }}
           maxWidth="xs"
           fullWidth
-          sx={{
-            "& .MuiDialog-paper": {
-              borderRadius: 4,
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
-              maxHeight: "85vh",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(102, 126, 234, 0.2)",
-              overflow: "hidden",
-            },
-            "& .MuiBackdrop-root": {
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-            },
-          }}
+          PaperProps={{ sx: dialogPaperSx }}
         >
-          <DialogTitle
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              p: 3,
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                top: -20,
-                right: -20,
-                width: 100,
-                height: 100,
-                background: "rgba(255, 255, 255, 0.1)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: -15,
-                left: -15,
-                width: 80,
-                height: 80,
-                background: "rgba(255, 255, 255, 0.05)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <Folder sx={{ position: "relative", zIndex: 1, fontSize: 28 }} />
-            <Box sx={{ position: "relative", zIndex: 1 }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 800,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                }}
-              >
-                {openViewDialog ? "Document Details" : "Add New Document"}
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                {openViewDialog
-                  ? "View document information"
-                  : "Add a new document to the system"}
-              </Typography>
-            </Box>
-          </DialogTitle>
+          <BrandedDialogTitle
+            icon={Folder}
+            title={openViewDialog ? "Document Details" : "Add New Document"}
+            subtitle={openViewDialog ? "View document information" : "Add a new document to the system"}
+          />
           <DialogContent
             sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto" }}
           >
@@ -1271,33 +986,16 @@ const Documents = () => {
               </Box>
             )}
           </DialogContent>
-          <DialogActions
-            sx={{ p: 3, gap: 2, backgroundColor: "rgba(102, 126, 234, 0.05)" }}
-          >
+          <DialogActions sx={dialogActionsSx}>
             <Button
               onClick={() => {
                 setOpenViewDialog(false);
                 setOpenCreateDialog(false);
                 setSelectedDocument(null);
-                setDocumentForm({
-                  title: "",
-                  description: "",
-                  file_type: "pdf",
-                });
+                setDocumentForm({ title: "", description: "", file_type: "pdf" });
               }}
               variant="outlined"
-              sx={{
-                borderColor: "#667eea",
-                color: "#667eea",
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                "&:hover": {
-                  borderColor: "#5a6fd8",
-                  backgroundColor: "rgba(102, 126, 234, 0.1)",
-                },
-              }}
+              sx={cancelButtonSx}
             >
               {openViewDialog ? "Close" : "Cancel"}
             </Button>
@@ -1306,32 +1004,8 @@ const Documents = () => {
                 onClick={handleCreateDocument}
                 variant="contained"
                 startIcon={<AddIcon />}
-                sx={{
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  borderRadius: 2,
-                  px: 4,
-                  py: 1,
-                  fontWeight: 600,
-                  textTransform: "none",
-                  boxShadow: "0 4px 15px rgba(102, 126, 234, 0.3)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
-                    transform: "translateY(-1px)",
-                    boxShadow: "0 6px 20px rgba(102, 126, 234, 0.4)",
-                  },
-                  "&:disabled": {
-                    background: "rgba(102, 126, 234, 0.3)",
-                    color: "rgba(255, 255, 255, 0.6)",
-                  },
-                  transition: "all 0.3s ease",
-                }}
-                disabled={
-                  !documentForm.title ||
-                  !documentForm.file_type ||
-                  !selectedFile
-                }
+                sx={saveButtonSx}
+                disabled={!documentForm.title || !documentForm.file_type || !selectedFile}
               >
                 Add Document
               </Button>

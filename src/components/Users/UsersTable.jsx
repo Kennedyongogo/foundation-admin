@@ -56,8 +56,29 @@ import {
   Check as ApproveIcon,
   Block as SuspendIcon,
 } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
+import { brand } from "../../brandColors";
+import { fieldSx } from "../Projects/projectFormUi";
+import {
+  listPaperSx,
+  ListPageHeader,
+  createButtonSx,
+  tabsSx,
+  tabCountChipSx,
+  tableContainerSx,
+  tableHeadRowSx,
+  tableRowSx,
+  paginationSx,
+  actionButtonSx,
+  dialogPaperSx,
+  BrandedDialogTitle,
+  DetailRow,
+  dialogActionsSx,
+  saveButtonSx,
+  cancelButtonSx,
+  detailCardSx,
+} from "../Util/adminListUi";
 
 const UsersTable = () => {
   const theme = useTheme();
@@ -162,6 +183,20 @@ const UsersTable = () => {
       setLoading(false);
     }
   };
+
+  const getRoleStyle = (role) => {
+    const styles = {
+      "super-admin": { bg: alpha("#c62828", 0.1), color: "#c62828", border: alpha("#c62828", 0.3) },
+      admin: { bg: alpha(brand.blue, 0.12), color: brand.blue, border: alpha(brand.blue, 0.35) },
+      "regular user": { bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted, border: brand.sidebarBorder },
+    };
+    return styles[role] || { bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted, border: brand.sidebarBorder };
+  };
+
+  const getStatusStyle = (isActive) =>
+    isActive
+      ? { bg: alpha(brand.green, 0.14), color: brand.greenDark, label: "Active" }
+      : { bg: alpha("#c62828", 0.1), color: "#c62828", label: "Inactive" };
 
   const getRoleColor = (role) => {
     switch (role) {
@@ -483,158 +518,53 @@ const UsersTable = () => {
   };
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 0,
-          overflow: "hidden",
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(10px)",
-          border: "none",
-          boxShadow: "none",
-          minHeight: "100vh",
-        }}
-      >
-        {/* Header Section */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            display="flex"
-            flexDirection={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            gap={{ xs: 2, sm: 0 }}
-            position="relative"
-            zIndex={1}
-          >
-            <Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 800,
-                  mb: 1,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
-                }}
-              >
-                Admin Users Management
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                Manage admin users and their roles
-              </Typography>
-            </Box>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => {
-                  setSelectedUser(null);
-                  setShowPassword(false);
-                  setUserForm({
-                    full_name: "",
-                    email: "",
-                    phone: "",
-                    position: "",
-                    description: "",
-                    role: "admin",
-                    password: "",
-                    profile_picture: null,
-                    profile_picture_preview: "",
-                    profile_picture_path: "",
-                    isActive: true,
-                    whatsapp_link: "",
-                    google_link: "",
-                    twitter_link: "",
-                    facebook_link: "",
-                  });
-                  setOpenCreateDialog(true);
-                }}
-                sx={{
-                  background: "linear-gradient(45deg, #FF6B6B, #4ECDC4)",
-                  borderRadius: 3,
-                  px: { xs: 2, sm: 4 },
-                  py: 1.5,
-                  fontSize: { xs: "0.875rem", sm: "1rem" },
-                  fontWeight: 600,
-                  textTransform: "none",
-                  boxShadow: "0 8px 25px rgba(255, 107, 107, 0.3)",
-                  width: { xs: "100%", sm: "auto" },
-                  "&:hover": {
-                    background: "linear-gradient(45deg, #FF5252, #26A69A)",
-                    transform: "translateY(-2px)",
-                    boxShadow: "0 12px 35px rgba(255, 107, 107, 0.4)",
-                  },
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-              >
-                Create New Admin
-              </Button>
-          </Box>
-        </Box>
+    <Box>
+      <Paper elevation={0} sx={listPaperSx}>
+        <ListPageHeader
+          icon={AdminIcon}
+          title="Admin Users Management"
+          subtitle="Manage admin users and their roles"
+          action={
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setSelectedUser(null);
+                setShowPassword(false);
+                setUserForm({
+                  full_name: "",
+                  email: "",
+                  phone: "",
+                  position: "",
+                  description: "",
+                  role: "admin",
+                  password: "",
+                  profile_picture: null,
+                  profile_picture_preview: "",
+                  profile_picture_path: "",
+                  isActive: true,
+                  whatsapp_link: "",
+                  google_link: "",
+                  twitter_link: "",
+                  facebook_link: "",
+                });
+                setOpenCreateDialog(true);
+              }}
+              sx={createButtonSx}
+            >
+              Create New Admin
+            </Button>
+          }
+        />
 
-        {/* Content Section */}
-        <Box
-          sx={{ p: { xs: 1, sm: 2, md: 3 }, minHeight: "calc(100vh - 200px)" }}
-        >
-          {/* Tabs */}
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
           <Box mb={3}>
             <Tabs
               value={activeTab}
               onChange={handleTabChange}
-              sx={{
-                "& .MuiTab-root": {
-                  textTransform: "none",
-                  fontWeight: 600,
-                  fontSize: "1rem",
-                  minHeight: 48,
-                  color: "#667eea",
-                  "&.Mui-selected": {
-                    color: "#667eea",
-                    fontWeight: 700,
-                  },
-                },
-                "& .MuiTabs-indicator": {
-                  backgroundColor: "#667eea",
-                  height: 3,
-                  borderRadius: "2px 2px 0 0",
-                },
-              }}
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={tabsSx}
             >
               {roleTabs.map((tab, index) => (
                 <Tab key={index} label={tab.label} />
@@ -642,46 +572,10 @@ const UsersTable = () => {
             </Tabs>
           </Box>
 
-          {/* Users Table */}
-          <TableContainer
-            sx={{
-              borderRadius: 3,
-              overflowX: "auto",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              border: "1px solid rgba(102, 126, 234, 0.1)",
-              "&::-webkit-scrollbar": {
-                height: 8,
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: "rgba(102, 126, 234, 0.1)",
-                borderRadius: 4,
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "rgba(102, 126, 234, 0.3)",
-                borderRadius: 4,
-                "&:hover": {
-                  backgroundColor: "rgba(102, 126, 234, 0.5)",
-                },
-              },
-            }}
-          >
+          <TableContainer sx={tableContainerSx}>
             <Table sx={{ minWidth: 600 }}>
               <TableHead>
-                <TableRow
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    "& .MuiTableCell-head": {
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: { xs: "0.8rem", sm: "0.95rem" },
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      border: "none",
-                      whiteSpace: "nowrap",
-                    },
-                  }}
-                >
+                <TableRow sx={tableHeadRowSx}>
                   <TableCell>No</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Position</TableCell>
@@ -694,154 +588,98 @@ const UsersTable = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <CircularProgress sx={{ color: "#667eea" }} />
+                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                      <CircularProgress sx={{ color: brand.green }} size={36} />
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Typography color="error" variant="h6">
+                      <Typography color="error" variant="body1" fontWeight={600}>
                         {error}
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Typography variant="h6" color="text.secondary">
+                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                      <PersonIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2), mb: 1 }} />
+                      <Typography variant="body1" color="text.secondary" fontWeight={500}>
                         No users found.
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  users.map((user, idx) => (
-                    <TableRow
-                      key={user.id}
-                      sx={{
-                        "&:nth-of-type(even)": {
-                          backgroundColor: "rgba(102, 126, 234, 0.02)",
-                        },
-                        "&:hover": {
-                          backgroundColor: "rgba(102, 126, 234, 0.08)",
-                          transform: { xs: "none", sm: "scale(1.01)" },
-                        },
-                        transition: "all 0.2s ease",
-                        cursor: "pointer",
-                        "& .MuiTableCell-root": {
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          padding: { xs: "8px 4px", sm: "16px" },
-                        },
-                      }}
-                    >
-                      <TableCell sx={{ fontWeight: 600, color: "#667eea" }}>
+                  users.map((user, idx) => {
+                    const roleStyle = getRoleStyle(user.role);
+                    const statusStyle = getStatusStyle(user.isActive);
+                    return (
+                    <TableRow key={user.id} hover sx={tableRowSx}>
+                      <TableCell sx={{ fontWeight: 700, color: brand.navy, width: 48 }}>
                         {page * rowsPerPage + idx + 1}
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          sx={{ color: "#2c3e50" }}
-                        >
+                        <Typography variant="body2" fontWeight={600} color={brand.navy}>
                           {user.full_name || "N/A"}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ color: "#7f8c8d" }}>
+                        <Typography variant="body2" color={brand.sidebarTextMuted}>
                           {user.position || "N/A"}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ color: "#7f8c8d" }}>
+                        <Typography variant="body2" color={brand.sidebarTextMuted}>
                           {user.email}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
                           label={formatRole(user.role)}
-                          color={getRoleColor(user.role)}
                           size="small"
-                          variant="outlined"
                           sx={{
-                            textTransform: "capitalize",
                             fontWeight: 600,
-                            borderRadius: 2,
+                            fontSize: "0.75rem",
+                            bgcolor: roleStyle.bg,
+                            color: roleStyle.color,
+                            border: `1px solid ${roleStyle.border}`,
                           }}
                         />
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={user.isActive ? "Active" : "Inactive"}
-                          color={getStatusColor(user.isActive)}
+                          label={statusStyle.label}
                           size="small"
-                          variant="outlined"
                           sx={{
-                            textTransform: "capitalize",
                             fontWeight: 600,
-                            borderRadius: 2,
+                            fontSize: "0.75rem",
+                            bgcolor: statusStyle.bg,
+                            color: statusStyle.color,
                           }}
                         />
                       </TableCell>
                       <TableCell>
                         <Box display="flex" gap={0.5}>
-                          <Tooltip title="View User Details" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleViewUser(user)}
-                              sx={{
-                                color: "#27ae60",
-                                backgroundColor: "rgba(39, 174, 96, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(39, 174, 96, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
+                          <Tooltip title="View details" arrow>
+                            <IconButton size="small" onClick={() => handleViewUser(user)} sx={actionButtonSx.view}>
                               <ViewIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                              <Tooltip title="Edit User" arrow>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleEditUser(user)}
-                                  sx={{
-                                    color: "#3498db",
-                                    backgroundColor: "rgba(52, 152, 219, 0.1)",
-                                    "&:hover": {
-                                  backgroundColor: "rgba(52, 152, 219, 0.2)",
-                                      transform: "scale(1.1)",
-                                    },
-                                    transition: "all 0.2s ease",
-                                    borderRadius: 2,
-                                  }}
-                                >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete User" arrow>
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleDeleteUser(user)}
-                                  sx={{
-                                    color: "#e74c3c",
-                                    backgroundColor: "rgba(231, 76, 60, 0.1)",
-                                    "&:hover": {
-                                      backgroundColor: "rgba(231, 76, 60, 0.2)",
-                                      transform: "scale(1.1)",
-                                    },
-                                    transition: "all 0.2s ease",
-                                    borderRadius: 2,
-                                  }}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
+                          <Tooltip title="Edit user" arrow>
+                            <IconButton size="small" onClick={() => handleEditUser(user)} sx={actionButtonSx.edit}>
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete user" arrow>
+                            <IconButton size="small" onClick={() => handleDeleteUser(user)} sx={actionButtonSx.delete}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
-                  ))
+                  );
+                  })
                 )}
               </TableBody>
             </Table>
@@ -854,23 +692,10 @@ const UsersTable = () => {
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
-            sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderTop: "1px solid rgba(102, 126, 234, 0.1)",
-              "& .MuiTablePagination-toolbar": {
-                color: "#667eea",
-                fontWeight: 600,
-              },
-              "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                {
-                  color: "#2c3e50",
-                  fontWeight: 600,
-                },
-            }}
+            sx={paginationSx}
           />
         </Box>
 
-        {/* User Dialog */}
         <Dialog
           open={openViewDialog || openEditDialog || openCreateDialog}
           onClose={() => {
@@ -899,601 +724,88 @@ const UsersTable = () => {
           }}
           maxWidth="sm"
           fullWidth
-          sx={{
-            "& .MuiDialog-paper": {
-              borderRadius: 4,
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
-              maxHeight: "85vh",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(102, 126, 234, 0.2)",
-              overflow: "hidden",
-            },
-            "& .MuiBackdrop-root": {
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-            },
-          }}
+          PaperProps={{ sx: dialogPaperSx }}
         >
-          <DialogTitle
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              p: 3,
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                top: -20,
-                right: -20,
-                width: 100,
-                height: 100,
-                background: "rgba(255, 255, 255, 0.1)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <AdminIcon sx={{ position: "relative", zIndex: 1, fontSize: 28 }} />
-            <Box sx={{ position: "relative", zIndex: 1 }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 800,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                }}
-              >
-                {openViewDialog
-                  ? "User Details"
-                  : openEditDialog
-                  ? "Edit User"
-                  : "Create New Admin"}
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                {openViewDialog
-                  ? "View user information"
-                  : openEditDialog
-                  ? "Update user details"
-                  : "Add a new admin to the system"}
-              </Typography>
-            </Box>
-          </DialogTitle>
-          <DialogContent
-            sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto" }}
-          >
+          <BrandedDialogTitle
+            icon={AdminIcon}
+            title={openViewDialog ? "User Details" : openEditDialog ? "Edit User" : "Create New Admin"}
+            subtitle={openViewDialog ? "View user information" : openEditDialog ? "Update user details" : "Add a new admin to the system"}
+          />
+          <DialogContent sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto", bgcolor: brand.sidebarBg }}>
             {openViewDialog ? (
-              // View User Details
               <Box>
-                <Box
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    borderRadius: 3,
-                    p: 3,
-                    mb: 4,
-                    mt: 2,
-                    position: "relative",
-                    overflow: "hidden",
-                    color: "white",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: -20,
-                      right: -20,
-                      width: 100,
-                      height: 100,
-                      background: "rgba(255, 255, 255, 0.1)",
-                      borderRadius: "50%",
-                      zIndex: 0,
-                    }}
-                  />
-                  <Box sx={{ position: "relative", zIndex: 1 }}>
-                    <Typography
-                      variant="h4"
-                      sx={{
-                        fontWeight: 800,
-                        mb: 1,
-                        textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                        background: "linear-gradient(45deg, #fff, #f0f8ff)",
-                        backgroundClip: "text",
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
-                      }}
-                    >
-                      {selectedUser?.full_name || "N/A"}
-                    </Typography>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        opacity: 0.9,
-                        lineHeight: 1.6,
-                        fontSize: "1rem",
-                        textShadow: "0 1px 2px rgba(0,0,0,0.3)",
-                      }}
-                    >
-                      {selectedUser?.email}
-                    </Typography>
-                  </Box>
+                <Box sx={{ ...detailCardSx, mb: 3, mt: 1, bgcolor: alpha(brand.navy, 0.04) }}>
+                  <Typography variant="h6" fontWeight={800} color={brand.navy}>
+                    {selectedUser?.full_name || "N/A"}
+                  </Typography>
+                  <Typography variant="body2" color={brand.sidebarTextMuted} mt={0.5}>
+                    {selectedUser?.email}
+                  </Typography>
                 </Box>
 
-                {/* Profile Picture Display */}
                 {selectedUser?.profile_image && (
                   <Box sx={{ textAlign: "center", mb: 3 }}>
-                    <Typography
-                      variant="h6"
-                      sx={{ mb: 2, color: "#2c3e50", fontWeight: 600 }}
-                    >
-                      Profile Picture
-                    </Typography>
                     <Box
                       sx={{
-                        p: 2,
-                        backgroundColor: "rgba(102, 126, 234, 0.1)",
-                        borderRadius: 2,
-                        border: "2px solid rgba(102, 126, 234, 0.3)",
-                        cursor: "pointer",
-                        transition: "transform 0.2s ease-in-out",
                         display: "inline-block",
-                        "&:hover": {
-                          transform: "scale(1.02)",
-                        },
+                        p: 1,
+                        borderRadius: 2,
+                        border: `2px solid ${brand.sidebarBorder}`,
+                        cursor: "pointer",
                       }}
-                      onClick={() => {
-                        const fullImageUrl = buildImageUrl(
-                          selectedUser.profile_image
-                        );
-                        window.open(fullImageUrl, "_blank");
-                      }}
+                      onClick={() => window.open(buildImageUrl(selectedUser.profile_image), "_blank")}
                     >
                       <Box
                         component="img"
                         src={buildImageUrl(selectedUser.profile_image)}
-                        alt="Profile Picture"
-                        sx={{
-                          width: 150,
-                          height: 150,
-                          objectFit: "cover",
-                          borderRadius: "50%",
-                          border: "4px solid #667eea",
-                          boxShadow: "0 8px 25px rgba(102, 126, 234, 0.3)",
-                        }}
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          e.target.nextSibling.style.display = "block";
-                        }}
+                        alt="Profile"
+                        sx={{ width: 120, height: 120, objectFit: "cover", borderRadius: "50%" }}
                       />
-                      <Box
-                        textAlign="center"
-                        sx={{
-                          display: "none",
-                          width: 150,
-                          height: 150,
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor: "rgba(102, 126, 234, 0.1)",
-                          borderRadius: "50%",
-                          border: "4px solid #667eea",
-                        }}
-                      >
-                        <PersonIcon
-                          sx={{
-                            fontSize: 48,
-                            color: "#667eea",
-                            mb: 1,
-                          }}
-                        />
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: "#667eea",
-                            display: "block",
-                            wordBreak: "break-word",
-                            textAlign: "center",
-                          }}
-                        >
-                          Profile Picture
-                        </Typography>
-                      </Box>
                     </Box>
                   </Box>
                 )}
 
-                <Stack spacing={2} sx={{ mb: 3 }}>
-                  <Card
-                    sx={{
-                      background: "white",
-                      borderRadius: 2,
-                      p: 2,
-                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                        transform: "translateY(-2px)",
-                      },
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <PersonIcon sx={{ fontSize: 24, color: "#667eea" }} />
-                      <Box>
-                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
-                          ROLE
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50" }}>
-                          {formatRole(selectedUser?.role)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Card>
-                  <Card
-                    sx={{
-                      background: "white",
-                      borderRadius: 2,
-                      p: 2,
-                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                        transform: "translateY(-2px)",
-                      },
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <PhoneIcon sx={{ fontSize: 24, color: "#667eea" }} />
-                      <Box>
-                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
-                          PHONE
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50" }}>
-                          {selectedUser?.phone || "N/A"}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Card>
-                  <Card
-                    sx={{
-                      background: "white",
-                      borderRadius: 2,
-                      p: 2,
-                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                        transform: "translateY(-2px)",
-                      },
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <CheckCircle sx={{ fontSize: 24, color: "#667eea" }} />
-                      <Box>
-                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
-                          STATUS
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50" }}>
-                          {selectedUser?.isActive ? "Active" : "Inactive"}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Card>
-                  <Card
-                    sx={{
-                      background: "white",
-                      borderRadius: 2,
-                      p: 2,
-                      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                        transform: "translateY(-2px)",
-                      },
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <Schedule sx={{ fontSize: 24, color: "#667eea" }} />
-                      <Box>
-                        <Typography variant="caption" sx={{ color: "#7f8c8d" }}>
-                          LAST LOGIN
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 600, color: "#2c3e50" }}>
-                          {selectedUser?.lastLogin
-                            ? new Date(
-                                selectedUser.lastLogin
-                              ).toLocaleDateString()
-                            : "Never"}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Card>
+                <Stack spacing={1.5} sx={{ mb: 3 }}>
+                  <DetailRow icon={PersonIcon} label="ROLE" value={formatRole(selectedUser?.role)} />
+                  <DetailRow icon={PhoneIcon} label="PHONE" value={selectedUser?.phone || "N/A"} />
+                  <DetailRow icon={CheckCircle} label="STATUS" value={selectedUser?.isActive ? "Active" : "Inactive"} />
+                  <DetailRow
+                    icon={Schedule}
+                    label="LAST LOGIN"
+                    value={selectedUser?.lastLogin ? new Date(selectedUser.lastLogin).toLocaleDateString() : "Never"}
+                  />
                 </Stack>
 
-                {/* Additional Info Section */}
-                <Box sx={{ mb: 3 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{ fontWeight: 600, mb: 2, color: "#2c3e50" }}
-                  >
-                    Additional Information
-                  </Typography>
-                  <Stack spacing={2}>
-                    <Card
-                      sx={{
-                        background: "white",
-                        borderRadius: 2,
-                        p: 2,
-                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                        transition: "all 0.3s ease",
-                        "&:hover": {
-                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                          transform: "translateY(-2px)",
-                        },
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "#7f8c8d", mb: 0.5 }}
-                      >
-                        <strong>Position:</strong>{" "}
-                        {selectedUser?.position || "N/A"}
-                      </Typography>
-                    </Card>
-                    <Card
-                      sx={{
-                        background: "white",
-                        borderRadius: 2,
-                        p: 2,
-                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                        transition: "all 0.3s ease",
-                        "&:hover": {
-                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                          transform: "translateY(-2px)",
-                        },
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "#7f8c8d", mb: 0.5 }}
-                      >
-                        <strong>Description:</strong>{" "}
-                        {selectedUser?.description || "N/A"}
-                      </Typography>
-                    </Card>
-                    <Card
-                      sx={{
-                        background: "white",
-                        borderRadius: 2,
-                        p: 2,
-                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                        transition: "all 0.3s ease",
-                        "&:hover": {
-                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                          transform: "translateY(-2px)",
-                        },
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "#7f8c8d", mb: 0.5 }}
-                      >
-                        <strong>Created:</strong>{" "}
-                        {selectedUser?.createdAt
-                          ? new Date(
-                              selectedUser.createdAt
-                            ).toLocaleDateString()
-                          : "N/A"}
-                      </Typography>
-                    </Card>
-                    <Card
-                      sx={{
-                        background: "white",
-                        borderRadius: 2,
-                        p: 2,
-                        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                        transition: "all 0.3s ease",
-                        "&:hover": {
-                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                          transform: "translateY(-2px)",
-                        },
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "#7f8c8d", mb: 0.5 }}
-                      >
-                        <strong>Last Updated:</strong>{" "}
-                        {selectedUser?.updatedAt
-                          ? new Date(
-                              selectedUser.updatedAt
-                            ).toLocaleDateString()
-                          : "N/A"}
-                      </Typography>
-                    </Card>
-                  </Stack>
-                </Box>
-
-                {/* Social Media Links Section */}
-                {(selectedUser?.whatsapp_link || selectedUser?.google_link || selectedUser?.twitter_link || selectedUser?.facebook_link) && (
-                  <Box sx={{ mb: 3 }}>
-                    <Typography
-                      variant="h6"
-                      sx={{ fontWeight: 600, mb: 2, color: "#2c3e50" }}
-                    >
-                      Social Media Links
+                <Typography variant="subtitle2" fontWeight={700} color={brand.navy} mb={1.5}>
+                  Additional Information
+                </Typography>
+                <Stack spacing={1.5} sx={{ mb: 3 }}>
+                  <Box sx={detailCardSx}>
+                    <Typography variant="body2" color={brand.sidebarTextMuted}>
+                      <strong>Position:</strong> {selectedUser?.position || "N/A"}
                     </Typography>
-                    <Stack spacing={2}>
-                      {selectedUser?.whatsapp_link && (
-                        <Card
-                          sx={{
-                            background: "white",
-                            borderRadius: 2,
-                            p: 2,
-                            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                            transition: "all 0.3s ease",
-                            "&:hover": {
-                              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                              transform: "translateY(-2px)",
-                            },
-                          }}
-                        >
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>WhatsApp:</strong>{" "}
-                            <a href={selectedUser.whatsapp_link} target="_blank" rel="noopener noreferrer" style={{ color: "#25D366" }}>
-                              {selectedUser.whatsapp_link}
-                            </a>
-                          </Typography>
-                        </Card>
-                      )}
-                      {selectedUser?.google_link && (
-                        <Card
-                          sx={{
-                            background: "white",
-                            borderRadius: 2,
-                            p: 2,
-                            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                            transition: "all 0.3s ease",
-                            "&:hover": {
-                              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                              transform: "translateY(-2px)",
-                            },
-                          }}
-                        >
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Google:</strong>{" "}
-                            <a href={selectedUser.google_link} target="_blank" rel="noopener noreferrer" style={{ color: "#4285F4" }}>
-                              {selectedUser.google_link}
-                            </a>
-                          </Typography>
-                        </Card>
-                      )}
-                      {selectedUser?.twitter_link && (
-                        <Card
-                          sx={{
-                            background: "white",
-                            borderRadius: 2,
-                            p: 2,
-                            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                            transition: "all 0.3s ease",
-                            "&:hover": {
-                              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                              transform: "translateY(-2px)",
-                            },
-                          }}
-                        >
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Twitter:</strong>{" "}
-                            <a href={selectedUser.twitter_link} target="_blank" rel="noopener noreferrer" style={{ color: "#1DA1F2" }}>
-                              {selectedUser.twitter_link}
-                            </a>
-                          </Typography>
-                        </Card>
-                      )}
-                      {selectedUser?.facebook_link && (
-                        <Card
-                          sx={{
-                            background: "white",
-                            borderRadius: 2,
-                            p: 2,
-                            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
-                            transition: "all 0.3s ease",
-                            "&:hover": {
-                              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                              transform: "translateY(-2px)",
-                            },
-                          }}
-                        >
-                          <Typography
-                            variant="body2"
-                            sx={{ color: "#7f8c8d", mb: 0.5 }}
-                          >
-                            <strong>Facebook:</strong>{" "}
-                            <a href={selectedUser.facebook_link} target="_blank" rel="noopener noreferrer" style={{ color: "#1877F2" }}>
-                              {selectedUser.facebook_link}
-                            </a>
-                          </Typography>
-                        </Card>
-                      )}
-                    </Stack>
                   </Box>
-                )}
+                  <Box sx={detailCardSx}>
+                    <Typography variant="body2" color={brand.sidebarTextMuted}>
+                      <strong>Description:</strong> {selectedUser?.description || "N/A"}
+                    </Typography>
+                  </Box>
+                  <Box sx={detailCardSx}>
+                    <Typography variant="body2" color={brand.sidebarTextMuted}>
+                      <strong>Created:</strong>{" "}
+                      {selectedUser?.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : "N/A"}
+                    </Typography>
+                  </Box>
+                </Stack>
               </Box>
             ) : (
-              // Create/Edit User Form
-              <Box
-                component="form"
-                noValidate
-                sx={{ maxHeight: "45vh", overflowY: "auto" }}
-              >
-                <Stack spacing={1.5} sx={{ mt: 1 }}>
-                      <TextField
-                        fullWidth
-                        label="Full Name"
-                    value={userForm.full_name}
-                        onChange={(e) =>
-                      setUserForm({ ...userForm, full_name: e.target.value })
-                        }
-                        required
-                        variant="outlined"
-                        size="small"
-                      />
-                      <TextField
-                        fullWidth
-                        label="Email"
-                        type="email"
-                        value={userForm.email}
-                        onChange={(e) =>
-                          setUserForm({ ...userForm, email: e.target.value })
-                        }
-                        required
-                        variant="outlined"
-                        size="small"
-                      />
-                      <TextField
-                        fullWidth
-                        label="Phone"
-                        value={userForm.phone}
-                        onChange={(e) =>
-                          setUserForm({ ...userForm, phone: e.target.value })
-                        }
-                        variant="outlined"
-                        size="small"
-                      />
-                      <TextField
-                        fullWidth
-                    label="Position"
-                    value={userForm.position}
-                        onChange={(e) =>
-                      setUserForm({ ...userForm, position: e.target.value })
-                        }
-                        variant="outlined"
-                        size="small"
-                      />
-                      <TextField
-                        fullWidth
-                        label="Description"
-                        value={userForm.description}
-                        onChange={(e) =>
-                          setUserForm({ ...userForm, description: e.target.value })
-                        }
-                        variant="outlined"
-                        size="small"
-                        multiline
-                        rows={3}
-                      />
+              <Box component="form" noValidate>
+                <Stack spacing={2} sx={{ mt: 1 }}>
+                      <TextField fullWidth label="Full Name" value={userForm.full_name} onChange={(e) => setUserForm({ ...userForm, full_name: e.target.value })} required size="small" sx={fieldSx} />
+                      <TextField fullWidth label="Email" type="email" value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} required size="small" sx={fieldSx} />
+                      <TextField fullWidth label="Phone" value={userForm.phone} onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })} size="small" sx={fieldSx} />
+                      <TextField fullWidth label="Position" value={userForm.position} onChange={(e) => setUserForm({ ...userForm, position: e.target.value })} size="small" sx={fieldSx} />
+                      <TextField fullWidth label="Description" value={userForm.description} onChange={(e) => setUserForm({ ...userForm, description: e.target.value })} size="small" multiline rows={3} sx={fieldSx} />
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
                       Profile Picture
@@ -1512,12 +824,9 @@ const UsersTable = () => {
                         startIcon={<PersonIcon />}
                         sx={{
                           mb: 2,
-                          borderColor: "#667eea",
-                          color: "#667eea",
-                          "&:hover": {
-                            borderColor: "#5a6fd8",
-                            backgroundColor: "rgba(102, 126, 234, 0.1)",
-                          },
+                          borderColor: brand.green,
+                          color: brand.green,
+                          "&:hover": { borderColor: brand.green, bgcolor: alpha(brand.green, 0.08) },
                         }}
                       >
                         {userForm.profile_picture_preview
@@ -1545,7 +854,7 @@ const UsersTable = () => {
                       </Box>
                     )}
                   </Box>
-                    <FormControl fullWidth variant="outlined" size="small">
+                    <FormControl fullWidth variant="outlined" size="small" sx={fieldSx}>
                       <InputLabel>Role</InputLabel>
                       <Select
                         value={userForm.role}
@@ -1605,60 +914,18 @@ const UsersTable = () => {
                     }
                     label="Active User"
                   />
-                  <Typography variant="body2" sx={{ mt: 2, mb: 1, fontWeight: 600, color: "#2c3e50" }}>
+                  <Typography variant="body2" sx={{ mt: 1, mb: 1, fontWeight: 600, color: brand.navy }}>
                     Social Media Links (Optional)
                   </Typography>
-                  <TextField
-                    fullWidth
-                    label="WhatsApp Link"
-                    value={userForm.whatsapp_link}
-                    onChange={(e) =>
-                      setUserForm({ ...userForm, whatsapp_link: e.target.value })
-                    }
-                    variant="outlined"
-                    size="small"
-                    placeholder="https://wa.me/..."
-                  />
-                  <TextField
-                    fullWidth
-                    label="Google Link"
-                    value={userForm.google_link}
-                    onChange={(e) =>
-                      setUserForm({ ...userForm, google_link: e.target.value })
-                    }
-                    variant="outlined"
-                    size="small"
-                    placeholder="https://google.com/..."
-                  />
-                  <TextField
-                    fullWidth
-                    label="Twitter Link"
-                    value={userForm.twitter_link}
-                    onChange={(e) =>
-                      setUserForm({ ...userForm, twitter_link: e.target.value })
-                    }
-                    variant="outlined"
-                    size="small"
-                    placeholder="https://twitter.com/..."
-                  />
-                  <TextField
-                    fullWidth
-                    label="Facebook Link"
-                    value={userForm.facebook_link}
-                    onChange={(e) =>
-                      setUserForm({ ...userForm, facebook_link: e.target.value })
-                    }
-                    variant="outlined"
-                    size="small"
-                    placeholder="https://facebook.com/..."
-                  />
+                  <TextField fullWidth label="WhatsApp Link" value={userForm.whatsapp_link} onChange={(e) => setUserForm({ ...userForm, whatsapp_link: e.target.value })} variant="outlined" size="small" placeholder="https://wa.me/..." sx={fieldSx} />
+                  <TextField fullWidth label="Google Link" value={userForm.google_link} onChange={(e) => setUserForm({ ...userForm, google_link: e.target.value })} variant="outlined" size="small" sx={fieldSx} />
+                  <TextField fullWidth label="Twitter Link" value={userForm.twitter_link} onChange={(e) => setUserForm({ ...userForm, twitter_link: e.target.value })} variant="outlined" size="small" sx={fieldSx} />
+                  <TextField fullWidth label="Facebook Link" value={userForm.facebook_link} onChange={(e) => setUserForm({ ...userForm, facebook_link: e.target.value })} variant="outlined" size="small" sx={fieldSx} />
                 </Stack>
               </Box>
             )}
           </DialogContent>
-          <DialogActions
-            sx={{ p: 3, gap: 2, backgroundColor: "rgba(102, 126, 234, 0.05)" }}
-          >
+          <DialogActions sx={dialogActionsSx}>
             <Button
               onClick={() => {
                 setOpenViewDialog(false);
@@ -1685,18 +952,7 @@ const UsersTable = () => {
                 });
               }}
               variant="outlined"
-              sx={{
-                borderColor: "#667eea",
-                color: "#667eea",
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                "&:hover": {
-                  borderColor: "#5a6fd8",
-                  backgroundColor: "rgba(102, 126, 234, 0.1)",
-                },
-              }}
+              sx={cancelButtonSx}
             >
               {openViewDialog ? "Close" : "Cancel"}
             </Button>
@@ -1704,49 +960,17 @@ const UsersTable = () => {
               <Button
                 onClick={openEditDialog ? handleUpdateUser : handleCreateUser}
                 variant="contained"
-                startIcon={
-                  isCreating || isUpdating ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    <AddIcon />
-                  )
-                }
-                sx={{
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  borderRadius: 2,
-                  px: 4,
-                  py: 1,
-                  fontWeight: 600,
-                  textTransform: "none",
-                  boxShadow: "0 4px 15px rgba(102, 126, 234, 0.3)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
-                    transform: "translateY(-1px)",
-                    boxShadow: "0 6px 20px rgba(102, 126, 234, 0.4)",
-                  },
-                  "&:disabled": {
-                    background: "rgba(102, 126, 234, 0.3)",
-                    color: "rgba(255, 255, 255, 0.6)",
-                  },
-                  transition: "all 0.3s ease",
-                }}
+                startIcon={isCreating || isUpdating ? <CircularProgress size={20} color="inherit" /> : <AddIcon />}
+                sx={saveButtonSx}
                 disabled={
                   !userForm.full_name ||
-                      !userForm.email ||
-                      (openCreateDialog && !userForm.password) ||
-                      isCreating ||
-                      isUpdating
+                  !userForm.email ||
+                  (openCreateDialog && !userForm.password) ||
+                  isCreating ||
+                  isUpdating
                 }
               >
-                {isCreating
-                  ? "Creating..."
-                  : isUpdating
-                  ? "Updating..."
-                  : openEditDialog
-                  ? "Update User"
-                  : "Create Admin"}
+                {isCreating ? "Creating…" : isUpdating ? "Updating…" : openEditDialog ? "Update User" : "Create Admin"}
               </Button>
             )}
           </DialogActions>

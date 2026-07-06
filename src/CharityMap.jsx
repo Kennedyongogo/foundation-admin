@@ -26,7 +26,18 @@ import {
   Paper,
   Divider,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { alpha } from "@mui/material/styles";
+import { brand, appBarGradient } from "./brandColors";
+import { fieldSx } from "./components/Projects/projectFormUi";
+import {
+  listPaperSx,
+  ListPageHeader,
+  filterBarSx,
+  tabsSx,
+  saveButtonSx,
+  cancelButtonSx,
+  detailCardSx,
+} from "./components/Util/adminListUi";
 import "ol/ol.css";
 import Map from "ol/Map";
 import View from "ol/View";
@@ -936,17 +947,17 @@ const CharityMap = () => {
   const categoryCounts = getCategoryCounts();
 
   return (
-    <>
+    <Box>
+      <Paper elevation={0} sx={listPaperSx}>
+        <ListPageHeader
+          icon={MapIcon}
+          title="Charity Projects Map"
+          subtitle="Explore foundation projects by location, category, and proximity"
+        />
+
+        <Box sx={{ p: { xs: 1.5, sm: 2 } }}>
       {/* Search and Filter Controls */}
-      <Box
-        sx={{
-          mb: 0.5,
-          p: 1,
-          backgroundColor: "#f8f9fa",
-          borderRadius: 1,
-          border: "1px solid #e0e0e0",
-        }}
-      >
+      <Box sx={{ ...filterBarSx, mb: 1.5, borderRadius: 2 }}>
         {/* Charity Projects Location Label and Near Me Controls */}
         <Box
           sx={{
@@ -956,15 +967,8 @@ const CharityMap = () => {
             mb: 0.5,
           }}
         >
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 600,
-              color: "#4caf50",
-              fontSize: "1.1rem",
-            }}
-          >
-            Charity Projects Map
+          <Typography variant="h6" sx={{ fontWeight: 700, color: brand.navy, fontSize: "1rem" }}>
+            Map Controls
           </Typography>
 
           {/* Near Me Controls */}
@@ -975,29 +979,14 @@ const CharityMap = () => {
               size="small"
               onClick={findNearMeProjects}
               disabled={isGettingLocation}
-              startIcon={
-                isGettingLocation ? (
-                  <CircularProgress size={16} />
-                ) : (
-                  <MyLocationIcon />
-                )
-              }
+              startIcon={isGettingLocation ? <CircularProgress size={16} color="inherit" /> : <MyLocationIcon />}
               sx={{
                 minWidth: 120,
                 textTransform: "none",
                 fontWeight: 600,
-                backgroundColor: nearMeMode ? "#2196f3" : "transparent",
-                borderColor: "#2196f3",
-                color: nearMeMode ? "white" : "#2196f3",
-                "&:hover": {
-                  backgroundColor: nearMeMode ? "#1976d2" : "#e3f2fd",
-                  borderColor: "#1976d2",
-                },
-                "&:disabled": {
-                  backgroundColor: "transparent",
-                  borderColor: "#ccc",
-                  color: "#999",
-                },
+                ...(nearMeMode
+                  ? { ...saveButtonSx, py: 0.75, px: 2 }
+                  : { borderColor: brand.green, color: brand.green, "&:hover": { bgcolor: alpha(brand.green, 0.08), borderColor: brand.greenDark } }),
               }}
             >
               {isGettingLocation ? "Getting Location..." : "Near Me"}
@@ -1010,69 +999,22 @@ const CharityMap = () => {
                 type="number"
                 label="Radius (km)"
                 value={nearMeRadius}
-                onChange={(e) =>
-                  setNearMeRadius(parseFloat(e.target.value) || 10)
-                }
-                inputProps={{
-                  min: 0.1,
-                  max: 1000,
-                  step: 0.1,
-                }}
-                sx={{
-                  minWidth: 120,
-                  maxWidth: 120,
-                  "& .MuiInputBase-root": {
-                    fontSize: "0.75rem",
-                  },
-                  "& .MuiInputLabel-root": {
-                    fontSize: "0.7rem",
-                  },
-                }}
+                onChange={(e) => setNearMeRadius(parseFloat(e.target.value) || 10)}
+                inputProps={{ min: 0.1, max: 1000, step: 0.1 }}
+                sx={{ ...fieldSx, minWidth: 120, maxWidth: 120 }}
               />
             )}
 
             {/* Center on Location Button */}
             {userLocation && (
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={centerOnUserLocation}
-                startIcon={<LocationSearchingIcon />}
-                sx={{
-                  minWidth: 100,
-                  textTransform: "none",
-                  fontWeight: 600,
-                  borderColor: "#4caf50",
-                  color: "#4caf50",
-                  "&:hover": {
-                    backgroundColor: "#e8f5e8",
-                    borderColor: "#388e3c",
-                  },
-                }}
-              >
+              <Button variant="outlined" size="small" onClick={centerOnUserLocation} startIcon={<LocationSearchingIcon />} sx={{ ...cancelButtonSx, py: 0.75, borderColor: brand.green, color: brand.green, "&:hover": { bgcolor: alpha(brand.green, 0.08) } }}>
                 Center
               </Button>
             )}
 
             {/* Clear Near Me Button */}
             {nearMeMode && (
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={clearNearMe}
-                startIcon={<ClearIcon />}
-                sx={{
-                  minWidth: 100,
-                  textTransform: "none",
-                  fontWeight: 600,
-                  borderColor: "#f44336",
-                  color: "#f44336",
-                  "&:hover": {
-                    backgroundColor: "#ffebee",
-                    borderColor: "#d32f2f",
-                  },
-                }}
-              >
+              <Button variant="outlined" size="small" onClick={clearNearMe} startIcon={<ClearIcon />} sx={{ ...cancelButtonSx, py: 0.75, borderColor: "#c62828", color: "#c62828", "&:hover": { bgcolor: alpha("#c62828", 0.06) } }}>
                 Clear
               </Button>
             )}
@@ -1097,12 +1039,7 @@ const CharityMap = () => {
               placeholder="Search by project name, category, county, target individual, or description..."
               value={searchQuery}
               onChange={handleSearchChange}
-              sx={{
-                width: 350,
-                "& .MuiOutlinedInput-root": {
-                  backgroundColor: "white",
-                },
-              }}
+              sx={{ ...fieldSx, width: 350, bgcolor: "#fff" }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -1124,7 +1061,7 @@ const CharityMap = () => {
             />
 
             {/* Search Column Selector */}
-            <FormControl size="small" sx={{ minWidth: 150 }}>
+            <FormControl size="small" sx={{ ...fieldSx, minWidth: 150 }}>
               <InputLabel>Search in</InputLabel>
               <Select
                 value={searchColumn}
@@ -1267,7 +1204,11 @@ const CharityMap = () => {
         ref={mapRef}
         sx={{
           width: "100%",
-          height: "calc(100vh - 200px)",
+          height: "calc(100vh - 320px)",
+          minHeight: 420,
+          borderRadius: 2,
+          overflow: "hidden",
+          border: `1px solid ${brand.sidebarBorder}`,
           position: "relative",
           "& .ol-zoom": {
             top: "1em",
@@ -1401,7 +1342,7 @@ const CharityMap = () => {
           <IconButton
             sx={{
               backgroundColor: "transparent",
-              color: baseLayer === "osm" ? "#2196f3" : "#666",
+              color: baseLayer === "osm" ? brand.green : brand.sidebarTextMuted,
               "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
             }}
             onClick={() => handleBaseLayerChange({ target: { value: "osm" } })}
@@ -1411,7 +1352,7 @@ const CharityMap = () => {
           <IconButton
             sx={{
               backgroundColor: "transparent",
-              color: baseLayer === "satellite" ? "#2196f3" : "#666",
+              color: baseLayer === "satellite" ? brand.green : brand.sidebarTextMuted,
               "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
             }}
             onClick={() =>
@@ -1423,7 +1364,7 @@ const CharityMap = () => {
           <IconButton
             sx={{
               backgroundColor: "transparent",
-              color: baseLayer === "terrain" ? "#2196f3" : "#666",
+              color: baseLayer === "terrain" ? brand.green : brand.sidebarTextMuted,
               "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
             }}
             onClick={() =>
@@ -1441,45 +1382,25 @@ const CharityMap = () => {
             bottom: 60,
             right: 10,
             zIndex: 1000,
-            backgroundColor: "white",
-            borderRadius: 1,
-            padding: "6px 10px",
+            backgroundColor: brand.sidebarBg,
+            borderRadius: 2,
+            padding: "8px 12px",
             minWidth: "200px",
             maxWidth: "220px",
-            boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
-            opacity: 0.9,
+            boxShadow: `0 4px 16px ${alpha(brand.navy, 0.12)}`,
+            border: `1px solid ${brand.sidebarBorder}`,
+            borderTop: `3px solid ${brand.gold}`,
             maxHeight: "60vh",
             overflowY: "auto",
           }}
         >
-          <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: "bold", mb: 0.5, fontSize: "13px" }}
-          >
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5, fontSize: "13px", color: brand.navy }}>
             Legend
           </Typography>
 
           {/* Select All / Deselect All Buttons */}
           <Box sx={{ display: "flex", gap: 0.25, mb: 0.5 }}>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={handleSelectAll}
-              sx={{
-                fontSize: "9px",
-                py: 0.1,
-                px: 0.75,
-                textTransform: "none",
-                borderColor: "#4caf50",
-                color: "#4caf50",
-                minWidth: "auto",
-                height: "20px",
-                "&:hover": {
-                  backgroundColor: "#e8f5e8",
-                  borderColor: "#388e3c",
-                },
-              }}
-            >
+            <Button size="small" variant="outlined" onClick={handleSelectAll} sx={{ fontSize: "9px", py: 0.1, px: 0.75, textTransform: "none", borderColor: brand.green, color: brand.green, minWidth: "auto", height: "20px", "&:hover": { bgcolor: alpha(brand.green, 0.08) } }}>
               All
             </Button>
             <Button
@@ -1700,17 +1621,7 @@ const CharityMap = () => {
             }}
           >
             {/* Header */}
-            <Box
-              sx={{
-                p: 3,
-                borderBottom: 1,
-                borderColor: "divider",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                color: "white",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
+            <Box sx={{ p: 3, borderBottom: `3px solid ${brand.gold}`, background: appBarGradient, color: "white", position: "relative", overflow: "hidden" }}>
               {/* Decorative Elements */}
               <Box
                 sx={{
@@ -1778,31 +1689,7 @@ const CharityMap = () => {
             </Box>
 
             {/* Tabs */}
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              variant="fullWidth"
-              sx={{
-                borderBottom: 1,
-                borderColor: "divider",
-                backgroundColor: "#f8f9fa",
-                "& .MuiTab-root": {
-                  textTransform: "none",
-                  fontWeight: 500,
-                  fontSize: "0.9rem",
-                  minHeight: "56px",
-                  "&.Mui-selected": {
-                    color: "#667eea",
-                    fontWeight: 600,
-                  },
-                },
-                "& .MuiTabs-indicator": {
-                  backgroundColor: "#667eea",
-                  height: 3,
-                  borderRadius: "2px 2px 0 0",
-                },
-              }}
-            >
+            <Tabs value={tabValue} onChange={handleTabChange} variant="fullWidth" sx={{ ...tabsSx, borderBottom: `1px solid ${brand.sidebarBorder}`, bgcolor: brand.sidebarBgAlt }}>
               <Tab
                 icon={<InfoIcon fontSize="small" />}
                 label="Basic Info"
@@ -1816,418 +1703,54 @@ const CharityMap = () => {
             </Tabs>
 
             {/* Content Area */}
-            <Box
-              sx={{
-                flex: 1,
-                overflow: "auto",
-                p: 3,
-                backgroundColor: "#fafafa",
-              }}
-            >
+            <Box sx={{ flex: 1, overflow: "auto", p: 3, backgroundColor: brand.sidebarBgAlt }}>
               {selectedProjectDetails ? (
                 <>
                   {tabValue === 0 && (
-                    <Box
-                      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-                    >
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "white",
-                          borderRadius: 2,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: "text.secondary",
-                            mb: 1,
-                            fontSize: "0.8rem",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          Project Name
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: 500, color: "text.primary" }}
-                        >
-                          {selectedProjectDetails.name}
-                        </Typography>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "white",
-                          borderRadius: 2,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: "text.secondary",
-                            mb: 1,
-                            fontSize: "0.8rem",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          Status
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            px: 2,
-                            py: 0.5,
-                            borderRadius: 3,
-                            backgroundColor: `${getStatusColor(
-                              selectedProjectDetails.status
-                            )}20`,
-                            color: getStatusColor(
-                              selectedProjectDetails.status
-                            ),
-                            fontWeight: 600,
-                            fontSize: "0.85rem",
-                          }}
-                        >
-                          {selectedProjectDetails.status
-                            .charAt(0)
-                            .toUpperCase() +
-                            selectedProjectDetails.status
-                              .slice(1)
-                              .replace("_", " ")}
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      {[
+                        { label: "Project Name", value: selectedProjectDetails.name },
+                        { label: "Target Individual", value: selectedProjectDetails.target_individual || "-" },
+                        { label: "Description", value: selectedProjectDetails.description || "-" },
+                      ].map(({ label, value }) => (
+                        <Box key={label} sx={{ ...detailCardSx, p: 2 }}>
+                          <Typography variant="caption" sx={{ color: brand.sidebarTextMuted, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 600, color: brand.navy, mt: 0.5 }}>{value}</Typography>
                         </Box>
+                      ))}
+                      <Box sx={{ ...detailCardSx, p: 2 }}>
+                        <Typography variant="caption" sx={{ color: brand.sidebarTextMuted, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>Status</Typography>
+                        <Chip label={selectedProjectDetails.status?.replace("_", " ") || "-"} size="small" sx={{ mt: 1, fontWeight: 600, bgcolor: alpha(getStatusColor(selectedProjectDetails.status), 0.15), color: getStatusColor(selectedProjectDetails.status) }} />
                       </Box>
-
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "white",
-                          borderRadius: 2,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: "text.secondary",
-                            mb: 1,
-                            fontSize: "0.8rem",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          Category
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            px: 2,
-                            py: 0.5,
-                            borderRadius: 3,
-                            backgroundColor: `${PROJECT_CATEGORIES[selectedProjectDetails.category]?.color}20`,
-                            color: PROJECT_CATEGORIES[selectedProjectDetails.category]?.color,
-                            fontWeight: 600,
-                            fontSize: "0.85rem",
-                          }}
-                        >
-                          {PROJECT_CATEGORIES[selectedProjectDetails.category]?.label || 
-                           selectedProjectDetails.category?.charAt(0).toUpperCase() + 
-                           selectedProjectDetails.category?.slice(1) || "-"}
+                      <Box sx={{ ...detailCardSx, p: 2 }}>
+                        <Typography variant="caption" sx={{ color: brand.sidebarTextMuted, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>Category</Typography>
+                        <Chip label={PROJECT_CATEGORIES[selectedProjectDetails.category]?.label || selectedProjectDetails.category || "-"} size="small" sx={{ mt: 1, fontWeight: 600, bgcolor: alpha(PROJECT_CATEGORIES[selectedProjectDetails.category]?.color || brand.navy, 0.15), color: PROJECT_CATEGORIES[selectedProjectDetails.category]?.color || brand.navy }} />
+                      </Box>
+                      {userLocation && selectedProjectDetails.distance !== undefined && (
+                        <Box sx={{ ...detailCardSx, p: 2 }}>
+                          <Typography variant="caption" sx={{ color: brand.sidebarTextMuted, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>Distance from You</Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 600, color: brand.blue, mt: 0.5, display: "flex", alignItems: "center", gap: 0.5 }}>
+                            <LocationOnIcon fontSize="small" /> {selectedProjectDetails.distance.toFixed(1)} km
+                          </Typography>
                         </Box>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "white",
-                          borderRadius: 2,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: "text.secondary",
-                            mb: 1,
-                            fontSize: "0.8rem",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          Target Individual
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: 500, color: "text.primary" }}
-                        >
-                          {selectedProjectDetails.target_individual || "-"}
-                        </Typography>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "white",
-                          borderRadius: 2,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: "text.secondary",
-                            mb: 1,
-                            fontSize: "0.8rem",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          Description
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: 500, color: "text.primary" }}
-                        >
-                          {selectedProjectDetails.description || "-"}
-                        </Typography>
-                      </Box>
-
-                      {/* Distance from user location */}
-                      {userLocation &&
-                        selectedProjectDetails.distance !== undefined && (
-                          <Box
-                            sx={{
-                              p: 2,
-                              backgroundColor: "white",
-                              borderRadius: 2,
-                              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                              border: "1px solid #e0e0e0",
-                            }}
-                          >
-                            <Typography
-                              variant="subtitle2"
-                              sx={{
-                                color: "text.secondary",
-                                mb: 1,
-                                fontSize: "0.8rem",
-                                textTransform: "uppercase",
-                                letterSpacing: 0.5,
-                              }}
-                            >
-                              Distance from You
-                            </Typography>
-                            <Box
-                              sx={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                px: 2,
-                                py: 0.5,
-                                borderRadius: 3,
-                                backgroundColor: "#e3f2fd",
-                                color: "#1976d2",
-                                fontWeight: 600,
-                                fontSize: "0.85rem",
-                              }}
-                            >
-                              <LocationOnIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                              {selectedProjectDetails.distance.toFixed(1)} km
-                            </Box>
-                          </Box>
-                        )}
+                      )}
                     </Box>
                   )}
                   {tabValue === 1 && (
-                    <Box
-                      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-                    >
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "white",
-                          borderRadius: 2,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: "text.secondary",
-                            mb: 1,
-                            fontSize: "0.8rem",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          County
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: 500, color: "text.primary" }}
-                        >
-                          {selectedProjectDetails.county || "-"}
-                        </Typography>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "white",
-                          borderRadius: 2,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: "text.secondary",
-                            mb: 1,
-                            fontSize: "0.8rem",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          Subcounty
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: 500, color: "text.primary" }}
-                        >
-                          {selectedProjectDetails.subcounty || "-"}
-                        </Typography>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "white",
-                          borderRadius: 2,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: "text.secondary",
-                            mb: 1,
-                            fontSize: "0.8rem",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          Progress
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: 500, color: "text.primary" }}
-                        >
-                          {selectedProjectDetails.progress || 0}%
-                        </Typography>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "white",
-                          borderRadius: 2,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: "text.secondary",
-                            mb: 1,
-                            fontSize: "0.8rem",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          Assigned To
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: 500, color: "text.primary" }}
-                        >
-                          {selectedProjectDetails.assignee?.full_name || "Not Assigned"}
-                        </Typography>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "white",
-                          borderRadius: 2,
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                          border: "1px solid #e0e0e0",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: "text.secondary",
-                            mb: 1,
-                            fontSize: "0.8rem",
-                            textTransform: "uppercase",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          Coordinates
-                        </Typography>
-                        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-                          <Box>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: "text.secondary", display: "block" }}
-                            >
-                              Latitude
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontWeight: 500,
-                                color: "text.primary",
-                                fontFamily: "monospace",
-                              }}
-                            >
-                              {selectedProjectDetails.latitude || "-"}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: "text.secondary", display: "block" }}
-                            >
-                              Longitude
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontWeight: 500,
-                                color: "text.primary",
-                                fontFamily: "monospace",
-                              }}
-                            >
-                              {selectedProjectDetails.longitude || "-"}
-                            </Typography>
-                          </Box>
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      {[
+                        { label: "County", value: selectedProjectDetails.county || "-" },
+                        { label: "Subcounty", value: selectedProjectDetails.subcounty || "-" },
+                        { label: "Progress", value: `${selectedProjectDetails.progress || 0}%` },
+                        { label: "Assigned To", value: selectedProjectDetails.assignee?.full_name || "Not Assigned" },
+                        { label: "Latitude", value: selectedProjectDetails.latitude || "-" },
+                        { label: "Longitude", value: selectedProjectDetails.longitude || "-" },
+                      ].map(({ label, value }) => (
+                        <Box key={label} sx={{ ...detailCardSx, p: 2 }}>
+                          <Typography variant="caption" sx={{ color: brand.sidebarTextMuted, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 600, color: brand.navy, mt: 0.5, fontFamily: label.includes("itude") ? "monospace" : "inherit" }}>{value}</Typography>
                         </Box>
-                      </Box>
+                      ))}
                     </Box>
                   )}
                 </>
@@ -2270,40 +1793,12 @@ const CharityMap = () => {
             </Box>
 
             {/* Bottom Button */}
-            <Box
-              sx={{
-                p: 3,
-                borderTop: 1,
-                borderColor: "divider",
-                marginTop: "auto",
-                backgroundColor: "white",
-                boxShadow: "0 -2px 8px rgba(0,0,0,0.08)",
-              }}
-            >
+            <Box sx={{ p: 2.5, borderTop: `1px solid ${brand.sidebarBorder}`, marginTop: "auto", bgcolor: brand.sidebarBg }}>
               <Button
                 fullWidth
                 variant="contained"
-                onClick={() => {
-                  if (selectedProjectDetails?.id) {
-                    navigate(`/projects/${selectedProjectDetails.id}`);
-                  }
-                }}
-                sx={{
-                  py: 1.5,
-                  fontSize: "0.95rem",
-                  fontWeight: 600,
-                  textTransform: "none",
-                  borderRadius: 2,
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
-                    transform: "translateY(-1px)",
-                    boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
-                  },
-                  transition: "all 0.2s ease-in-out",
-                }}
+                onClick={() => { if (selectedProjectDetails?.id) navigate(`/projects/${selectedProjectDetails.id}`); }}
+                sx={saveButtonSx}
               >
                 View Full Details
               </Button>
@@ -2311,7 +1806,9 @@ const CharityMap = () => {
           </Box>
         </Drawer>
       </Box>
-    </>
+        </Box>
+      </Paper>
+    </Box>
   );
 };
 

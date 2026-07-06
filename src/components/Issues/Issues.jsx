@@ -48,8 +48,26 @@ import {
   Schedule as ScheduleIcon,
   Update as UpdateIcon,
 } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
+import { brand } from "../../brandColors";
+import { fieldSx } from "../Projects/projectFormUi";
+import {
+  listPaperSx,
+  ListPageHeader,
+  tableContainerSx,
+  tableHeadRowSx,
+  tableRowSx,
+  paginationSx,
+  actionButtonSx,
+  dialogPaperSx,
+  BrandedDialogTitle,
+  DetailRow,
+  dialogActionsSx,
+  saveButtonSx,
+  cancelButtonSx,
+  detailCardSx,
+} from "../Util/adminListUi";
 
 const Issues = () => {
   const navigate = useNavigate();
@@ -115,6 +133,27 @@ const Issues = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getStatusStyle = (status) => {
+    const styles = {
+      pending: { bg: alpha(brand.gold, 0.18), color: "#e65100", label: "Pending" },
+      in_progress: { bg: alpha(brand.blue, 0.12), color: brand.blue, label: "In Progress" },
+      resolved: { bg: alpha(brand.green, 0.14), color: brand.greenDark, label: "Resolved" },
+    };
+    return styles[status] || { bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted, label: status };
+  };
+
+  const getCategoryStyle = (category) => {
+    const styles = {
+      volunteer: { bg: alpha(brand.green, 0.12), color: brand.greenDark, border: alpha(brand.green, 0.35) },
+      education: { bg: alpha(brand.navy, 0.1), color: brand.navy, border: alpha(brand.navy, 0.3) },
+      mental_health: { bg: alpha(brand.blue, 0.12), color: brand.blue, border: alpha(brand.blue, 0.35) },
+      community: { bg: alpha(brand.greenLight, 0.15), color: brand.greenDark, border: alpha(brand.green, 0.3) },
+      donation: { bg: alpha(brand.gold, 0.15), color: "#b8860b", border: alpha(brand.gold, 0.4) },
+      partnership: { bg: alpha(brand.blueLight, 0.12), color: brand.blue, border: alpha(brand.blue, 0.3) },
+    };
+    return styles[category] || { bg: alpha(brand.navy, 0.08), color: brand.sidebarTextMuted, border: brand.sidebarBorder };
   };
 
   const getStatusColor = (status) => {
@@ -359,130 +398,19 @@ const Issues = () => {
   }
 
   return (
-    <Box
-      sx={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        minHeight: "100vh",
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 0,
-          overflow: "hidden",
-          background: "rgba(255, 255, 255, 0.95)",
-          backdropFilter: "blur(10px)",
-          border: "none",
-          boxShadow: "none",
-          minHeight: "100vh",
-        }}
-      >
-        {/* Header Section */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              top: -50,
-              right: -50,
-              width: 200,
-              height: 200,
-              background: "rgba(255, 255, 255, 0.1)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -30,
-              left: -30,
-              width: 150,
-              height: 150,
-              background: "rgba(255, 255, 255, 0.05)",
-              borderRadius: "50%",
-              zIndex: 0,
-            }}
-          />
-          <Box
-            display="flex"
-            flexDirection={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            gap={{ xs: 2, sm: 0 }}
-            position="relative"
-            zIndex={1}
-          >
-            <Box>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 800,
-                  mb: 1,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
-                }}
-              >
-                Issues Management
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                Track and manage project issues and inquiries
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+    <Box>
+      <Paper elevation={0} sx={listPaperSx}>
+        <ListPageHeader
+          icon={WarningIcon}
+          title="Issues Management"
+          subtitle="Track and manage project issues and inquiries"
+        />
 
-        {/* Content Section */}
-        <Box
-          sx={{ p: { xs: 1, sm: 2, md: 3 }, minHeight: "calc(100vh - 200px)" }}
-        >
-          {/* Issues Table */}
-          <TableContainer
-            sx={{
-              borderRadius: 3,
-              overflowX: "auto",
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              border: "1px solid rgba(102, 126, 234, 0.1)",
-              "&::-webkit-scrollbar": {
-                height: 8,
-              },
-              "&::-webkit-scrollbar-track": {
-                backgroundColor: "rgba(102, 126, 234, 0.1)",
-                borderRadius: 4,
-              },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "rgba(102, 126, 234, 0.3)",
-                borderRadius: 4,
-                "&:hover": {
-                  backgroundColor: "rgba(102, 126, 234, 0.5)",
-                },
-              },
-            }}
-          >
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <TableContainer sx={tableContainerSx}>
             <Table sx={{ minWidth: 800 }}>
               <TableHead>
-                <TableRow
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    "& .MuiTableCell-head": {
-                      color: "white",
-                      fontWeight: 700,
-                      fontSize: { xs: "0.8rem", sm: "0.95rem" },
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      border: "none",
-                      whiteSpace: "nowrap",
-                    },
-                  }}
-                >
+                <TableRow sx={tableHeadRowSx}>
                   <TableCell>No</TableCell>
                   <TableCell>Full Name</TableCell>
                   <TableCell>Category</TableCell>
@@ -494,160 +422,89 @@ const Issues = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <CircularProgress sx={{ color: "#667eea" }} />
+                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                      <CircularProgress sx={{ color: brand.green }} size={36} />
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
-                      </Alert>
-                      <Button
-                        variant="contained"
-                        onClick={fetchIssues}
-                        sx={{
-                          background:
-                            "linear-gradient(45deg, #667eea, #764ba2)",
-                        }}
-                      >
+                      <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
+                      <Button variant="contained" onClick={fetchIssues} sx={{ bgcolor: brand.green, "&:hover": { bgcolor: brand.greenLight } }}>
                         Retry
                       </Button>
                     </TableCell>
                   </TableRow>
                 ) : issues.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                      <Typography variant="h6" color="text.secondary">
+                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                      <WarningIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2), mb: 1 }} />
+                      <Typography variant="body1" color="text.secondary" fontWeight={500}>
                         No inquiries found.
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  issues.map((issue, idx) => (
-                    <TableRow
-                      key={issue.id}
-                      sx={{
-                        "&:nth-of-type(even)": {
-                          backgroundColor: "rgba(102, 126, 234, 0.02)",
-                        },
-                        "&:hover": {
-                          backgroundColor: "rgba(102, 126, 234, 0.08)",
-                          transform: { xs: "none", sm: "scale(1.01)" },
-                        },
-                        transition: "all 0.2s ease",
-                        cursor: "pointer",
-                        "& .MuiTableCell-root": {
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          padding: { xs: "8px 4px", sm: "16px" },
-                        },
-                      }}
-                    >
-                      <TableCell sx={{ fontWeight: 600, color: "#667eea" }}>
+                  issues.map((issue, idx) => {
+                    const catStyle = getCategoryStyle(issue.category);
+                    const statusStyle = getStatusStyle(issue.status);
+                    return (
+                    <TableRow key={issue.id} hover sx={tableRowSx}>
+                      <TableCell sx={{ fontWeight: 700, color: brand.navy, width: 48 }}>
                         {page * rowsPerPage + idx + 1}
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          sx={{ color: "#2c3e50" }}
-                        >
+                        <Typography variant="body2" fontWeight={600} color={brand.navy}>
                           {issue.full_name}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
                           label={getCategoryText(issue.category)}
-                          color="primary"
                           size="small"
                           sx={{
-                            textTransform: "capitalize",
                             fontWeight: 600,
-                            borderRadius: 2,
+                            fontSize: "0.75rem",
+                            bgcolor: catStyle.bg,
+                            color: catStyle.color,
+                            border: `1px solid ${catStyle.border}`,
                           }}
                         />
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={getStatusText(issue.status)}
-                          color={getStatusColor(issue.status)}
+                          label={statusStyle.label}
                           size="small"
-                          sx={{
-                            textTransform: "capitalize",
-                            fontWeight: 600,
-                            borderRadius: 2,
-                          }}
+                          sx={{ fontWeight: 600, fontSize: "0.75rem", bgcolor: statusStyle.bg, color: statusStyle.color }}
                         />
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#7f8c8d", fontWeight: 600 }}
-                        >
+                        <Typography variant="body2" color={brand.sidebarTextMuted} fontWeight={500}>
                           {formatDate(issue.createdAt)}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Box display="flex" gap={0.5}>
-                          <Tooltip title="View Issue Details" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleViewIssue(issue)}
-                              sx={{
-                                color: "#27ae60",
-                                backgroundColor: "rgba(39, 174, 96, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(39, 174, 96, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
+                          <Tooltip title="View details" arrow>
+                            <IconButton size="small" onClick={() => handleViewIssue(issue)} sx={actionButtonSx.view}>
                               <ViewIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Edit Issue" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleEditIssue(issue)}
-                              sx={{
-                                color: "#3498db",
-                                backgroundColor: "rgba(52, 152, 219, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(52, 152, 219, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
+                          <Tooltip title="Edit issue" arrow>
+                            <IconButton size="small" onClick={() => handleEditIssue(issue)} sx={actionButtonSx.edit}>
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Delete Issue" arrow>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDeleteIssue(issue)}
-                              sx={{
-                                color: "#e74c3c",
-                                backgroundColor: "rgba(231, 76, 60, 0.1)",
-                                "&:hover": {
-                                  backgroundColor: "rgba(231, 76, 60, 0.2)",
-                                  transform: "scale(1.1)",
-                                },
-                                transition: "all 0.2s ease",
-                                borderRadius: 2,
-                              }}
-                            >
+                          <Tooltip title="Delete issue" arrow>
+                            <IconButton size="small" onClick={() => handleDeleteIssue(issue)} sx={actionButtonSx.delete}>
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
-                  ))
+                  );
+                  })
                 )}
               </TableBody>
             </Table>
@@ -660,325 +517,70 @@ const Issues = () => {
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
-            sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              borderTop: "1px solid rgba(102, 126, 234, 0.1)",
-              "& .MuiTablePagination-toolbar": {
-                color: "#667eea",
-                fontWeight: 600,
-              },
-              "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-                {
-                  color: "#2c3e50",
-                  fontWeight: 600,
-                },
-            }}
+            sx={paginationSx}
           />
         </Box>
 
-        {/* Issue Dialog */}
         <Dialog
           open={openViewDialog}
-          onClose={() => {
-            setOpenViewDialog(false);
-            setSelectedIssue(null);
-          }}
+          onClose={() => { setOpenViewDialog(false); setSelectedIssue(null); }}
           maxWidth="sm"
           fullWidth
-          sx={{
-            "& .MuiDialog-paper": {
-              borderRadius: 4,
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
-              maxHeight: "85vh",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(102, 126, 234, 0.2)",
-              overflow: "hidden",
-            },
-            "& .MuiBackdrop-root": {
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-            },
-          }}
+          PaperProps={{ sx: dialogPaperSx }}
         >
-          <DialogTitle
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              p: 3,
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                top: -20,
-                right: -20,
-                width: 100,
-                height: 100,
-                background: "rgba(255, 255, 255, 0.1)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: -15,
-                left: -15,
-                width: 80,
-                height: 80,
-                background: "rgba(255, 255, 255, 0.05)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <WarningIcon
-              sx={{ position: "relative", zIndex: 1, fontSize: 28 }}
-            />
-            <Box sx={{ position: "relative", zIndex: 1 }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 800,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                }}
-              >
-                Issue Details
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                View issue information
-              </Typography>
-            </Box>
-          </DialogTitle>
-          <DialogContent
-            sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto" }}
-          >
+          <BrandedDialogTitle icon={WarningIcon} title="Issue Details" subtitle="View inquiry information" />
+          <DialogContent sx={{ p: 3, bgcolor: brand.sidebarBg }}>
             {selectedIssue && (
               <Box>
-                <Typography variant="h6" gutterBottom>
-                  {selectedIssue.full_name}
-                </Typography>
-
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    <strong>Email:</strong> {selectedIssue.email}
-                  </Typography>
-                  <Typography variant="subtitle2" gutterBottom>
-                    <strong>Phone:</strong> {selectedIssue.phone || "N/A"}
-                  </Typography>
-                  <Typography variant="subtitle2" gutterBottom>
-                    <strong>Category:</strong>{" "}
-                    {getCategoryText(selectedIssue.category)}
-                  </Typography>
-                  <Typography variant="subtitle2" gutterBottom>
-                    <strong>Status:</strong>{" "}
-                    {getStatusText(selectedIssue.status)}
-                  </Typography>
-                  <Typography variant="subtitle2" gutterBottom>
-                    <strong>Created:</strong>{" "}
-                    {formatDate(selectedIssue.createdAt)}
-                  </Typography>
-                  <Typography variant="subtitle2" gutterBottom>
-                    <strong>Message:</strong>
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mt: 1,
-                      p: 2,
-                      backgroundColor: "rgba(102, 126, 234, 0.05)",
-                      borderRadius: 2,
-                      border: "1px solid rgba(102, 126, 234, 0.1)",
-                    }}
-                  >
+                <Box sx={{ ...detailCardSx, mb: 2, bgcolor: alpha(brand.navy, 0.04) }}>
+                  <Typography variant="h6" fontWeight={800} color={brand.navy}>{selectedIssue.full_name}</Typography>
+                </Box>
+                <Stack spacing={1.5} sx={{ mb: 2 }}>
+                  <DetailRow icon={EmailIcon} label="EMAIL" value={selectedIssue.email} color={brand.blue} />
+                  <DetailRow icon={PersonIcon} label="PHONE" value={selectedIssue.phone || "N/A"} />
+                  <DetailRow icon={CategoryIcon} label="CATEGORY" value={getCategoryText(selectedIssue.category)} color={brand.gold} />
+                  <DetailRow icon={CheckCircleIcon} label="STATUS" value={getStatusText(selectedIssue.status)} color={brand.green} />
+                  <DetailRow icon={ScheduleIcon} label="CREATED" value={formatDate(selectedIssue.createdAt)} />
+                </Stack>
+                <Typography variant="subtitle2" fontWeight={700} color={brand.navy} mb={1}>Message</Typography>
+                <Box sx={{ ...detailCardSx, bgcolor: brand.sidebarBgAlt }}>
+                  <Typography variant="body2" color={brand.navy} sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
                     {selectedIssue.message}
                   </Typography>
                 </Box>
               </Box>
             )}
           </DialogContent>
-          <DialogActions
-            sx={{ p: 3, gap: 2, backgroundColor: "rgba(102, 126, 234, 0.05)" }}
-          >
-            <Button
-              onClick={() => {
-                setOpenViewDialog(false);
-                setSelectedIssue(null);
-              }}
-              variant="outlined"
-              sx={{
-                borderColor: "#667eea",
-                color: "#667eea",
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                "&:hover": {
-                  borderColor: "#5a6fd8",
-                  backgroundColor: "rgba(102, 126, 234, 0.1)",
-                },
-              }}
-            >
+          <DialogActions sx={dialogActionsSx}>
+            <Button onClick={() => { setOpenViewDialog(false); setSelectedIssue(null); }} variant="outlined" sx={cancelButtonSx}>
               Close
             </Button>
           </DialogActions>
         </Dialog>
 
-        {/* Edit Issue Dialog */}
         <Dialog
           open={openEditDialog}
           onClose={() => {
             setOpenEditDialog(false);
             setSelectedIssue(null);
-            setEditForm({
-              name: "",
-              email: "",
-              description: "",
-              category: "",
-              project_id: "",
-              status: "",
-            });
+            setEditForm({ full_name: "", email: "", phone: "", message: "", category: "", status: "" });
           }}
           maxWidth="sm"
           fullWidth
-          sx={{
-            "& .MuiDialog-paper": {
-              borderRadius: 4,
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
-              maxHeight: "85vh",
-              background: "rgba(255, 255, 255, 0.95)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(102, 126, 234, 0.2)",
-              overflow: "hidden",
-            },
-            "& .MuiBackdrop-root": {
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-            },
-          }}
+          PaperProps={{ sx: dialogPaperSx }}
         >
-          <DialogTitle
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              fontWeight: "bold",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              p: 3,
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                top: -20,
-                right: -20,
-                width: 100,
-                height: 100,
-                background: "rgba(255, 255, 255, 0.1)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: -15,
-                left: -15,
-                width: 80,
-                height: 80,
-                background: "rgba(255, 255, 255, 0.05)",
-                borderRadius: "50%",
-                zIndex: 0,
-              }}
-            />
-            <UpdateIcon
-              sx={{ position: "relative", zIndex: 1, fontSize: 28 }}
-            />
-            <Box sx={{ position: "relative", zIndex: 1 }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 800,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                }}
-              >
-                Edit Issue
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                Update issue information
-              </Typography>
-            </Box>
-          </DialogTitle>
-          <DialogContent
-            sx={{ p: 3, pt: 3, maxHeight: "70vh", overflowY: "auto" }}
-          >
-            <Stack spacing={3} sx={{ mt: 1 }}>
-              {/* Full Name Field */}
-              <TextField
-                fullWidth
-                label="Full Name"
-                value={editForm.full_name}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, full_name: e.target.value })
-                }
-                required
-                variant="outlined"
-                size="small"
-              />
-
-              {/* Email and Phone Row */}
-              <Box
-                display="flex"
-                flexDirection={{ xs: "column", sm: "row" }}
-                gap={2}
-              >
-                <TextField
-                  fullWidth
-                  label="Email"
-                  type="email"
-                  value={editForm.email}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, email: e.target.value })
-                  }
-                  variant="outlined"
-                  size="small"
-                  required
-                />
-                <TextField
-                  fullWidth
-                  label="Phone"
-                  value={editForm.phone}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, phone: e.target.value })
-                  }
-                  variant="outlined"
-                  size="small"
-                />
+          <BrandedDialogTitle icon={UpdateIcon} title="Edit Issue" subtitle="Update inquiry information" />
+          <DialogContent sx={{ p: 3, bgcolor: brand.sidebarBg }}>
+            <Stack spacing={2.5} sx={{ mt: 1 }}>
+              <TextField fullWidth label="Full Name" value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} required size="small" sx={fieldSx} />
+              <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={2}>
+                <TextField fullWidth label="Email" type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} required size="small" sx={fieldSx} />
+                <TextField fullWidth label="Phone" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} size="small" sx={fieldSx} />
               </Box>
-
-              {/* Category and Status Row */}
-              <Box
-                display="flex"
-                flexDirection={{ xs: "column", sm: "row" }}
-                gap={2}
-              >
-                <FormControl fullWidth variant="outlined" size="small">
+              <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={2}>
+                <FormControl fullWidth size="small" sx={fieldSx}>
                   <InputLabel>Category</InputLabel>
-                  <Select
-                    value={editForm.category}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, category: e.target.value })
-                    }
-                    label="Category"
-                    required
-                  >
+                  <Select value={editForm.category} onChange={(e) => setEditForm({ ...editForm, category: e.target.value })} label="Category" required>
                     <MenuItem value="volunteer">Volunteer</MenuItem>
                     <MenuItem value="education">Education</MenuItem>
                     <MenuItem value="mental_health">Mental Health</MenuItem>
@@ -987,87 +589,32 @@ const Issues = () => {
                     <MenuItem value="partnership">Partnership</MenuItem>
                   </Select>
                 </FormControl>
-                <FormControl fullWidth variant="outlined" size="small">
+                <FormControl fullWidth size="small" sx={fieldSx}>
                   <InputLabel>Status</InputLabel>
-                  <Select
-                    value={editForm.status}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, status: e.target.value })
-                    }
-                    label="Status"
-                    required
-                  >
+                  <Select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })} label="Status" required>
                     <MenuItem value="pending">Pending</MenuItem>
                     <MenuItem value="in_progress">In Progress</MenuItem>
                     <MenuItem value="resolved">Resolved</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
-
-              {/* Message */}
-              <TextField
-                fullWidth
-                label="Message"
-                value={editForm.message}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, message: e.target.value })
-                }
-                variant="outlined"
-                size="small"
-                multiline
-                rows={4}
-                required
-              />
+              <TextField fullWidth label="Message" value={editForm.message} onChange={(e) => setEditForm({ ...editForm, message: e.target.value })} multiline rows={4} required size="small" sx={fieldSx} />
             </Stack>
           </DialogContent>
-          <DialogActions
-            sx={{ p: 3, gap: 2, backgroundColor: "rgba(102, 126, 234, 0.05)" }}
-          >
+          <DialogActions sx={dialogActionsSx}>
             <Button
               onClick={() => {
                 setOpenEditDialog(false);
                 setSelectedIssue(null);
-                setEditForm({
-                  full_name: "",
-                  email: "",
-                  phone: "",
-                  message: "",
-                  category: "",
-                  status: "",
-                });
+                setEditForm({ full_name: "", email: "", phone: "", message: "", category: "", status: "" });
               }}
               variant="outlined"
-              sx={{
-                borderColor: "#667eea",
-                color: "#667eea",
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                "&:hover": {
-                  borderColor: "#5a6fd8",
-                  backgroundColor: "rgba(102, 126, 234, 0.1)",
-                },
-              }}
+              sx={cancelButtonSx}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleUpdateIssue}
-              variant="contained"
-              disabled={loading}
-              sx={{
-                background: "linear-gradient(45deg, #667eea, #764ba2)",
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                fontWeight: 600,
-                "&:hover": {
-                  background: "linear-gradient(45deg, #5a6fd8, #6a4c93)",
-                },
-              }}
-            >
-              {loading ? "Updating..." : "Update Issue"}
+            <Button onClick={handleUpdateIssue} variant="contained" disabled={loading} sx={saveButtonSx}>
+              {loading ? "Updating…" : "Update Issue"}
             </Button>
           </DialogActions>
         </Dialog>

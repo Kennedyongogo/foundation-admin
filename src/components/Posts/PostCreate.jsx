@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import {
   Box,
-  Container,
   Typography,
-  Card,
-  CardContent,
+  Paper,
   Grid,
   TextField,
   Button,
@@ -25,9 +23,21 @@ import {
   Article as NewsIcon,
   Event as EventIcon,
   Close as CloseIcon,
+  Add,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
+import { brand } from "../../brandColors";
+import {
+  fieldSx,
+  sectionCardSx,
+  SectionHeader,
+  outerPaperSx,
+  pageHeaderSx,
+  dateGridSx,
+} from "../Projects/projectFormUi";
+import { saveButtonSx, cancelButtonSx } from "../Util/adminListUi";
 
 const PostCreate = () => {
   const navigate = useNavigate();
@@ -194,7 +204,7 @@ const PostCreate = () => {
           title: "Success!",
           text: `${postForm.type === "news" ? "News" : "Event"} created successfully!`,
           icon: "success",
-          confirmButtonColor: "#667eea",
+          confirmButtonColor: brand.green,
         });
         navigate("/posts");
       } else {
@@ -207,508 +217,286 @@ const PostCreate = () => {
         title: "Error!",
         text: error.message || "Failed to create post",
         icon: "error",
-        confirmButtonColor: "#667eea",
+        confirmButtonColor: brand.green,
       });
     } finally {
       setSaving(false);
     }
   };
 
+  const TypeIcon = postForm.type === "news" ? NewsIcon : EventIcon;
+
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-      >
-        <CircularProgress size={60} />
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+        <CircularProgress sx={{ color: brand.green }} size={48} />
       </Box>
     );
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        py: 4,
-      }}
-    >
-      <Container maxWidth="xl">
-        {/* Header */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            p: 3,
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-            borderRadius: 2,
-            mb: 4,
-          }}
-        >
-          <Stack
-            direction="row"
-            alignItems="center"
-            spacing={2}
-            sx={{ position: "relative", zIndex: 1 }}
-          >
+    <Box>
+      <Paper elevation={0} sx={outerPaperSx}>
+        <Box sx={pageHeaderSx}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: -40,
+              right: -40,
+              width: 140,
+              height: 140,
+              borderRadius: "50%",
+              bgcolor: alpha("#fff", 0.06),
+            }}
+          />
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ position: "relative", zIndex: 1 }}>
             <IconButton
               onClick={() => navigate("/posts")}
+              aria-label="Back to posts"
               sx={{
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.3)",
-                },
+                bgcolor: alpha("#fff", 0.12),
+                color: "#fff",
+                border: `1px solid ${alpha("#fff", 0.2)}`,
+                "&:hover": { bgcolor: alpha(brand.gold, 0.25) },
               }}
             >
               <ArrowBack />
             </IconButton>
-            {postForm.type === "news" ? (
-              <NewsIcon sx={{ fontSize: 40 }} />
-            ) : (
-              <EventIcon sx={{ fontSize: 40 }} />
-            )}
-            <Typography
-              variant="h3"
+            <Box
               sx={{
-                fontWeight: "bold",
-                textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
-                fontSize: { xs: "1.3rem", sm: "1.6rem", md: "1.8rem" },
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: alpha("#fff", 0.12),
+                border: `1px solid ${alpha(brand.gold, 0.45)}`,
               }}
             >
-              Create New {postForm.type === "news" ? "News" : "Event"}
-            </Typography>
+              <Add sx={{ fontSize: 26, color: brand.gold }} />
+            </Box>
+            <Box>
+              <Typography variant="h5" fontWeight={800} sx={{ fontSize: { xs: "1.2rem", md: "1.5rem" }, lineHeight: 1.2 }}>
+                Create New {postForm.type === "news" ? "News" : "Event"}
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.88, mt: 0.25 }}>
+                Add news or event content for the public portal
+              </Typography>
+            </Box>
           </Stack>
-
           {error && (
-            <Alert
-              severity="error"
-              sx={{ mt: 2, position: "relative", zIndex: 1 }}
-            >
+            <Alert severity="error" sx={{ mt: 2, position: "relative", zIndex: 1 }}>
               {error}
             </Alert>
           )}
         </Box>
 
-        <Grid container spacing={4} sx={{ width: "100%" }}>
-          {/* Basic Information */}
-          <Grid item xs={12} sx={{ width: "100%" }}>
-            <Card
-              sx={{
-                backgroundColor: "white",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e0e0e0",
-                mb: 3,
-              }}
-            >
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={3}>
-                  {postForm.type === "news" ? (
-                    <NewsIcon sx={{ color: "#2196f3" }} />
-                  ) : (
-                    <EventIcon sx={{ color: "#ff9800" }} />
-                  )}
-                  <Typography variant="h5" sx={{ color: "#333" }}>
-                    Basic Information
-                  </Typography>
-                </Box>
-
-                <Grid container spacing={3} sx={{ flexDirection: "column" }}>
-                  {/* Type */}
-                  <Grid item xs={12}>
-                    <FormControl
-                      fullWidth
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    >
-                      <InputLabel id="type-label" shrink={!!postForm.type}>Post Type</InputLabel>
-                      <Select
-                        labelId="type-label"
-                        value={postForm.type || ""}
-                        onChange={(e) => {
-                          const newValue = e.target.value;
-                          handleInputChange("type", newValue);
-                        }}
-                        label="Post Type"
-                        inputProps={{
-                          name: "type",
-                          id: "type-select",
-                        }}
-                      >
-                        <MenuItem value="news">
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <NewsIcon fontSize="small" />
-                            News
-                          </Box>
-                        </MenuItem>
-                        <MenuItem value="event">
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <EventIcon fontSize="small" />
-                            Event
-                          </Box>
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  {/* Status */}
-                  <Grid item xs={12}>
-                    <FormControl
-                      fullWidth
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    >
-                      <InputLabel id="status-label" shrink={!!postForm.status}>Status</InputLabel>
-                      <Select
-                        key={`status-${postForm.type}`}
-                        labelId="status-label"
-                        value={postForm.status || ""}
-                        onChange={(e) => {
-                          const newValue = e.target.value;
-                          handleInputChange("status", newValue);
-                        }}
-                        label="Status"
-                        displayEmpty={false}
-                        inputProps={{
-                          name: "status",
-                          id: "status-select",
-                        }}
-                      >
-                        {postForm.type === "news" ? (
-                          [
-                            <MenuItem key="draft" value="draft">Draft</MenuItem>,
-                            <MenuItem key="published" value="published">Published</MenuItem>,
-                            <MenuItem key="archived" value="archived">Archived</MenuItem>,
-                          ]
-                        ) : (
-                          [
-                            <MenuItem key="upcoming" value="upcoming">Upcoming</MenuItem>,
-                            <MenuItem key="ongoing" value="ongoing">Ongoing</MenuItem>,
-                            <MenuItem key="completed" value="completed">Completed</MenuItem>,
-                            <MenuItem key="cancelled" value="cancelled">Cancelled</MenuItem>,
-                          ]
-                        )}
-                      </Select>
-                      <Typography variant="caption" sx={{ mt: 1, color: "text.secondary", display: "block" }}>
-                        {postForm.type === "news" 
-                          ? "Default: Draft - Posts start as drafts and can be published later"
-                          : "Default: Upcoming - Events start as upcoming and can be updated to ongoing/completed"}
-                      </Typography>
-                    </FormControl>
-                  </Grid>
-
-                  {/* Title */}
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Title *"
-                      value={postForm.title}
-                      onChange={(e) => handleInputChange("title", e.target.value)}
-                      required
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          backgroundColor: "transparent",
-                        },
-                      }}
-                    />
-                  </Grid>
-
-                  {/* Content */}
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Content *"
-                      multiline
-                      rows={4}
-                      value={postForm.content}
-                      onChange={(e) => handleInputChange("content", e.target.value)}
-                      required
-                    />
-                  </Grid>
-
-                  {/* Event-specific fields */}
-                  {postForm.type === "event" && (
-                    <>
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="Start Date *"
-                          type="datetime-local"
-                          value={postForm.start_date}
-                          onChange={(e) => handleInputChange("start_date", e.target.value)}
-                          required
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              backgroundColor: "transparent",
-                            },
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="End Date"
-                          type="datetime-local"
-                          value={postForm.end_date}
-                          onChange={(e) => handleInputChange("end_date", e.target.value)}
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              backgroundColor: "transparent",
-                            },
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="Location"
-                          value={postForm.location}
-                          onChange={(e) => handleInputChange("location", e.target.value)}
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              backgroundColor: "transparent",
-                            },
-                          }}
-                        />
-                      </Grid>
-                    </>
-                  )}
-                </Grid>
-              </CardContent>
-            </Card>
-
-            {/* Image Upload */}
-            <Card
-              sx={{
-                backgroundColor: "white",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e0e0e0",
-                mb: 3,
-              }}
-            >
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={3}>
-                  <ImageIcon sx={{ color: "#43e97b" }} />
-                  <Typography variant="h5" sx={{ color: "#333" }}>
-                    {postForm.type === "news" ? "Images" : "Banner"}
-                  </Typography>
-                </Box>
-
-                {postForm.type === "news" ? (
-                  <>
-                    <Box mb={3}>
-                      <input
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        id="images-upload"
-                        type="file"
-                        multiple
-                        onChange={handleImageSelect}
-                      />
-                      <label htmlFor="images-upload">
-                        <Button
-                          variant="outlined"
-                          component="span"
-                          startIcon={<CloudUpload />}
-                          sx={{
-                            color: "#43e97b",
-                            borderColor: "#43e97b",
-                            "&:hover": {
-                              borderColor: "#43e97b",
-                              backgroundColor: "rgba(67, 233, 123, 0.1)",
-                            },
-                          }}
-                        >
-                          Upload Images
-                        </Button>
-                      </label>
-                    </Box>
-
-                    {imagePreviews.length > 0 && (
-                      <Grid container spacing={2}>
-                        {imagePreviews.map((preview, index) => (
-                          <Grid item xs={12} sm={6} md={4} key={index}>
-                            <Box
-                              sx={{
-                                p: 2,
-                                backgroundColor: "#f8f9fa",
-                                borderRadius: 2,
-                                border: "1px solid #e0e0e0",
-                                position: "relative",
-                              }}
-                            >
-                              <IconButton
-                                onClick={() => removeSelectedImage(index)}
-                                sx={{
-                                  position: "absolute",
-                                  top: 8,
-                                  right: 8,
-                                  backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                  color: "white",
-                                  "&:hover": {
-                                    backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                  },
-                                  zIndex: 2,
-                                }}
-                                size="small"
-                              >
-                                <CloseIcon fontSize="small" />
-                              </IconButton>
-                              <img
-                                src={preview.preview}
-                                alt={preview.file.name}
-                                style={{
-                                  width: "100%",
-                                  height: "150px",
-                                  objectFit: "cover",
-                                  borderRadius: "8px",
-                                }}
-                              />
-                            </Box>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <Box mb={3}>
-                      <input
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        id="banner-upload"
-                        type="file"
-                        onChange={handleBannerSelect}
-                      />
-                      <label htmlFor="banner-upload">
-                        <Button
-                          variant="outlined"
-                          component="span"
-                          startIcon={<CloudUpload />}
-                          sx={{
-                            color: "#43e97b",
-                            borderColor: "#43e97b",
-                            "&:hover": {
-                              borderColor: "#43e97b",
-                              backgroundColor: "rgba(67, 233, 123, 0.1)",
-                            },
-                          }}
-                        >
-                          Upload Banner
-                        </Button>
-                      </label>
-                    </Box>
-
-                    {bannerPreview && (
-                      <Box
-                        sx={{
-                          p: 2,
-                          backgroundColor: "#f8f9fa",
-                          borderRadius: 2,
-                          border: "1px solid #e0e0e0",
-                          position: "relative",
-                        }}
-                      >
-                        <IconButton
-                          onClick={removeBanner}
-                          sx={{
-                            position: "absolute",
-                            top: 8,
-                            right: 8,
-                            backgroundColor: "rgba(0, 0, 0, 0.5)",
-                            color: "white",
-                            "&:hover": {
-                              backgroundColor: "rgba(0, 0, 0, 0.7)",
-                            },
-                            zIndex: 2,
-                          }}
-                          size="small"
-                        >
-                          <CloseIcon fontSize="small" />
-                        </IconButton>
-                        <img
-                          src={bannerPreview}
-                          alt="Banner preview"
-                          style={{
-                            width: "100%",
-                            maxHeight: "300px",
-                            objectFit: "cover",
-                            borderRadius: "8px",
-                          }}
-                        />
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={TypeIcon} title="Basic Information" />
+            <Box sx={{ p: 3 }}>
+              <Stack spacing={2.5}>
+                <FormControl fullWidth required sx={fieldSx}>
+                  <InputLabel id="type-label" shrink={!!postForm.type}>Post Type</InputLabel>
+                  <Select
+                    labelId="type-label"
+                    value={postForm.type || ""}
+                    onChange={(e) => handleInputChange("type", e.target.value)}
+                    label="Post Type"
+                  >
+                    <MenuItem value="news">
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <NewsIcon fontSize="small" />
+                        News
                       </Box>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
+                    </MenuItem>
+                    <MenuItem value="event">
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <EventIcon fontSize="small" />
+                        Event
+                      </Box>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
 
-            {/* Actions */}
-            <Card
-              sx={{
-                backgroundColor: "white",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e0e0e0",
-              }}
-            >
-              <CardContent>
-                <Box display="flex" gap={2}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    startIcon={saving ? <CircularProgress size={20} /> : <Save />}
-                    onClick={handleCreate}
-                    disabled={saving}
-                    sx={{
-                      flex: 1,
-                      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                      color: "white",
-                      "&:hover": {
-                        background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
-                      },
-                    }}
+                <FormControl fullWidth required sx={fieldSx}>
+                  <InputLabel id="status-label" shrink={!!postForm.status}>Status</InputLabel>
+                  <Select
+                    key={`status-${postForm.type}`}
+                    labelId="status-label"
+                    value={postForm.status || ""}
+                    onChange={(e) => handleInputChange("status", e.target.value)}
+                    label="Status"
                   >
-                    {saving ? "Creating..." : "Create Post"}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    onClick={() => navigate("/posts")}
-                    sx={{
-                      flex: 1,
-                      color: "#667eea",
-                      borderColor: "#667eea",
-                      "&:hover": {
-                        borderColor: "#667eea",
-                        backgroundColor: "rgba(102, 126, 234, 0.1)",
-                      },
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </Container>
+                    {postForm.type === "news" ? (
+                      [
+                        <MenuItem key="draft" value="draft">Draft</MenuItem>,
+                        <MenuItem key="published" value="published">Published</MenuItem>,
+                        <MenuItem key="archived" value="archived">Archived</MenuItem>,
+                      ]
+                    ) : (
+                      [
+                        <MenuItem key="upcoming" value="upcoming">Upcoming</MenuItem>,
+                        <MenuItem key="ongoing" value="ongoing">Ongoing</MenuItem>,
+                        <MenuItem key="completed" value="completed">Completed</MenuItem>,
+                        <MenuItem key="cancelled" value="cancelled">Cancelled</MenuItem>,
+                      ]
+                    )}
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  fullWidth
+                  label="Title"
+                  value={postForm.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  required
+                  sx={fieldSx}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Content"
+                  multiline
+                  rows={4}
+                  value={postForm.content}
+                  onChange={(e) => handleInputChange("content", e.target.value)}
+                  required
+                  sx={fieldSx}
+                />
+
+                {postForm.type === "event" && (
+                  <Box sx={dateGridSx}>
+                    <TextField
+                      fullWidth
+                      label="Start Date"
+                      type="datetime-local"
+                      value={postForm.start_date}
+                      onChange={(e) => handleInputChange("start_date", e.target.value)}
+                      required
+                      InputLabelProps={{ shrink: true }}
+                      sx={fieldSx}
+                    />
+                    <TextField
+                      fullWidth
+                      label="End Date"
+                      type="datetime-local"
+                      value={postForm.end_date}
+                      onChange={(e) => handleInputChange("end_date", e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      sx={fieldSx}
+                    />
+                    <TextField
+                      fullWidth
+                      label="Location"
+                      value={postForm.location}
+                      onChange={(e) => handleInputChange("location", e.target.value)}
+                      sx={{ ...fieldSx, gridColumn: "1 / -1" }}
+                    />
+                  </Box>
+                )}
+              </Stack>
+            </Box>
+          </Paper>
+
+          <Paper elevation={0} sx={sectionCardSx}>
+            <SectionHeader icon={ImageIcon} title={postForm.type === "news" ? "Images" : "Banner"} color={brand.blue} />
+            <Box sx={{ p: 3 }}>
+              {postForm.type === "news" ? (
+                <>
+                  <input accept="image/*" style={{ display: "none" }} id="images-upload" type="file" multiple onChange={handleImageSelect} />
+                  <label htmlFor="images-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<CloudUpload />}
+                      sx={{ color: brand.green, borderColor: brand.green, mb: 2, "&:hover": { bgcolor: alpha(brand.green, 0.08) } }}
+                    >
+                      Upload Images
+                    </Button>
+                  </label>
+                  {imagePreviews.length > 0 ? (
+                    <Grid container spacing={2}>
+                      {imagePreviews.map((preview, index) => (
+                        <Grid item xs={12} sm={6} md={4} key={index}>
+                          <Box sx={{ p: 1.5, borderRadius: 2, border: `1px solid ${brand.sidebarBorder}`, position: "relative", bgcolor: brand.sidebarBgAlt }}>
+                            <IconButton
+                              onClick={() => removeSelectedImage(index)}
+                              size="small"
+                              sx={{ position: "absolute", top: 8, right: 8, bgcolor: alpha("#000", 0.5), color: "#fff", zIndex: 2 }}
+                            >
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                            <img src={preview.preview} alt={preview.file.name} style={{ width: "100%", height: 150, objectFit: "cover", borderRadius: 8 }} />
+                          </Box>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  ) : (
+                    <Box sx={{ border: `2px dashed ${brand.sidebarBorder}`, borderRadius: 2, p: 4, textAlign: "center", bgcolor: brand.sidebarBgAlt }}>
+                      <ImageIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2) }} />
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>No images selected yet.</Typography>
+                    </Box>
+                  )}
+                </>
+              ) : (
+                <>
+                  <input accept="image/*" style={{ display: "none" }} id="banner-upload" type="file" onChange={handleBannerSelect} />
+                  <label htmlFor="banner-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<CloudUpload />}
+                      sx={{ color: brand.green, borderColor: brand.green, mb: 2, "&:hover": { bgcolor: alpha(brand.green, 0.08) } }}
+                    >
+                      Upload Banner
+                    </Button>
+                  </label>
+                  {bannerPreview ? (
+                    <Box sx={{ p: 1.5, borderRadius: 2, border: `1px solid ${brand.sidebarBorder}`, position: "relative", bgcolor: brand.sidebarBgAlt }}>
+                      <IconButton
+                        onClick={removeBanner}
+                        size="small"
+                        sx={{ position: "absolute", top: 8, right: 8, bgcolor: alpha("#000", 0.5), color: "#fff", zIndex: 2 }}
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                      <img src={bannerPreview} alt="Banner preview" style={{ width: "100%", maxHeight: 300, objectFit: "cover", borderRadius: 8 }} />
+                    </Box>
+                  ) : (
+                    <Box sx={{ border: `2px dashed ${brand.sidebarBorder}`, borderRadius: 2, p: 4, textAlign: "center", bgcolor: brand.sidebarBgAlt }}>
+                      <ImageIcon sx={{ fontSize: 48, color: alpha(brand.navy, 0.2) }} />
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>No banner selected yet.</Typography>
+                    </Box>
+                  )}
+                </>
+              )}
+            </Box>
+          </Paper>
+
+          <Paper elevation={0} sx={{ ...sectionCardSx, mb: 0, position: { md: "sticky" }, bottom: 16, zIndex: 10 }}>
+            <Box sx={{ p: 2.5 }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <Save />}
+                  onClick={handleCreate}
+                  disabled={saving}
+                  sx={saveButtonSx}
+                >
+                  {saving ? "Creating…" : "Create Post"}
+                </Button>
+                <Button variant="outlined" size="large" fullWidth onClick={() => navigate("/posts")} sx={cancelButtonSx}>
+                  Cancel
+                </Button>
+              </Stack>
+            </Box>
+          </Paper>
+        </Box>
+      </Paper>
     </Box>
   );
 };

@@ -26,19 +26,22 @@ import {
   Security,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
+import { brand } from "../brandColors";
 
-/** Public site palette — old paper / deep umber / morpho blue */
+/** Logo palette — navy / sky blue / green / gold (shared with admin chrome) */
 const BRAND = {
-  oldPaper: "#F3EDE3",
-  oldPaperSoft: "#F8F4EE",
-  deepUmber: "#3A2415",
-  deepUmberDark: "#2A1A0F",
-  deepUmberMid: "#4A3224",
-  morphoBlue: "#0077C8",
-  morphoBlueDark: "#005A9C",
-  morphoBlueMuted: "#5BA3D4",
+  oldPaper: brand.softBgAlt,
+  oldPaperSoft: brand.softBg,
+  deepUmber: brand.navy,
+  deepUmberDark: brand.navyDark,
+  deepUmberMid: brand.navyLight,
+  morphoBlue: brand.green,
+  morphoBlueDark: brand.greenDark,
+  morphoBlueMuted: brand.greenLight,
+  gold: brand.gold,
+  skyBlue: brand.blue,
   name: "Mwalimu Hope Foundation",
-  tagline: "Empowering Communities, Restoring Hope, and Transforming Lives",
+  tagline: "Empowering Minds, Restoring Hope",
 };
 
 const LOGIN_IMAGES = [
@@ -438,7 +441,7 @@ export default function LoginPage() {
                 height: 3,
                 borderRadius: 2,
                 mb: 1.25,
-                background: `linear-gradient(90deg, ${BRAND.morphoBlue}, ${BRAND.deepUmber})`,
+                background: `linear-gradient(90deg, ${BRAND.morphoBlue}, ${BRAND.gold}, ${BRAND.skyBlue})`,
               }}
             />
             <Typography
@@ -702,13 +705,13 @@ export default function LoginPage() {
                   resetLoading ? <CircularProgress size={18} color="inherit" /> : <Security />
                 }
                 sx={{
-                  bgcolor: BRAND.morphoBlue,
+                  bgcolor: BRAND.skyBlue,
                   borderRadius: "999px",
                   px: 3,
                   fontWeight: 600,
                   textTransform: "none",
-                  boxShadow: `0 6px 18px ${alpha(BRAND.morphoBlue, 0.35)}`,
-                  "&:hover": { bgcolor: BRAND.morphoBlueDark },
+                  boxShadow: `0 6px 18px ${alpha(BRAND.skyBlue, 0.35)}`,
+                  "&:hover": { bgcolor: brand.navyLight },
                 }}
               >
                 {resetLoading ? "Sending..." : "Send Reset Link"}

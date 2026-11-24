@@ -10,108 +10,125 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Card,
-  Grid,
-  Container,
   Stack,
   Divider,
-  Fade,
-  Slide,
   CircularProgress,
   InputAdornment,
   IconButton,
-  useTheme,
+  FormControlLabel,
+  Checkbox,
+  Link,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import {
   Visibility,
   VisibilityOff,
   Email,
-  Login,
   Security,
-  AdminPanelSettings,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
 
-const images = ["/foundation1.jpg", "/foundation2.jpg", "/foundation3.jpg"];
+/** Public site palette — old paper / deep umber / morpho blue */
+const BRAND = {
+  oldPaper: "#F3EDE3",
+  oldPaperSoft: "#F8F4EE",
+  deepUmber: "#3A2415",
+  deepUmberDark: "#2A1A0F",
+  deepUmberMid: "#4A3224",
+  morphoBlue: "#0077C8",
+  morphoBlueDark: "#005A9C",
+  morphoBlueMuted: "#5BA3D4",
+  name: "Mwalimu Hope Foundation",
+  tagline: "Empowering Communities, Restoring Hope, and Transforming Lives",
+};
 
-const darkFieldSx = {
+const LOGIN_IMAGES = [
+  "/images/login-hero-1.jpg",
+  "/images/login-hero-2.jpg",
+  "/images/login-hero-3.jpg",
+];
+
+const REMEMBER_KEY = "mwalimu_admin_remember_email";
+
+const fieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
-    borderRadius: { xs: 3, sm: 4 },
-    border: "1px solid rgba(255, 255, 255, 0.15)",
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    backdropFilter: "blur(10px)",
-    "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.12)",
-      border: "1px solid rgba(255, 255, 255, 0.3)",
-      transform: "translateY(-1px)",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-    },
-    "&.Mui-focused": {
-      backgroundColor: "rgba(255, 255, 255, 0.15)",
-      border: "2px solid rgba(255, 255, 255, 0.6)",
-      boxShadow: "0 0 0 4px rgba(255, 255, 255, 0.1), 0 8px 24px rgba(0, 0, 0, 0.2)",
-      transform: "translateY(-2px)",
+    borderRadius: "12px",
+    bgcolor: "#fff",
+    fontSize: "0.95rem",
+    "& fieldset": { borderColor: alpha(BRAND.deepUmber, 0.18) },
+    "&:hover fieldset": { borderColor: BRAND.morphoBlue },
+    "&.Mui-focused fieldset": {
+      borderColor: BRAND.morphoBlue,
+      borderWidth: 2,
     },
   },
-  "& .MuiInputLabel-root": {
-    color: "rgba(255, 255, 255, 0.8)",
-    fontWeight: 500,
-    fontSize: { xs: "0.9rem", sm: "1rem" },
-    "&.Mui-focused": {
-      color: "rgba(255, 255, 255, 0.95)",
-    },
-  },
+  "& .MuiInputLabel-root.Mui-focused": { color: BRAND.morphoBlueDark },
   "& .MuiInputBase-input": {
-    color: "white",
-    fontWeight: 400,
-    fontSize: { xs: "0.9rem", sm: "1rem" },
-    py: { xs: 1.2, sm: 1.5 },
-    "&::placeholder": {
-      color: "rgba(255, 255, 255, 0.5)",
-      opacity: 1,
-      fontSize: { xs: "0.85rem", sm: "0.9rem" },
-    },
+    py: 1.35,
+    color: BRAND.deepUmber,
   },
 };
 
 export default function LoginPage() {
-  const theme = useTheme();
   const rfEmail = useRef();
   const rsEmail = useRef();
   const rfPassword = useRef();
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [bgIndex, setBgIndex] = useState(0);
-  const [body, updateBody] = useState({ email: null });
   const [openResetDialog, setOpenResetDialog] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    LOGIN_IMAGES.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+    const saved = localStorage.getItem(REMEMBER_KEY);
+    if (saved && rfEmail.current) {
+      rfEmail.current.value = saved;
+      setRememberMe(true);
+    }
+    const interval = setInterval(() => {
+      setBgIndex((i) => (i + 1) % LOGIN_IMAGES.length);
+    }, 7000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const validateEmail = (email) =>
+    String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]/.,;:\s@"]+(\.[^<>()[\]/.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+
+  const validatePassword = (password) => password.length >= 6;
 
   const login = async (e) => {
     if (e) e.preventDefault();
 
-    const d = body;
-    d.email = rfEmail.current.value.toLowerCase().trim();
-    d.password = rfPassword.current.value;
-    updateBody(d);
+    const email = rfEmail.current.value.toLowerCase().trim();
+    const password = rfPassword.current.value;
+    const body = { email, password };
 
-    if (!validateEmail(body.email)) {
+    if (!validateEmail(email)) {
       Swal.fire({
         icon: "error",
         title: "Invalid Email",
         text: "Please enter a valid email address",
-        confirmButtonColor: theme.palette.primary.main,
+        confirmButtonColor: BRAND.morphoBlue,
       });
       return;
     }
 
-    if (!validatePassword(body.password)) {
+    if (!validatePassword(password)) {
       Swal.fire({
         icon: "error",
         title: "Invalid Password",
         text: "Password must be at least 6 characters",
-        confirmButtonColor: theme.palette.primary.main,
+        confirmButtonColor: BRAND.morphoBlue,
       });
       return;
     }
@@ -140,9 +157,12 @@ export default function LoginPage() {
           icon: "error",
           title: "Login Failed",
           text: data.message,
-          confirmButtonColor: theme.palette.primary.main,
+          confirmButtonColor: BRAND.morphoBlue,
         });
       } else if (data.success) {
+        if (rememberMe) localStorage.setItem(REMEMBER_KEY, email);
+        else localStorage.removeItem(REMEMBER_KEY);
+
         Swal.fire({
           icon: "success",
           title: "Success!",
@@ -159,7 +179,7 @@ export default function LoginPage() {
           icon: "error",
           title: "Login Failed",
           text: data.message,
-          confirmButtonColor: theme.palette.primary.main,
+          confirmButtonColor: BRAND.morphoBlue,
         });
       }
     } catch {
@@ -167,7 +187,7 @@ export default function LoginPage() {
         icon: "error",
         title: "Error",
         text: "Login failed. Please try again.",
-        confirmButtonColor: theme.palette.primary.main,
+        confirmButtonColor: BRAND.morphoBlue,
       });
     } finally {
       setLoading(false);
@@ -182,7 +202,7 @@ export default function LoginPage() {
         icon: "error",
         title: "Invalid Email",
         text: "Please enter a valid email address",
-        confirmButtonColor: theme.palette.primary.main,
+        confirmButtonColor: BRAND.morphoBlue,
       });
       return;
     }
@@ -212,14 +232,14 @@ export default function LoginPage() {
           icon: "success",
           title: "Success",
           text: data.message,
-          confirmButtonColor: theme.palette.primary.main,
+          confirmButtonColor: BRAND.morphoBlue,
         });
       } else {
         Swal.fire({
           icon: "error",
           title: "Error",
           text: data.message,
-          confirmButtonColor: theme.palette.primary.main,
+          confirmButtonColor: BRAND.morphoBlue,
         });
       }
     } catch {
@@ -227,416 +247,352 @@ export default function LoginPage() {
         icon: "error",
         title: "Error",
         text: "Something went wrong. Please try again.",
-        confirmButtonColor: theme.palette.primary.main,
+        confirmButtonColor: BRAND.morphoBlue,
       });
     } finally {
       setResetLoading(false);
     }
   };
 
-  const validateEmail = (email) =>
-    String(email)
-      .toLowerCase()
-      .match(
-        /^(([^<>()[\]/.,;:\s@"]+(\.[^<>()[\]/.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      );
-
-  const validatePassword = (password) => password.length >= 6;
-
-  useEffect(() => {
-    images.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-    const interval = setInterval(() => {
-      setBgIndex((i) => (i + 1) % images.length);
-    }, 7000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <Box
-      display="flex"
-      flexDirection="column"
-      minHeight="100vh"
-      position="relative"
-      sx={{ overflow: "hidden", bgcolor: "#0a1628" }}
+      sx={{
+        height: "100dvh",
+        maxHeight: "100dvh",
+        width: "100%",
+        display: "flex",
+        flexDirection: { xs: "column", md: "row" },
+        overflow: "hidden",
+        bgcolor: BRAND.oldPaperSoft,
+        fontFamily: '"Plus Jakarta Sans", "Open Sans", system-ui, sans-serif',
+        position: "relative",
+      }}
     >
-      {/* Cinematic background slideshow */}
-      {images.map((src, index) => (
-        <Box
-          key={src}
-          aria-hidden
-          sx={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: `url(${src})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            opacity: bgIndex === index ? 1 : 0,
-            transform: bgIndex === index ? "scale(1.06)" : "scale(1)",
-            transition: "opacity 1.8s ease-in-out, transform 7s ease-out",
-            willChange: "opacity, transform",
-          }}
-        />
-      ))}
+      {/* SVG clip defs — smooth cubic S-curve like the reference */}
+      <svg width="0" height="0" aria-hidden style={{ position: "absolute" }}>
+        <defs>
+          {/*
+            Image right edge: bulges into the form at top & bottom,
+            dips back toward the image in the middle (soft S / C wave).
+          */}
+          <clipPath id="mwalimu-hero-curve-desktop" clipPathUnits="objectBoundingBox">
+            <path d="M0,0 H0.92 C0.98,0.08 1,0.16 0.96,0.28 C0.9,0.42 0.78,0.48 0.8,0.58 C0.82,0.7 0.94,0.78 0.98,0.88 C1,0.94 0.96,0.98 0.92,1 H0 Z" />
+          </clipPath>
+          {/* Mobile: soft wave along the bottom of the image */}
+          <clipPath id="mwalimu-hero-curve-mobile" clipPathUnits="objectBoundingBox">
+            <path d="M0,0 H1 V0.78 C0.9,0.86 0.78,0.92 0.62,0.94 C0.48,0.96 0.35,0.94 0.22,0.9 C0.12,0.86 0.05,0.82 0,0.78 Z" />
+          </clipPath>
+        </defs>
+      </svg>
 
-      {/* Layered overlays for depth & readability */}
+      {/* Left — hero with curved right edge */}
       <Box
         sx={{
-          position: "absolute",
-          inset: 0,
-          background: `
-            linear-gradient(115deg, rgba(6, 28, 18, 0.92) 0%, rgba(10, 40, 28, 0.75) 42%, rgba(8, 20, 40, 0.55) 100%),
-            radial-gradient(ellipse at 15% 50%, rgba(14, 141, 69, 0.35) 0%, transparent 55%),
-            radial-gradient(ellipse at 85% 20%, rgba(33, 150, 243, 0.2) 0%, transparent 45%)
-          `,
-        }}
-      />
-      <Box
-        sx={{
-          position: "absolute",
-          inset: 0,
-          opacity: 0.04,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-        }}
-      />
-
-      {/* Slideshow indicators */}
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{
-          position: "absolute",
-          bottom: { xs: 72, sm: 80 },
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 2,
+          position: "relative",
+          flex: { xs: "0 0 36%", md: "0 0 52%" },
+          minHeight: 0,
+          height: { xs: "36%", md: "100%" },
+          overflow: "hidden",
+          zIndex: 1,
+          clipPath: {
+            xs: "url(#mwalimu-hero-curve-mobile)",
+            md: "url(#mwalimu-hero-curve-desktop)",
+          },
+          WebkitClipPath: {
+            xs: "url(#mwalimu-hero-curve-mobile)",
+            md: "url(#mwalimu-hero-curve-desktop)",
+          },
         }}
       >
-        {images.map((_, i) => (
+        {LOGIN_IMAGES.map((src, index) => (
           <Box
-            key={i}
-            onClick={() => setBgIndex(i)}
-            role="button"
-            tabIndex={0}
-            aria-label={`Background image ${i + 1}`}
-            onKeyDown={(e) => e.key === "Enter" && setBgIndex(i)}
+            key={src}
+            aria-hidden
             sx={{
-              width: bgIndex === i ? 28 : 8,
-              height: 8,
-              borderRadius: 4,
-              bgcolor: bgIndex === i ? "#40a86c" : "rgba(255,255,255,0.35)",
-              cursor: "pointer",
-              transition: "all 0.35s ease",
-              "&:hover": { bgcolor: "rgba(255,255,255,0.7)" },
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url(${src})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              opacity: bgIndex === index ? 1 : 0,
+              transform: bgIndex === index ? "scale(1.04)" : "scale(1)",
+              transition: "opacity 1.6s ease-in-out, transform 7s ease-out",
             }}
           />
         ))}
-      </Stack>
 
-      {/* Main content */}
+        {/* Light bottom shade only — keeps photos clear */}
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            background: `linear-gradient(180deg, transparent 58%, ${alpha(BRAND.deepUmberDark, 0.42)} 100%)`,
+            pointerEvents: "none",
+          }}
+        />
+
+        <Box
+          sx={{
+            position: "absolute",
+            left: { xs: 16, md: 28 },
+            bottom: { xs: 28, md: 40 },
+            right: { xs: 16, md: 72 },
+            zIndex: 2,
+            display: { xs: "none", sm: "block" },
+          }}
+        >
+          <Typography
+            sx={{
+              fontFamily: '"Cormorant Garamond", Georgia, serif',
+              fontWeight: 700,
+              fontSize: { sm: "1.35rem", md: "1.75rem" },
+              color: BRAND.oldPaperSoft,
+              lineHeight: 1.2,
+              mb: 0.5,
+            }}
+          >
+            Admin Portal
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: { sm: "0.82rem", md: "0.92rem" },
+              color: alpha(BRAND.oldPaperSoft, 0.85),
+              lineHeight: 1.5,
+              maxWidth: 360,
+            }}
+          >
+            Secure access for Mwalimu Hope Foundation staff and board.
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Right — login form */}
       <Box
         sx={{
           flex: 1,
+          minHeight: 0,
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
+          justifyContent: "center",
+          px: { xs: 2.5, sm: 4, md: 5, lg: 7 },
+          py: { xs: 2, md: 3 },
+          bgcolor: BRAND.oldPaperSoft,
+          overflow: "hidden",
           position: "relative",
-          zIndex: 1,
-          width: "100%",
-          py: { xs: 3, sm: 4 },
+          zIndex: 0,
+          ml: { md: "-6%" },
         }}
       >
-        <Container
-          maxWidth={false}
-          sx={{ width: "100%", px: { xs: 2, sm: 3, md: 4, lg: 8, xl: 12 } }}
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: 400,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
         >
-          <Grid
-            container
-            spacing={{ xs: 4, md: 5, lg: 6 }}
-            alignItems="center"
-            justifyContent={{ xs: "center", lg: "space-between" }}
-          >
-            {/* Brand panel */}
-            <Grid
-              size={{ xs: 12, lg: "auto" }}
-              sx={{
-                display: "flex",
-                justifyContent: { xs: "center", lg: "flex-start" },
-                pl: { lg: 2, xl: 4 },
-              }}
-            >
-              <Fade in timeout={900}>
-                <Stack
-                  spacing={3}
-                  alignItems={{ xs: "center", lg: "flex-start" }}
-                >
-                  <Box sx={{ position: "relative" }}>
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        inset: "-20%",
-                        background: "radial-gradient(circle, rgba(14,141,69,0.25) 0%, transparent 70%)",
-                        filter: "blur(20px)",
-                      }}
-                    />
-                    <Box
-                      component="img"
-                      src="/foundation-logo-removebg-preview.png"
-                      alt="Mwalimu Hope Foundation"
-                      sx={{
-                        position: "relative",
-                        height: { xs: 180, sm: 220, md: 260, lg: 300 },
-                        width: "auto",
-                        maxWidth: { xs: "80vw", sm: 320, lg: 380 },
-                        objectFit: "contain",
-                        filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.45))",
-                      }}
-                    />
-                  </Box>
-                </Stack>
-              </Fade>
-            </Grid>
-
-            {/* Login card */}
-            <Grid
-              size={{ xs: 12, md: 6, lg: "auto" }}
-              sx={{
-                display: "flex",
-                justifyContent: { xs: "center", lg: "flex-end" },
-                pr: { lg: 2, xl: 4 },
-              }}
-            >
-              <Slide direction="left" in timeout={1500}>
-                <Card
-                  elevation={0}
-                  sx={{
-                    p: { xs: 2, sm: 3, md: 4 },
-                    maxWidth: { xs: "100%", sm: 450, md: 480 },
-                    width: "100%",
-                    borderRadius: { xs: 4, sm: 6 },
-                    background: "rgba(255, 255, 255, 0.08)",
-                    backdropFilter: "blur(40px)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    boxShadow: `
-                      0 20px 40px rgba(0, 0, 0, 0.3),
-                      0 0 0 1px rgba(255, 255, 255, 0.05),
-                      inset 0 1px 0 rgba(255, 255, 255, 0.1)
-                    `,
-                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                    position: "relative",
-                    overflow: "hidden",
-                    mx: { xs: 1, sm: 0 },
-                    "&::before": {
-                      content: '""',
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: "2px",
-                      background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
-                      opacity: 0,
-                      transition: "opacity 0.3s ease",
-                    },
-                    "&:hover": {
-                      transform: { xs: "translateY(-2px)", sm: "translateY(-4px)", md: "translateY(-8px) scale(1.02)" },
-                      boxShadow: `
-                        0 32px 64px rgba(0, 0, 0, 0.4),
-                        0 0 0 1px rgba(255, 255, 255, 0.1),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.2)
-                      `,
-                      border: "1px solid rgba(255, 255, 255, 0.25)",
-                      "&::before": { opacity: 1 },
-                    },
-                  }}
-                >
-                  <form onSubmit={login}>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="center"
-                      spacing={{ xs: 1.5, sm: 2 }}
-                      sx={{ mb: { xs: 3, sm: 4 } }}
-                    >
-                      <AdminPanelSettings
-                        sx={{
-                          color: "rgba(255,255,255,0.9)",
-                          fontSize: { xs: 24, sm: 28, md: 32 },
-                          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-                        }}
-                      />
-                      <Typography
-                        textAlign="center"
-                        fontWeight="800"
-                        variant="h4"
-                        sx={{
-                          textShadow: "2px 2px 8px rgba(0,0,0,0.6)",
-                          letterSpacing: "1px",
-                          color: "white",
-                          fontSize: { xs: "1.5rem", sm: "1.8rem", md: "2rem" },
-                        }}
-                      >
-                        Admin Portal
-                      </Typography>
-                    </Stack>
-
-                    <TextField
-                      inputRef={rfEmail}
-                      type="email"
-                      label="Email Address"
-                      fullWidth
-                      margin="normal"
-                      variant="outlined"
-                      placeholder="admin@mwalimuhope.org"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Email sx={{ color: "rgba(255,255,255,0.7)", fontSize: { xs: 20, sm: 24 } }} />
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={darkFieldSx}
-                    />
-
-                    <TextField
-                      inputRef={rfPassword}
-                      type={showPassword ? "text" : "password"}
-                      label="Password"
-                      fullWidth
-                      margin="normal"
-                      variant="outlined"
-                      placeholder="Enter your secure password"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Security sx={{ color: "rgba(255,255,255,0.7)", fontSize: { xs: 20, sm: 24 } }} />
-                          </InputAdornment>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => setShowPassword(!showPassword)}
-                              edge="end"
-                              sx={{
-                                color: "rgba(255,255,255,0.7)",
-                                p: { xs: 0.8, sm: 1 },
-                                "&:hover": {
-                                  color: "rgba(255,255,255,0.9)",
-                                  backgroundColor: "rgba(255,255,255,0.1)",
-                                },
-                              }}
-                            >
-                              {showPassword ? (
-                                <VisibilityOff sx={{ fontSize: { xs: 20, sm: 22 } }} />
-                              ) : (
-                                <Visibility sx={{ fontSize: { xs: 20, sm: 22 } }} />
-                              )}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={darkFieldSx}
-                    />
-
-                    <Typography
-                      variant="body2"
-                      color="rgba(255,255,255,0.8)"
-                      align="center"
-                      sx={{
-                        mt: 2,
-                        cursor: "pointer",
-                        fontWeight: 500,
-                        "&:hover": { color: "rgba(255,255,255,0.95)" },
-                      }}
-                      onClick={() => setOpenResetDialog(true)}
-                    >
-                      Forgot your password?
-                      <Box
-                        component="span"
-                        sx={{
-                          color: "rgba(255,255,255,0.9)",
-                          textDecoration: "underline",
-                          ml: 0.5,
-                        }}
-                      >
-                        Reset here
-                      </Box>
-                    </Typography>
-
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      fullWidth
-                      size="large"
-                      disabled={loading}
-                      startIcon={
-                        loading ? (
-                          <CircularProgress size={20} color="inherit" />
-                        ) : (
-                          <Login sx={{ fontSize: { xs: 20, sm: 24 } }} />
-                        )
-                      }
-                      sx={{
-                        mt: { xs: 3, sm: 4 },
-                        py: { xs: 1.5, sm: 2 },
-                        borderRadius: { xs: 3, sm: 4 },
-                        background: `linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(56, 142, 60, 0.9) 50%, rgba(46, 125, 50, 0.9) 100%)`,
-                        boxShadow: "0 8px 32px rgba(76, 175, 80, 0.3)",
-                        textTransform: "none",
-                        fontSize: { xs: "1rem", sm: "1.1rem", md: "1.2rem" },
-                        fontWeight: 700,
-                        "&:hover": {
-                          background: `linear-gradient(135deg, rgba(76, 175, 80, 1) 0%, rgba(56, 142, 60, 1) 50%, rgba(46, 125, 50, 1) 100%)`,
-                          boxShadow: "0 12px 48px rgba(76, 175, 80, 0.4)",
-                          transform: { xs: "translateY(-2px)", sm: "translateY(-3px) scale(1.02)" },
-                        },
-                        "&:disabled": {
-                          background: "rgba(255, 255, 255, 0.1)",
-                          color: "rgba(255, 255, 255, 0.5)",
-                        },
-                      }}
-                    >
-                      {loading ? "Authenticating..." : "Access Admin Portal"}
-                    </Button>
-                  </form>
-                </Card>
-              </Slide>
-            </Grid>
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* Footer credit */}
-      <Box
-        sx={{
-          flexShrink: 0,
-          py: { xs: 1.5, sm: 2 },
-          textAlign: "center",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        <Fade in timeout={1200}>
-          <Typography
-            variant="caption"
+          <Box
+            component="img"
+            src="/foundation-logo-removebg-preview.png"
+            alt={BRAND.name}
             sx={{
-              color: "rgba(255,255,255,0.55)",
-              fontSize: "0.75rem",
-              letterSpacing: "0.03em",
+              height: { xs: 64, sm: 76, md: 88 },
+              width: "auto",
+              objectFit: "contain",
+              mb: { xs: 1, md: 1.25 },
+            }}
+          />
+          <Typography
+            sx={{
+              fontFamily: '"Cormorant Garamond", Georgia, serif',
+              fontWeight: 700,
+              fontSize: { xs: "1.35rem", md: "1.55rem" },
+              color: BRAND.deepUmber,
+              textAlign: "center",
+              lineHeight: 1.15,
+              mb: 0.35,
+            }}
+          >
+            {BRAND.name}
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: { xs: "0.78rem", md: "0.85rem" },
+              color: BRAND.morphoBlueDark,
+              textAlign: "center",
+              fontWeight: 600,
+              mb: { xs: 2.25, md: 3 },
+              maxWidth: 320,
+              lineHeight: 1.45,
+            }}
+          >
+            {BRAND.tagline}
+          </Typography>
+
+          <Box component="form" onSubmit={login} sx={{ width: "100%" }}>
+            <Typography
+              component="label"
+              htmlFor="admin-email"
+              sx={{
+                display: "block",
+                fontSize: "0.82rem",
+                fontWeight: 700,
+                color: BRAND.deepUmber,
+                mb: 0.75,
+              }}
+            >
+              Email{" "}
+              <Box component="span" sx={{ color: "#c62828" }}>
+                *
+              </Box>
+            </Typography>
+            <TextField
+              id="admin-email"
+              inputRef={rfEmail}
+              type="email"
+              fullWidth
+              placeholder="Enter your email"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email sx={{ color: alpha(BRAND.deepUmber, 0.45), fontSize: 20 }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ ...fieldSx, mb: 2 }}
+            />
+
+            <Typography
+              component="label"
+              htmlFor="admin-password"
+              sx={{
+                display: "block",
+                fontSize: "0.82rem",
+                fontWeight: 700,
+                color: BRAND.deepUmber,
+                mb: 0.75,
+              }}
+            >
+              Password{" "}
+              <Box component="span" sx={{ color: "#c62828" }}>
+                *
+              </Box>
+            </Typography>
+            <TextField
+              id="admin-password"
+              inputRef={rfPassword}
+              type={showPassword ? "text" : "password"}
+              fullWidth
+              placeholder="Enter password"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword((v) => !v)}
+                      edge="end"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      sx={{ color: alpha(BRAND.deepUmber, 0.5) }}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ ...fieldSx, mb: 1.5 }}
+            />
+
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{ mb: 2.5 }}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    size="small"
+                    sx={{
+                      color: alpha(BRAND.deepUmber, 0.4),
+                      "&.Mui-checked": { color: BRAND.morphoBlue },
+                    }}
+                  />
+                }
+                label={
+                  <Typography sx={{ fontSize: "0.85rem", color: alpha(BRAND.deepUmber, 0.75) }}>
+                    Remember me
+                  </Typography>
+                }
+                sx={{ ml: -0.5, mr: 0 }}
+              />
+              <Link
+                component="button"
+                type="button"
+                underline="always"
+                onClick={() => setOpenResetDialog(true)}
+                sx={{
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  color: BRAND.morphoBlue,
+                  "&:hover": { color: BRAND.morphoBlueDark },
+                }}
+              >
+                Forgot password?
+              </Link>
+            </Stack>
+
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Button
+                type="submit"
+                variant="contained"
+                disableElevation
+                disabled={loading}
+                sx={{
+                  width: { xs: "100%", sm: "72%" },
+                  py: 1.35,
+                  borderRadius: "999px",
+                  textTransform: "none",
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                  bgcolor: BRAND.deepUmber,
+                  color: BRAND.oldPaperSoft,
+                  boxShadow: `0 10px 28px ${alpha(BRAND.deepUmber, 0.35)}`,
+                  "&:hover": {
+                    bgcolor: BRAND.deepUmberDark,
+                    boxShadow: `0 12px 32px ${alpha(BRAND.deepUmberDark, 0.4)}`,
+                  },
+                  "&.Mui-disabled": {
+                    bgcolor: alpha(BRAND.deepUmber, 0.35),
+                    color: alpha(BRAND.oldPaperSoft, 0.7),
+                  },
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={22} sx={{ color: BRAND.oldPaperSoft }} />
+                ) : (
+                  "Log in"
+                )}
+              </Button>
+            </Box>
+          </Box>
+
+          <Typography
+            sx={{
+              mt: { xs: 2.5, md: 3.5 },
+              fontSize: "0.7rem",
+              color: alpha(BRAND.deepUmber, 0.45),
+              textAlign: "center",
             }}
           >
             Developed by{" "}
-            <Box
-              component="span"
-              sx={{
-                color: "rgba(255,255,255,0.85)",
-                fontWeight: 600,
-              }}
-            >
+            <Box component="span" sx={{ fontWeight: 700, color: alpha(BRAND.deepUmber, 0.7) }}>
               Carlvyne Technologies Ltd
             </Box>
           </Typography>
-        </Fade>
+        </Box>
       </Box>
 
       {/* Reset password dialog */}
@@ -645,46 +601,43 @@ export default function LoginPage() {
         onClose={() => setOpenResetDialog(false)}
         fullWidth
         maxWidth="sm"
-        TransitionComponent={Slide}
-        transitionDuration={400}
         PaperProps={{
           sx: {
-            borderRadius: 4,
-            background: "rgba(255, 255, 255, 0.95)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
+            borderRadius: 3,
+            bgcolor: BRAND.oldPaperSoft,
+            border: `1px solid ${alpha(BRAND.deepUmber, 0.12)}`,
+            boxShadow: `0 20px 48px ${alpha(BRAND.deepUmberDark, 0.22)}`,
           },
         }}
       >
         <DialogTitle
           sx={{
-            background: `linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(56, 142, 60, 0.9) 100%)`,
-            color: "white",
+            background: `linear-gradient(135deg, ${BRAND.deepUmberDark} 0%, ${BRAND.deepUmber} 100%)`,
+            color: BRAND.oldPaperSoft,
             fontWeight: 700,
-            fontSize: "1.3rem",
-            letterSpacing: "0.5px",
+            fontSize: "1.2rem",
             textAlign: "center",
-            py: 3,
+            py: 2.5,
           }}
         >
-          <Stack direction="row" alignItems="center" justifyContent="center" spacing={2}>
-            <Security sx={{ fontSize: 28 }} />
+          <Stack direction="row" alignItems="center" justifyContent="center" spacing={1.5}>
+            <Security />
             <Box>Reset Password</Box>
           </Stack>
         </DialogTitle>
         <Divider />
-        <DialogContent sx={{ pt: 4, pb: 2 }}>
+        <DialogContent sx={{ pt: 3.5, pb: 2, bgcolor: "#fff" }}>
           <DialogContentText
             sx={{
-              mb: 3,
-              fontSize: "1rem",
-              color: "rgba(0,0,0,0.7)",
+              mb: 2.5,
+              fontSize: "0.95rem",
+              color: alpha(BRAND.deepUmber, 0.72),
               textAlign: "center",
               lineHeight: 1.6,
             }}
           >
-            Enter your registered email address and we&apos;ll send you a secure link to reset your password.
+            Enter your registered email address and we&apos;ll send you a secure link to reset your
+            password.
           </DialogContentText>
           <Box
             component="form"
@@ -703,37 +656,24 @@ export default function LoginPage() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Email sx={{ color: "rgba(0,0,0,0.6)" }} />
+                    <Email sx={{ color: alpha(BRAND.deepUmber, 0.5) }} />
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "rgba(76, 175, 80, 0.5)",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "rgba(76, 175, 80, 1)",
-                    borderWidth: 2,
-                  },
-                },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color: "rgba(76, 175, 80, 1)",
-                },
-              }}
+              sx={fieldSx}
             />
-            <DialogActions sx={{ mt: 4, gap: 2, px: 0 }}>
+            <DialogActions sx={{ mt: 3, gap: 1.5, px: 0 }}>
               <Button
                 onClick={() => setOpenResetDialog(false)}
                 variant="outlined"
                 disabled={resetLoading}
                 sx={{
-                  borderColor: "rgba(0,0,0,0.3)",
-                  color: "rgba(0,0,0,0.7)",
-                  borderRadius: 3,
+                  borderColor: alpha(BRAND.deepUmber, 0.28),
+                  color: BRAND.deepUmber,
+                  borderRadius: "999px",
                   px: 3,
                   fontWeight: 600,
+                  textTransform: "none",
                 }}
               >
                 Cancel
@@ -741,17 +681,19 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 variant="contained"
+                disableElevation
                 disabled={resetLoading}
                 startIcon={
                   resetLoading ? <CircularProgress size={18} color="inherit" /> : <Security />
                 }
                 sx={{
-                  background: `linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(56, 142, 60, 0.9) 100%)`,
-                  borderRadius: 3,
+                  bgcolor: BRAND.morphoBlue,
+                  borderRadius: "999px",
                   px: 3,
                   fontWeight: 600,
                   textTransform: "none",
-                  boxShadow: "0 4px 12px rgba(76, 175, 80, 0.3)",
+                  boxShadow: `0 6px 18px ${alpha(BRAND.morphoBlue, 0.35)}`,
+                  "&:hover": { bgcolor: BRAND.morphoBlueDark },
                 }}
               >
                 {resetLoading ? "Sending..." : "Send Reset Link"}

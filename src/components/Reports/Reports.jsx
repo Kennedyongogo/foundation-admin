@@ -266,9 +266,7 @@ const Reports = () => {
         showConfirmButton: false,
       });
 
-      // Reset preview to empty state after successful generation
-      setReportData(null);
-
+      // Keep Report Preview beside Configuration after download
     } catch (err) {
       console.error("Error generating Word document:", err);
       Swal.close();
@@ -439,13 +437,14 @@ const Reports = () => {
             )}
 
             <Box sx={{ px: 4, pb: 4 }}>
-              <Grid container spacing={3}>
+              <Grid container spacing={3} alignItems="stretch">
           {/* Report Configuration Panel */}
-          <Grid item xs={12} lg={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
+              style={{ height: "100%" }}
             >
               <Card
                 sx={{
@@ -455,7 +454,9 @@ const Reports = () => {
                   borderRadius: 4,
                   boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
                   overflow: "hidden",
-                  position: "relative",
+                  position: { md: "sticky" },
+                  top: { md: 16 },
+                  height: "100%",
                   "&::before": {
                     content: '""',
                     position: "absolute",
@@ -603,64 +604,56 @@ const Reports = () => {
                     <Divider sx={{ my: 2 }} />
 
                     {/* Action Buttons */}
-                    <Stack spacing={2}>
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                    <Stack spacing={1.25}>
+                      <Button
+                        variant="contained"
+                        startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <PreviewIcon />}
+                        onClick={handlePreview}
+                        disabled={loading}
+                        fullWidth
+                        size="medium"
+                        sx={{
+                          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          py: 1,
+                          px: 1.5,
+                          fontWeight: 600,
+                          fontSize: "0.875rem",
+                          borderRadius: 2,
+                          whiteSpace: "nowrap",
+                          boxShadow: "0 4px 12px rgba(102, 126, 234, 0.25)",
+                          "& .MuiButton-startIcon": { mr: 0.75 },
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
+                          },
+                        }}
                       >
-                        <Button
-                          variant="contained"
-                          startIcon={loading ? <CircularProgress size={20} /> : <PreviewIcon />}
-                          onClick={handlePreview}
-                          disabled={loading}
-                          fullWidth
-                          size="large"
-                          sx={{
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            py: 2,
-                            fontWeight: 700,
-                            fontSize: "1.1rem",
-                            borderRadius: 3,
-                            boxShadow: "0 8px 20px rgba(102, 126, 234, 0.3)",
-                            "&:hover": {
-                              background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
-                              boxShadow: "0 12px 30px rgba(102, 126, 234, 0.4)",
-                            },
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          {loading ? "Loading..." : "Preview Data"}
-                        </Button>
-                      </motion.div>
+                        {loading ? "Loading..." : "Preview Data"}
+                      </Button>
 
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                      <Button
+                        variant="contained"
+                        startIcon={generating ? <CircularProgress size={16} color="inherit" /> : <WordIcon />}
+                        onClick={handleGenerateWord}
+                        disabled={generating}
+                        fullWidth
+                        size="medium"
+                        sx={{
+                          background: "linear-gradient(135deg, #2196f3 0%, #1976d2 100%)",
+                          py: 1,
+                          px: 1.5,
+                          fontWeight: 600,
+                          fontSize: "0.875rem",
+                          borderRadius: 2,
+                          whiteSpace: "nowrap",
+                          boxShadow: "0 4px 12px rgba(33, 150, 243, 0.25)",
+                          "& .MuiButton-startIcon": { mr: 0.75 },
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #1e88e5 0%, #1565c0 100%)",
+                          },
+                        }}
                       >
-                        <Button
-                          variant="contained"
-                          startIcon={generating ? <CircularProgress size={20} /> : <WordIcon />}
-                          onClick={handleGenerateWord}
-                          disabled={generating}
-                          fullWidth
-                          size="large"
-                          sx={{
-                            background: "linear-gradient(135deg, #2196f3 0%, #1976d2 100%)",
-                            py: 2,
-                            fontWeight: 700,
-                            fontSize: "1.1rem",
-                            borderRadius: 3,
-                            boxShadow: "0 8px 20px rgba(33, 150, 243, 0.3)",
-                            "&:hover": {
-                              background: "linear-gradient(135deg, #1e88e5 0%, #1565c0 100%)",
-                              boxShadow: "0 12px 30px rgba(33, 150, 243, 0.4)",
-                            },
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          {generating ? "Generating Word Document..." : "Generate Word Document"}
-                        </Button>
-                      </motion.div>
+                        {generating ? "Generating..." : "Generate Word"}
+                      </Button>
                     </Stack>
                   </Stack>
                 </CardContent>
@@ -668,12 +661,13 @@ const Reports = () => {
             </motion.div>
           </Grid>
 
-          {/* Report Preview Panel */}
-          <Grid item xs={12} lg={8}>
+          {/* Report Preview Panel — stays beside Configuration */}
+          <Grid size={{ xs: 12, md: 8 }}>
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
+              style={{ height: "100%" }}
             >
               <Card
                 sx={{
@@ -684,6 +678,9 @@ const Reports = () => {
                   boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
                   overflow: "hidden",
                   position: "relative",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
                   "&::before": {
                     content: '""',
                     position: "absolute",
@@ -695,8 +692,18 @@ const Reports = () => {
                   },
                 }}
               >
-                <CardContent sx={{ p: 4 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
+                <CardContent
+                  sx={{
+                    p: 4,
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    minHeight: { md: 520 },
+                    maxHeight: { md: "calc(100vh - 220px)" },
+                    overflow: "auto",
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 4, flexShrink: 0 }}>
                     <Box
                       sx={{
                         width: 50,
@@ -734,7 +741,7 @@ const Reports = () => {
                         {/* Summary Cards */}
                         <Grid container spacing={3} sx={{ mb: 4 }}>
                           {reportData.summary && Object.entries(reportData.summary).map(([key, data], index) => (
-                            <Grid item xs={6} sm={3} key={key}>
+                            <Grid size={{ xs: 6, sm: 3 }} key={key}>
                               <motion.div
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
@@ -816,7 +823,7 @@ const Reports = () => {
                         {/* Data Sections */}
                         <Grid container spacing={3}>
                           {reportData.projects && reportData.projects.length > 0 && (
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                               <Card sx={{ p: 3, borderRadius: 3, background: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)" }}>
                                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                                   <BarChartIcon sx={{ color: "#2196f3", mr: 1 }} />
@@ -832,7 +839,7 @@ const Reports = () => {
                           )}
 
                           {reportData.inquiries && reportData.inquiries.length > 0 && (
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                               <Card sx={{ p: 3, borderRadius: 3, background: "linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%)" }}>
                                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                                   <PieChartIcon sx={{ color: "#ff9800", mr: 1 }} />
@@ -848,7 +855,7 @@ const Reports = () => {
                           )}
 
                           {reportData.documents && reportData.documents.length > 0 && (
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                               <Card sx={{ p: 3, borderRadius: 3, background: "linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)" }}>
                                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                                   <FileDownloadIcon sx={{ color: "#9c27b0", mr: 1 }} />
@@ -864,7 +871,7 @@ const Reports = () => {
                           )}
 
                           {reportData.activities && reportData.activities.length > 0 && (
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                               <Card sx={{ p: 3, borderRadius: 3, background: "linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%)" }}>
                                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                                   <TimelineIcon sx={{ color: "#e91e63", mr: 1 }} />

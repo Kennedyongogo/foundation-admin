@@ -47,6 +47,8 @@ import {
   Cancel as CancelIcon,
   Schedule as ScheduleIcon,
   Update as UpdateIcon,
+  Star as StarIcon,
+  StarBorder as StarBorderIcon,
 } from "@mui/icons-material";
 import { useTheme, alpha } from "@mui/material/styles";
 import Swal from "sweetalert2";
@@ -167,7 +169,18 @@ const Testimony = () => {
   };
 
   const getRatingStars = (rating) => {
-    return 'â­'.repeat(rating);
+    const value = Math.max(0, Math.min(5, Number(rating) || 0));
+    return (
+      <Stack direction="row" spacing={0.15} alignItems="center" component="span">
+        {Array.from({ length: 5 }, (_, i) =>
+          i < value ? (
+            <StarIcon key={i} sx={{ fontSize: 18, color: brand.gold }} />
+          ) : (
+            <StarBorderIcon key={i} sx={{ fontSize: 18, color: alpha(brand.gold, 0.35) }} />
+          )
+        )}
+      </Stack>
+    );
   };
 
   const formatDate = (dateString) => {
@@ -392,7 +405,7 @@ const Testimony = () => {
                       <TableRow key={testimony.id} hover sx={tableRowSx}>
                         <TableCell sx={{ fontWeight: 700, color: brand.navy }}>{page * rowsPerPage + idx + 1}</TableCell>
                         <TableCell><Typography variant="body2" fontWeight={600} color={brand.navy}>{testimony.name}</Typography></TableCell>
-                        <TableCell><Typography variant="body2" fontWeight={600} color={brand.gold}>{getRatingStars(testimony.rating)}</Typography></TableCell>
+                        <TableCell>{getRatingStars(testimony.rating)}</TableCell>
                         <TableCell><Chip label={statusStyle.label} size="small" sx={{ fontWeight: 600, bgcolor: statusStyle.bg, color: statusStyle.color }} /></TableCell>
                         <TableCell>
                           <Box display="flex" gap={0.5}>
@@ -418,7 +431,12 @@ const Testimony = () => {
               <Stack spacing={2}>
                 <Box sx={{ ...detailCardSx, bgcolor: alpha(brand.navy, 0.04) }}>
                   <Typography variant="h6" fontWeight={800} color={brand.navy}>{selectedTestimony.name}</Typography>
-                  <Typography variant="body1" color={brand.gold} mt={1}>{getRatingStars(selectedTestimony.rating)} ({selectedTestimony.rating}/5)</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
+                    {getRatingStars(selectedTestimony.rating)}
+                    <Typography variant="body2" fontWeight={600} color={brand.sidebarTextMuted}>
+                      ({selectedTestimony.rating}/5)
+                    </Typography>
+                  </Stack>
                 </Box>
                 <DetailRow icon={CheckCircleIcon} label="STATUS" value={getStatusText(selectedTestimony.status)} color={brand.green} />
                 <DetailRow icon={ScheduleIcon} label="CREATED" value={formatDate(selectedTestimony.createdAt)} />
@@ -439,7 +457,7 @@ const Testimony = () => {
               {selectedTestimony && (
                 <Box sx={{ ...detailCardSx, bgcolor: brand.sidebarBgAlt }}>
                   <Typography variant="subtitle1" fontWeight={700} color={brand.navy}>{selectedTestimony.name}</Typography>
-                  <Typography variant="body2" color={brand.gold} mt={0.5}>{getRatingStars(selectedTestimony.rating)}</Typography>
+                  <Box sx={{ mt: 0.75 }}>{getRatingStars(selectedTestimony.rating)}</Box>
                   <Typography variant="body2" color={brand.sidebarTextMuted} sx={{ mt: 1, fontStyle: "italic" }}>"{selectedTestimony.description}"</Typography>
                 </Box>
               )}

@@ -15,8 +15,6 @@ import {
   CircularProgress,
   InputAdornment,
   IconButton,
-  FormControlLabel,
-  Checkbox,
   Link,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
@@ -24,6 +22,7 @@ import {
   Visibility,
   VisibilityOff,
   Email,
+  LockOutlined,
   Security,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
@@ -48,24 +47,34 @@ const LOGIN_IMAGES = [
   "/images/login-hero-3.jpg",
 ];
 
-const REMEMBER_KEY = "mwalimu_admin_remember_email";
-
 const fieldSx = {
   "& .MuiOutlinedInput-root": {
-    borderRadius: "12px",
+    borderRadius: "14px",
     bgcolor: "#fff",
     fontSize: "0.95rem",
-    "& fieldset": { borderColor: alpha(BRAND.deepUmber, 0.18) },
-    "&:hover fieldset": { borderColor: BRAND.morphoBlue },
-    "&.Mui-focused fieldset": {
-      borderColor: BRAND.morphoBlue,
-      borderWidth: 2,
+    transition: "box-shadow 0.2s ease, border-color 0.2s ease",
+    "& fieldset": { borderColor: alpha(BRAND.deepUmber, 0.14) },
+    "&:hover": {
+      bgcolor: "#fff",
+      "& fieldset": { borderColor: alpha(BRAND.morphoBlue, 0.55) },
+    },
+    "&.Mui-focused": {
+      bgcolor: "#fff",
+      boxShadow: `0 0 0 4px ${alpha(BRAND.morphoBlue, 0.14)}`,
+      "& fieldset": {
+        borderColor: BRAND.morphoBlue,
+        borderWidth: 1.5,
+      },
     },
   },
-  "& .MuiInputLabel-root.Mui-focused": { color: BRAND.morphoBlueDark },
   "& .MuiInputBase-input": {
-    py: 1.35,
+    py: 1.45,
     color: BRAND.deepUmber,
+    fontWeight: 500,
+    "&::placeholder": {
+      color: alpha(BRAND.deepUmber, 0.42),
+      opacity: 1,
+    },
   },
 };
 
@@ -76,7 +85,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [bgIndex, setBgIndex] = useState(0);
   const [openResetDialog, setOpenResetDialog] = useState(false);
   const navigate = useNavigate();
@@ -86,11 +94,6 @@ export default function LoginPage() {
       const img = new Image();
       img.src = src;
     });
-    const saved = localStorage.getItem(REMEMBER_KEY);
-    if (saved && rfEmail.current) {
-      rfEmail.current.value = saved;
-      setRememberMe(true);
-    }
     const interval = setInterval(() => {
       setBgIndex((i) => (i + 1) % LOGIN_IMAGES.length);
     }, 7000);
@@ -160,9 +163,6 @@ export default function LoginPage() {
           confirmButtonColor: BRAND.morphoBlue,
         });
       } else if (data.success) {
-        if (rememberMe) localStorage.setItem(REMEMBER_KEY, email);
-        else localStorage.removeItem(REMEMBER_KEY);
-
         Swal.fire({
           icon: "success",
           title: "Success!",
@@ -387,49 +387,73 @@ export default function LoginPage() {
         <Box
           sx={{
             width: "100%",
-            maxWidth: 400,
+            maxWidth: 420,
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
+            alignItems: "stretch",
           }}
         >
-          <Box
-            component="img"
-            src="/foundation-logo-removebg-preview.png"
-            alt={BRAND.name}
-            sx={{
-              height: { xs: 64, sm: 76, md: 88 },
-              width: "auto",
-              objectFit: "contain",
-              mb: { xs: 1, md: 1.25 },
-            }}
-          />
-          <Typography
-            sx={{
-              fontFamily: '"Cormorant Garamond", Georgia, serif',
-              fontWeight: 700,
-              fontSize: { xs: "1.35rem", md: "1.55rem" },
-              color: BRAND.deepUmber,
-              textAlign: "center",
-              lineHeight: 1.15,
-              mb: 0.35,
-            }}
-          >
-            {BRAND.name}
-          </Typography>
-          <Typography
-            sx={{
-              fontSize: { xs: "0.78rem", md: "0.85rem" },
-              color: BRAND.morphoBlueDark,
-              textAlign: "center",
-              fontWeight: 600,
-              mb: { xs: 2.25, md: 3 },
-              maxWidth: 320,
-              lineHeight: 1.45,
-            }}
-          >
-            {BRAND.tagline}
-          </Typography>
+          <Stack alignItems="center" spacing={0} sx={{ mb: { xs: 2.5, md: 3.25 } }}>
+            <Box
+              sx={{
+                width: { xs: 78, md: 92 },
+                height: { xs: 78, md: 92 },
+                borderRadius: "22px",
+                bgcolor: "#fff",
+                border: `1px solid ${alpha(BRAND.deepUmber, 0.08)}`,
+                boxShadow: `0 12px 32px ${alpha(BRAND.deepUmber, 0.08)}`,
+                display: "grid",
+                placeItems: "center",
+                mb: 1.75,
+              }}
+            >
+              <Box
+                component="img"
+                src="/foundation-logo-removebg-preview.png"
+                alt={BRAND.name}
+                sx={{
+                  height: { xs: 52, md: 62 },
+                  width: "auto",
+                  objectFit: "contain",
+                }}
+              />
+            </Box>
+            <Typography
+              sx={{
+                fontFamily: '"Cormorant Garamond", Georgia, serif',
+                fontWeight: 700,
+                fontSize: { xs: "1.55rem", md: "1.85rem" },
+                color: BRAND.deepUmber,
+                textAlign: "center",
+                lineHeight: 1.12,
+                letterSpacing: "-0.02em",
+                mb: 0.75,
+              }}
+            >
+              {BRAND.name}
+            </Typography>
+            <Box
+              sx={{
+                width: 40,
+                height: 3,
+                borderRadius: 2,
+                mb: 1.25,
+                background: `linear-gradient(90deg, ${BRAND.morphoBlue}, ${BRAND.deepUmber})`,
+              }}
+            />
+            <Typography
+              sx={{
+                fontSize: { xs: "0.8rem", md: "0.88rem" },
+                color: alpha(BRAND.deepUmber, 0.62),
+                textAlign: "center",
+                fontWeight: 500,
+                maxWidth: 340,
+                lineHeight: 1.55,
+              }}
+            >
+              {BRAND.tagline}
+            </Typography>
+          </Stack>
 
           <Box component="form" onSubmit={login} sx={{ width: "100%" }}>
             <Typography
@@ -437,14 +461,16 @@ export default function LoginPage() {
               htmlFor="admin-email"
               sx={{
                 display: "block",
-                fontSize: "0.82rem",
+                fontSize: "0.78rem",
                 fontWeight: 700,
-                color: BRAND.deepUmber,
-                mb: 0.75,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+                color: alpha(BRAND.deepUmber, 0.72),
+                mb: 0.85,
               }}
             >
               Email{" "}
-              <Box component="span" sx={{ color: "#c62828" }}>
+              <Box component="span" sx={{ color: "#c62828", textTransform: "none" }}>
                 *
               </Box>
             </Typography>
@@ -453,15 +479,16 @@ export default function LoginPage() {
               inputRef={rfEmail}
               type="email"
               fullWidth
+              autoComplete="email"
               placeholder="Enter your email"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Email sx={{ color: alpha(BRAND.deepUmber, 0.45), fontSize: 20 }} />
+                    <Email sx={{ color: BRAND.morphoBlueMuted, fontSize: 20 }} />
                   </InputAdornment>
                 ),
               }}
-              sx={{ ...fieldSx, mb: 2 }}
+              sx={{ ...fieldSx, mb: 2.25 }}
             />
 
             <Typography
@@ -469,14 +496,16 @@ export default function LoginPage() {
               htmlFor="admin-password"
               sx={{
                 display: "block",
-                fontSize: "0.82rem",
+                fontSize: "0.78rem",
                 fontWeight: 700,
-                color: BRAND.deepUmber,
-                mb: 0.75,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+                color: alpha(BRAND.deepUmber, 0.72),
+                mb: 0.85,
               }}
             >
               Password{" "}
-              <Box component="span" sx={{ color: "#c62828" }}>
+              <Box component="span" sx={{ color: "#c62828", textTransform: "none" }}>
                 *
               </Box>
             </Typography>
@@ -485,56 +514,41 @@ export default function LoginPage() {
               inputRef={rfPassword}
               type={showPassword ? "text" : "password"}
               fullWidth
+              autoComplete="current-password"
               placeholder="Enter password"
               InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockOutlined sx={{ color: BRAND.morphoBlueMuted, fontSize: 20 }} />
+                  </InputAdornment>
+                ),
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
                       onClick={() => setShowPassword((v) => !v)}
                       edge="end"
                       aria-label={showPassword ? "Hide password" : "Show password"}
-                      sx={{ color: alpha(BRAND.deepUmber, 0.5) }}
+                      sx={{
+                        color: alpha(BRAND.deepUmber, 0.45),
+                        "&:hover": { color: BRAND.morphoBlueDark, bgcolor: alpha(BRAND.morphoBlue, 0.08) },
+                      }}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),
               }}
-              sx={{ ...fieldSx, mb: 1.5 }}
+              sx={{ ...fieldSx, mb: 1.25 }}
             />
 
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mb: 2.5 }}
-            >
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    size="small"
-                    sx={{
-                      color: alpha(BRAND.deepUmber, 0.4),
-                      "&.Mui-checked": { color: BRAND.morphoBlue },
-                    }}
-                  />
-                }
-                label={
-                  <Typography sx={{ fontSize: "0.85rem", color: alpha(BRAND.deepUmber, 0.75) }}>
-                    Remember me
-                  </Typography>
-                }
-                sx={{ ml: -0.5, mr: 0 }}
-              />
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2.75 }}>
               <Link
                 component="button"
                 type="button"
-                underline="always"
+                underline="hover"
                 onClick={() => setOpenResetDialog(true)}
                 sx={{
-                  fontSize: "0.85rem",
+                  fontSize: "0.86rem",
                   fontWeight: 600,
                   color: BRAND.morphoBlue,
                   "&:hover": { color: BRAND.morphoBlueDark },
@@ -542,53 +556,54 @@ export default function LoginPage() {
               >
                 Forgot password?
               </Link>
-            </Stack>
-
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Button
-                type="submit"
-                variant="contained"
-                disableElevation
-                disabled={loading}
-                sx={{
-                  width: { xs: "100%", sm: "72%" },
-                  py: 1.35,
-                  borderRadius: "999px",
-                  textTransform: "none",
-                  fontWeight: 700,
-                  fontSize: "1rem",
-                  bgcolor: BRAND.deepUmber,
-                  color: BRAND.oldPaperSoft,
-                  boxShadow: `0 10px 28px ${alpha(BRAND.deepUmber, 0.35)}`,
-                  "&:hover": {
-                    bgcolor: BRAND.deepUmberDark,
-                    boxShadow: `0 12px 32px ${alpha(BRAND.deepUmberDark, 0.4)}`,
-                  },
-                  "&.Mui-disabled": {
-                    bgcolor: alpha(BRAND.deepUmber, 0.35),
-                    color: alpha(BRAND.oldPaperSoft, 0.7),
-                  },
-                }}
-              >
-                {loading ? (
-                  <CircularProgress size={22} sx={{ color: BRAND.oldPaperSoft }} />
-                ) : (
-                  "Log in"
-                )}
-              </Button>
             </Box>
+
+            <Button
+              type="submit"
+              variant="contained"
+              disableElevation
+              fullWidth
+              disabled={loading}
+              sx={{
+                py: 1.45,
+                borderRadius: "999px",
+                textTransform: "none",
+                fontWeight: 700,
+                fontSize: "1.02rem",
+                letterSpacing: "0.01em",
+                bgcolor: BRAND.deepUmber,
+                color: BRAND.oldPaperSoft,
+                boxShadow: `0 12px 28px ${alpha(BRAND.deepUmber, 0.28)}`,
+                transition: "transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease",
+                "&:hover": {
+                  bgcolor: BRAND.deepUmberDark,
+                  boxShadow: `0 14px 34px ${alpha(BRAND.deepUmberDark, 0.34)}`,
+                  transform: "translateY(-1px)",
+                },
+                "&.Mui-disabled": {
+                  bgcolor: alpha(BRAND.deepUmber, 0.35),
+                  color: alpha(BRAND.oldPaperSoft, 0.7),
+                },
+              }}
+            >
+              {loading ? (
+                <CircularProgress size={22} sx={{ color: BRAND.oldPaperSoft }} />
+              ) : (
+                "Log in"
+              )}
+            </Button>
           </Box>
 
           <Typography
             sx={{
-              mt: { xs: 2.5, md: 3.5 },
+              mt: { xs: 3, md: 3.75 },
               fontSize: "0.7rem",
-              color: alpha(BRAND.deepUmber, 0.45),
+              color: alpha(BRAND.deepUmber, 0.42),
               textAlign: "center",
             }}
           >
             Developed by{" "}
-            <Box component="span" sx={{ fontWeight: 700, color: alpha(BRAND.deepUmber, 0.7) }}>
+            <Box component="span" sx={{ fontWeight: 700, color: alpha(BRAND.deepUmber, 0.65) }}>
               Carlvyne Technologies Ltd
             </Box>
           </Typography>
